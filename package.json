@@ -1,0 +1,33 @@
+{
+  "private": true,
+  "author": "Carlos-Chen <2663118046@qq.com>",
+  "scripts": {
+    "dev": "max dev",
+    "build": "max build",
+    "format": "prettier --cache --write .",
+    "prepare": "husky",
+    "postinstall": "max setup && npx -y @apdesign/aicodingtracker-cursor-cli install-hooks --auto",
+    "setup": "max setup",
+    "start": "npm run dev"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.1.1",
+    "@ant-design/pro-components": "^2.8.10",
+    "@umijs/max": "^4.6.46",
+    "antd": "^6.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "postcss": "^8.5.10",
+    "prettier": "^3.8.3",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-packagejson": "^3.0.2",
+    "tailwindcss": "^4.2.3",
+    "typescript": "^6.0.3"
+  }
+}

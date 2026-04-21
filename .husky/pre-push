@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# >>> aicodingtracker begin
+AIT_USER_HOME="${HOME:-${USERPROFILE:-.}}"
+AIT_LOG_DIR="$AIT_USER_HOME/.aicodingtracker/logs"
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || REPO_ROOT=""
+_ait_hook_log() {
+  _l="$1"
+  mkdir -p "$AIT_LOG_DIR" 2>/dev/null || true
+  _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
+    || date -u "+%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
+    || TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
+    || date +"%s" 2>/dev/null \
+    || echo "?")
+  printf '%s %s\n' "$_ts" "$_l" >>"$AIT_LOG_DIR/hook.log" 2>/dev/null || true
+}
+if [ -n "$REPO_ROOT" ] && command -v aicodingtracker-cursor-cli >/dev/null 2>&1; then
+  _ait_ec=0
+  aicodingtracker-cursor-cli pre-push || _ait_ec=$?
+  if [ "$_ait_ec" != 0 ]; then
+    _ait_hook_log "aicodingtracker pre-push exit=$_ait_ec cwd=$REPO_ROOT"
+    if [ "${AICODINGTRACKER_DEBUG:-}" = "1" ]; then echo "aicodingtracker: pre-push 失败 (exit $_ait_ec)，详见 $AIT_LOG_DIR/hook.log" >&2; fi || true
+  fi
+else
+  _ait_hook_log "aicodingtracker pre-push skipped: missing aicodingtracker-cursor-cli in PATH"
+  if [ "${AICODINGTRACKER_DEBUG:-}" = "1" ]; then echo "aicodingtracker: 跳过 pre-push（未找到 aicodingtracker-cursor-cli；请先全局安装 @apdesign/aicodingtracker-cursor-cli）" >&2; fi || true
+fi
+true
+# <<< aicodingtracker end

@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "sourceLabel": "http://localhost:3030/docs-json",
+  "operationKeys": [
+    "get:/admin/tool",
+    "post:/admin/tool/by-app-client/{appClientId}/{id}/debug/init-schemas"
+  ],
+  "savedAt": "2026-06-01T01:04:13.988Z"
+}

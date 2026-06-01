@@ -1,0 +1,109 @@
+.agentRunDetailPage :global(.ant-pro-page-container-children-content) {
+  height: 100%;
+}
+
+.agentRunDetailShell {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 12px 12px 16px;
+  background: var(--color-surface);
+}
+
+@media (min-width: 768px) {
+  .agentRunDetailShell {
+    padding: 16px 16px 20px;
+  }
+}
+
+.agentRunDetailCard {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: auto;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+  padding: 16px 18px 20px;
+  box-shadow: 0 8px 32px rgb(25 28 30 / 0.04);
+}
+
+@media (min-width: 768px) {
+  .agentRunDetailCard {
+    padding: 18px 22px 24px;
+  }
+}
+
+.agentRunDetailTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.agentRunDetailBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  color: rgb(25 28 30 / 0.62);
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  cursor: pointer;
+}
+
+.agentRunDetailBack:hover {
+  color: var(--color-primary);
+}
+
+.agentRunDetailTitle {
+  margin: 0 0 4px;
+  color: var(--color-on-surface);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.agentRunDetailSubtitle {
+  margin: 0;
+  color: rgb(25 28 30 / 0.55);
+  font-size: 13px;
+}
+
+.agentRunDetailBody {
+  min-height: 0;
+  flex: 1;
+}
+
+.agentRunDetailSection {
+  margin-bottom: 16px;
+}
+
+.agentRunDetailSectionTitle {
+  margin: 0 0 12px;
+  color: var(--color-on-surface);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.agentRunDetailCodeBlock {
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  border-radius: calc(var(--radius-ui) - 2px);
+  padding: 12px 14px;
+  color: rgb(25 28 30 / 0.82);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--color-surface-container-low);
+}
+
+.agentRunDetailEmpty {
+  padding: 32px 0;
+}

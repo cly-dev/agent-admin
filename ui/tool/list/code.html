@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tool Management | Cognitive Architect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2d3133",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#001a43",
+                        "tertiary": "#9e3d00",
+                        "error": "#ba1a1a",
+                        "secondary": "#425d97",
+                        "on-tertiary-fixed-variant": "#7c2e00",
+                        "surface-container": "#eceef1",
+                        "primary-fixed": "#d9e2ff",
+                        "surface-dim": "#d8dadd",
+                        "primary-fixed-dim": "#afc6ff",
+                        "tertiary-container": "#c64f00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#2f4b84",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#eff1f4",
+                        "background": "#f7f9fc",
+                        "on-primary-container": "#fefcff",
+                        "on-tertiary-fixed": "#351000",
+                        "on-primary-fixed-variant": "#004398",
+                        "on-primary-fixed": "#001a43",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "secondary-fixed-dim": "#afc6ff",
+                        "on-background": "#191c1e",
+                        "on-surface-variant": "#414755",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e0e3e6",
+                        "on-secondary-fixed-variant": "#28457e",
+                        "surface": "#f7f9fc",
+                        "outline": "#727786",
+                        "surface-variant": "#e0e3e6",
+                        "surface-tint": "#0059c7",
+                        "surface-container-high": "#e6e8eb",
+                        "surface-bright": "#f7f9fc",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#a3befe",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#0057c2",
+                        "outline-variant": "#c1c6d7",
+                        "surface-container-low": "#f2f4f7",
+                        "on-tertiary-container": "#fffbff",
+                        "secondary-fixed": "#d9e2ff",
+                        "inverse-primary": "#afc6ff",
+                        "primary-container": "#006ef2",
+                        "on-surface": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.375rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter", "sans-serif"],
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-header {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #0057c2 0%, #006ef2 100%);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c1c6d7; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full w-64 bg-surface-container-low border-r border-outline-variant/20 z-50 fixed inset-y-0">
+<div class="flex flex-col h-full p-4 gap-2">
+<div class="flex items-center gap-3 px-2 mb-6">
+<div class="w-10 h-10 rounded-lg primary-gradient flex items-center justify-center text-white shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">architecture</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline font-bold text-primary leading-tight">Cognitive Architect</h1>
+<p class="text-[10px] font-mono tracking-widest text-on-surface-variant uppercase">AI Orchestration</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_managed</span>
+<span class="text-body-md">Projects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-surface-container-lowest text-primary font-semibold rounded-lg shadow-sm" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">build</span>
+<span class="text-body-md">Tools</span>
+</a><a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]">extension</span>
+<span class="text-body-md">Integrations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+<span class="text-body-md">Skills</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="text-body-md">Users</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span class="text-body-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span class="text-body-md">Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+<span class="text-body-md">Help</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="h-14 flex justify-between items-center w-full px-6 bg-surface-container-low/85 backdrop-blur-md sticky top-0 z-40 border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-surface-container-highest px-3 py-1.5 rounded-lg border border-outline-variant/30 cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px] text-primary mr-2">layers</span>
+<span class="text-label-md font-semibold text-on-surface">Neural-Net-Optimizer-v2</span>
+<span class="material-symbols-outlined text-[18px] ml-2 text-on-surface-variant">expand_more</span>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant/40"></div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="text-label-md">Deployment:</span>
+<span class="text-label-md text-primary font-medium">Production-EU-West</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-3 py-1.5 text-label-md font-medium text-on-surface hover:bg-surface-container-high rounded-lg transition-colors">
+                    Switch Project
+                </button>
+<div class="relative">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-primary/20">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a software architect in a bright, modern studio. The lighting is crisp and flattering, with a clean white and soft blue background consistent with a high-end corporate tech environment. The person is wearing a minimalist dark shirt, looking confidently at the camera with a subtle, approachable smile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgMM2Kenly5cUNsjhH8tHgE0Tss5pUy9sDb7ZKgy-AWlbqj0ZmronBqz7e3lV6Y112dkTRPvXisk6hPCTw1I1hLEWNjFWAQAYImcGPzSy5kmTXeVCoqcYWoDbOBLEnhdVpnD4JSYMIFldgZReV6sSGnKuP7HLQF2iL7eDzMm_tm06hu9byaxcJHri6-m1DUgP--F32Ft2nnvzNO_dB-vmYf529gsDogVsHr0rGdJ0IwUTz_hghEykt-h4NObmx1tYSE9Tc5nZGECMb"/>
+</div>
+</div>
+</header>
+<!-- Workbench Canvas -->
+<div class="flex-1 overflow-y-auto p-8 space-y-8">
+<!-- Context Header -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="text-display-md font-headline font-bold tracking-tight text-on-surface mb-2">Tool Management</h2>
+<p class="text-on-surface-variant max-w-2xl">Connect and orchestrate external APIs, databases, and scripts. These tools act as the interface between your AI models and the real world.</p>
+</div>
+<div class="flex flex-col sm:flex-row gap-3">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-lowest border-none ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary/20 rounded-lg pl-10 pr-4 py-2 text-body-md w-full sm:w-64 transition-all outline-none" placeholder="Search integrated tools..." type="text"/>
+</div>
+<button class="primary-gradient text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+<span>Add Tool</span>
+</button>
+</div>
+</section>
+<!-- Tools Bento Grid / List Hybrid -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Tool Card 1: Active -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl border border-transparent hover:border-primary/10 transition-all hover:shadow-xl hover:shadow-primary/5 flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">search</span>
+</div>
+<div>
+<h3 class="text-title-sm font-bold text-on-surface mb-1">Google Search API</h3>
+<div class="flex items-center gap-2">
+<span class="bg-secondary-container/30 text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Search</span>
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+<span class="text-label-md text-on-surface-variant">Active</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors" title="Settings"><span class="material-symbols-outlined text-[20px]">settings</span></button>
+<button class="p-2 hover:bg-error/10 hover:text-error rounded-lg text-on-surface-variant transition-colors" title="Delete"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+</div>
+</div>
+<p class="text-body-md text-on-surface-variant mb-6 line-clamp-2">Enterprise-grade search integration for real-time web data retrieval and citation checking.</p>
+<div class="flex gap-2">
+<button class="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-label-md font-semibold py-2 rounded-lg transition-colors">Configure</button>
+<button class="px-4 bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-label-md font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">network_check</span>
+<span>Test</span>
+</button>
+</div>
+</div>
+<!-- Tool Card 2: Config Required -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl border border-tertiary/20 hover:shadow-xl hover:shadow-tertiary/5 transition-all flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-4">
+<div class="w-12 h-12 bg-tertiary-fixed rounded-xl flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">database</span>
+</div>
+<div>
+<h3 class="text-title-sm font-bold text-on-surface mb-1">PostgreSQL Read</h3>
+<div class="flex items-center gap-2">
+<span class="bg-secondary-container/30 text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Database</span>
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-label-md text-tertiary font-medium">Config Required</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors" title="Settings"><span class="material-symbols-outlined text-[20px]">settings</span></button>
+<button class="p-2 hover:bg-error/10 hover:text-error rounded-lg text-on-surface-variant transition-colors" title="Delete"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+</div>
+</div>
+<p class="text-body-md text-on-surface-variant mb-6 line-clamp-2">Read-only connection to production data warehouse for context-aware querying and analytics.</p>
+<div class="flex gap-2">
+<button class="flex-1 primary-gradient text-white text-label-md font-semibold py-2 rounded-lg hover:opacity-90 transition-opacity">Complete Setup</button>
+<button class="px-4 bg-surface-container-low text-outline text-label-md font-semibold py-2 rounded-lg cursor-not-allowed flex items-center justify-center gap-2" disabled="">
+<span class="material-symbols-outlined text-[18px]">network_check</span>
+<span>Test</span>
+</button>
+</div>
+</div>
+<!-- Tool Card 3: Active -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl border border-transparent hover:border-primary/10 transition-all hover:shadow-xl hover:shadow-primary/5 flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<div>
+<h3 class="text-title-sm font-bold text-on-surface mb-1">Currency Converter</h3>
+<div class="flex items-center gap-2">
+<span class="bg-secondary-container/30 text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Utility</span>
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+<span class="text-label-md text-on-surface-variant">Active</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors" title="Settings"><span class="material-symbols-outlined text-[20px]">settings</span></button>
+<button class="p-2 hover:bg-error/10 hover:text-error rounded-lg text-on-surface-variant transition-colors" title="Delete"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+</div>
+</div>
+<p class="text-body-md text-on-surface-variant mb-6 line-clamp-2">Real-time exchange rate API providing conversions for over 150 fiat and crypto currencies.</p>
+<div class="flex gap-2">
+<button class="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-label-md font-semibold py-2 rounded-lg transition-colors">Configure</button>
+<button class="px-4 bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-label-md font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">network_check</span>
+<span>Test</span>
+</button>
+</div>
+</div>
+<!-- Tool Card 4: Inactive -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl border border-transparent hover:border-primary/10 transition-all hover:shadow-xl hover:shadow-primary/5 flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<div>
+<h3 class="text-title-sm font-bold text-on-surface mb-1">Python Executor</h3>
+<div class="flex items-center gap-2">
+<span class="bg-secondary-container/30 text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Scripting</span>
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+<span class="text-label-md text-on-surface-variant">Inactive</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors" title="Settings"><span class="material-symbols-outlined text-[20px]">settings</span></button>
+<button class="p-2 hover:bg-error/10 hover:text-error rounded-lg text-on-surface-variant transition-colors" title="Delete"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+</div>
+</div>
+<p class="text-body-md text-on-surface-variant mb-6 line-clamp-2">Isolated sandboxed environment for executing complex logic and data manipulation scripts.</p>
+<div class="flex gap-2">
+<button class="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-label-md font-semibold py-2 rounded-lg transition-colors">Configure</button>
+<button class="px-4 bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-label-md font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+<span>Enable</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Usage & Quota Insights Section -->
+<section class="bg-surface-container-low rounded-2xl p-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-[120px] text-primary">monitoring</span>
+</div>
+<div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div>
+<h4 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-4">API Performance</h4>
+<div class="space-y-4">
+<div class="flex items-end gap-2 h-16">
+<div class="w-full bg-primary/20 h-[40%] rounded-t-sm"></div>
+<div class="w-full bg-primary/20 h-[60%] rounded-t-sm"></div>
+<div class="w-full bg-primary/20 h-[55%] rounded-t-sm"></div>
+<div class="w-full bg-primary/20 h-[80%] rounded-t-sm"></div>
+<div class="w-full bg-primary h-[95%] rounded-t-sm"></div>
+<div class="w-full bg-primary/40 h-[70%] rounded-t-sm"></div>
+<div class="w-full bg-primary/20 h-[50%] rounded-t-sm"></div>
+</div>
+<p class="text-label-md text-on-surface-variant">Avg. Latency: <span class="text-on-surface font-semibold">142ms</span></p>
+</div>
+</div>
+<div>
+<h4 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-4">Total Requests (24h)</h4>
+<p class="text-headline-sm font-bold text-on-surface mb-1">1,204,558</p>
+<div class="flex items-center gap-1 text-green-600">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+<span class="text-label-md font-bold">+12.5% from yesterday</span>
+</div>
+</div>
+<div>
+<h4 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-4">Quick Health Check</h4>
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-body-md text-on-surface-variant">Auth Handshake</span>
+<span class="text-label-md font-bold text-green-600">PASSED</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-body-md text-on-surface-variant">Rate Limiting</span>
+<span class="text-label-md font-bold text-primary">NORMAL</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-body-md text-on-surface-variant">DB Connectivity</span>
+<span class="text-label-md font-bold text-tertiary">1 WARNING</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- FAB (Suppressed on this view per rules) -->
+<script>
+        // Micro-interactions
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Potential hover sound or feedback logic
+            });
+        });
+
+        // Search Bar Focus Effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-primary');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-primary');
+        });
+    </script>
+</body></html>

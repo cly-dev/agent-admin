@@ -1,0 +1,475 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Tool Configuration - Cognitive Architect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2d3133",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#001a43",
+                        "tertiary": "#9e3d00",
+                        "error": "#ba1a1a",
+                        "secondary": "#425d97",
+                        "on-tertiary-fixed-variant": "#7c2e00",
+                        "surface-container": "#eceef1",
+                        "primary-fixed": "#d9e2ff",
+                        "surface-dim": "#d8dadd",
+                        "primary-fixed-dim": "#afc6ff",
+                        "tertiary-container": "#c64f00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#2f4b84",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#eff1f4",
+                        "background": "#f7f9fc",
+                        "on-primary-container": "#fefcff",
+                        "on-tertiary-fixed": "#351000",
+                        "on-primary-fixed-variant": "#004398",
+                        "on-primary-fixed": "#001a43",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "secondary-fixed-dim": "#afc6ff",
+                        "on-background": "#191c1e",
+                        "on-surface-variant": "#414755",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e0e3e6",
+                        "on-secondary-fixed-variant": "#28457e",
+                        "surface": "#f7f9fc",
+                        "outline": "#727786",
+                        "surface-variant": "#e0e3e6",
+                        "surface-tint": "#0059c7",
+                        "surface-container-high": "#e6e8eb",
+                        "surface-bright": "#f7f9fc",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#a3befe",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#0057c2",
+                        "outline-variant": "#c1c6d7",
+                        "surface-container-low": "#f2f4f7",
+                        "on-tertiary-container": "#fffbff",
+                        "secondary-fixed": "#d9e2ff",
+                        "inverse-primary": "#afc6ff",
+                        "primary-container": "#006ef2",
+                        "on-surface": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "display": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            background: rgba(242, 244, 247, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c6d7;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/20">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full w-64 bg-surface-container-low p-4 gap-2 border-r border-outline-variant/20">
+<div class="flex items-center gap-3 px-2 mb-6">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">architecture</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline font-bold text-primary tracking-tight leading-none">Cognitive Architect</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold opacity-60">AI Orchestration</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_managed</span>
+<span class="text-body-md">Projects</span>
+</a>
+<!-- Tools is active -->
+<a class="flex items-center gap-3 px-3 py-2 bg-surface-container-lowest text-primary font-semibold rounded-lg shadow-sm" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">build</span>
+<span class="text-body-md">Tools</span>
+</a><a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200 group" href="#"><span class="material-symbols-outlined text-[20px]">extension</span><span class="text-body-md">Integrations</span></a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+<span class="text-body-md">Skills</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="text-body-md">Users</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span class="text-body-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-1 pt-4 border-t border-outline-variant/20">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span class="text-body-md">Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+<span class="text-body-md">Help</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col h-full bg-surface overflow-hidden">
+<!-- TopNavBar -->
+<header class="h-14 flex justify-between items-center w-full px-6 bg-surface-container-low/85 backdrop-blur-md z-50">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-sm border border-outline-variant/10 cursor-pointer hover:bg-white transition-colors">
+<span class="text-on-surface-variant text-label-md font-semibold tracking-wider uppercase opacity-50">Project</span>
+<span class="text-body-md font-semibold text-primary">Nexus-Alpha</span>
+<span class="material-symbols-outlined text-primary text-[18px]">expand_more</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center gap-1 bg-surface-container-highest/50 px-3 py-1.5 rounded-full border border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md placeholder:text-on-surface-variant/60 w-48" placeholder="Search resources..." type="text">
+</div>
+<button class="px-4 py-1.5 bg-surface-container-high hover:bg-surface-container-highest transition-colors rounded-lg text-body-md font-medium text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+                        Switch Project
+                    </button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-primary/10 border border-primary/20">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASMc8OR9MqRiCZA7Tjc6RpRegAPd4dm6f06ytNuAD8ar4vKlhDttb_QCM6sjXB3knrvWzuesBL0G2wYBZ7Ji73kn--yx_Kx5-V1KU2J5ksfnkok76NsLezRhteOBPil2cnOTJ1R7p0dgafzZlK9v6x3Hkzdqm5U3Tct9pIgpvTu1eOhbQBFAuNcFlXrmMXhbCPXytoFbpp2UFDXG8NwHGr9AOlcZ-qknSrTEp8IBNuuGkVURYRGZ2JzqC1obT1eUr2_UQEVx2VPhOW">
+</div>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<!-- Breadcrumbs & Header -->
+<div class="px-8 py-6 max-w-7xl mx-auto w-full">
+<div class="flex items-center gap-2 text-label-md text-on-surface-variant opacity-70 mb-4">
+<a class="hover:text-primary transition-colors" href="#">Tools</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-medium">Google Search API</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-[32px]">language</span>
+</div>
+<div>
+<h2 class="text-headline-sm font-headline font-bold text-on-surface flex items-center gap-3">
+                                    Google Search API
+                                    <span class="px-2.5 py-0.5 rounded-full bg-secondary-container/30 text-on-secondary-container text-[11px] font-bold uppercase tracking-wider">Active</span>
+</h2>
+<p class="text-body-md text-on-surface-variant">Retrieve real-time web data for agent context enhancement.</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-5 py-2 text-on-surface-variant font-semibold hover:bg-surface-container-high transition-all rounded-lg">Discard</button>
+<button class="px-6 py-2 bg-gradient-to-br from-primary to-primary-container text-white font-semibold rounded-lg shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all flex items-center gap-2 active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px]">save</span>
+                                Save Changes
+                            </button>
+</div>
+</div>
+<!-- Configuration Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- Left Column (Main Config) -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- Basic Info Card -->
+<section class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary text-[20px]">info</span>
+<h3 class="text-title-sm font-semibold">Basic Info</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-semibold text-on-surface-variant px-1">Tool Name</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/10 text-body-md px-4 py-2.5 transition-all" type="text" value="Google Search API">
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-semibold text-on-surface-variant px-1">Tool Type</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/10 text-body-md px-4 py-2.5 transition-all cursor-pointer">
+<option>RESTful API</option>
+<option>Python Script</option>
+<option>GraphQL</option>
+<option>Webhook</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<div class="flex flex-col gap-1.5 md:col-span-2">
+<label class="text-label-md font-semibold text-on-surface-variant px-1">Description</label>
+<textarea class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/10 text-body-md px-4 py-2.5 transition-all resize-none" rows="3">Connects the LLM to Google Custom Search Engine to fetch organic results and snippets for grounded information retrieval.</textarea>
+</div>
+</div>
+</section>
+<!-- API Configuration Card -->
+<section class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary text-[20px]">api</span>
+<h3 class="text-title-sm font-semibold">API Configuration</h3>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-semibold text-on-surface-variant px-1">Endpoint URL</label>
+<div class="flex items-center gap-2 bg-surface-container-low rounded-lg p-1">
+<div class="px-3 py-1.5 bg-surface-container-high rounded text-label-md font-bold text-primary">GET</div>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-body-md px-2" type="text" value="https://www.googleapis.com/customsearch/v1">
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-semibold text-on-surface-variant px-1">API Key</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/10 text-body-md px-4 py-2.5 pr-12 transition-all" type="password" value="AIzaSyA_example_key_7654321">
+<button class="absolute right-3 top-2.5 text-on-surface-variant/60 hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-semibold text-on-surface-variant px-1">Auth Type</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary/10 text-body-md px-4 py-2.5 transition-all cursor-pointer">
+<option>Query Parameter (key)</option>
+<option>Bearer Token</option>
+<option>Basic Auth</option>
+<option>No Auth</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Parameters Table -->
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm">
+<div class="p-6 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">list_alt</span>
+<h3 class="text-title-sm font-semibold">Parameters</h3>
+</div>
+<button class="flex items-center gap-1.5 text-primary text-label-md font-bold hover:bg-primary/5 px-3 py-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                                        Add Parameter
+                                    </button>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-3 text-label-md font-semibold text-on-surface-variant border-b border-outline-variant/10">Name</th>
+<th class="px-6 py-3 text-label-md font-semibold text-on-surface-variant border-b border-outline-variant/10">Type</th>
+<th class="px-6 py-3 text-label-md font-semibold text-on-surface-variant border-b border-outline-variant/10">Required</th>
+<th class="px-6 py-3 text-label-md font-semibold text-on-surface-variant border-b border-outline-variant/10">Description</th>
+<th class="px-6 py-3 border-b border-outline-variant/10"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-4">
+<span class="font-mono text-body-md text-primary">q</span>
+</td>
+<td class="px-6 py-4">
+<span class="text-label-md bg-surface-container-high px-2 py-0.5 rounded text-on-surface">String</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-10 h-5 bg-primary/20 rounded-full relative cursor-pointer flex items-center transition-all">
+<div class="absolute right-1 w-3.5 h-3.5 bg-primary rounded-full shadow-sm"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md text-on-surface-variant">The search query term.</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant/40 hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-4">
+<span class="font-mono text-body-md text-primary">cx</span>
+</td>
+<td class="px-6 py-4">
+<span class="text-label-md bg-surface-container-high px-2 py-0.5 rounded text-on-surface">String</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-10 h-5 bg-primary/20 rounded-full relative cursor-pointer flex items-center transition-all">
+<div class="absolute right-1 w-3.5 h-3.5 bg-primary rounded-full shadow-sm"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md text-on-surface-variant">Custom search engine ID.</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant/40 hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-4">
+<span class="font-mono text-body-md text-primary">num</span>
+</td>
+<td class="px-6 py-4">
+<span class="text-label-md bg-surface-container-high px-2 py-0.5 rounded text-on-surface">Integer</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-10 h-5 bg-surface-container-high rounded-full relative cursor-pointer flex items-center transition-all">
+<div class="absolute left-1 w-3.5 h-3.5 bg-white rounded-full shadow-sm"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md text-on-surface-variant">Number of results to return (1-10).</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant/40 hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Right Column (Test Panel) -->
+<div class="lg:col-span-4 flex flex-col gap-6 sticky top-0">
+<!-- Test Panel -->
+<section class="bg-inverse-surface text-inverse-on-surface rounded-xl flex flex-col shadow-xl min-h-[500px]">
+<div class="p-6 border-b border-on-surface-variant/20 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-inverse-primary">terminal</span>
+<h3 class="text-title-sm font-semibold">Test Panel</h3>
+</div>
+<button class="px-4 py-1.5 bg-inverse-primary text-primary font-bold rounded-lg text-label-md flex items-center gap-2 hover:bg-white transition-colors active:scale-95 shadow-lg shadow-black/40" onclick="runTest()">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                                        Run Test
+                                    </button>
+</div>
+<div class="p-4 flex-1 flex flex-col gap-4 font-mono text-[13px]">
+<div class="flex flex-col gap-2">
+<span class="text-label-md text-secondary-container opacity-80 uppercase font-bold tracking-widest">Input Parameters</span>
+<div class="bg-black/20 p-3 rounded-lg border border-white/5">
+<div class="flex gap-2">
+<span class="text-tertiary-fixed-dim">"q":</span>
+<span class="text-secondary-fixed-dim">"quantum computing breakthroughs 2024"</span>
+</div>
+<div class="flex gap-2">
+<span class="text-tertiary-fixed-dim">"num":</span>
+<span class="text-secondary-fixed-dim">3</span>
+</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<span class="text-label-md text-secondary-container opacity-80 uppercase font-bold tracking-widest">Output Console</span>
+<div class="flex-1 bg-black/40 p-4 rounded-lg border border-white/5 custom-scrollbar overflow-y-auto leading-relaxed text-on-surface-variant/80 italic" id="console-output">
+                                            Click 'Run Test' to initiate API request...
+                                        </div>
+</div>
+</div>
+<div class="px-6 py-4 bg-black/20 text-label-md flex items-center justify-between border-t border-white/5 opacity-60">
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-secondary-container"></span> Ready</span>
+<span class="">240ms</span>
+</div>
+</section>
+<!-- Usage Insights Card -->
+<div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
+<span class="material-symbols-outlined text-[80px]">monitoring</span>
+</div>
+<h4 class="text-label-md font-bold text-on-surface-variant/60 uppercase tracking-widest mb-4">Quick Stats</h4>
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<span class="text-body-md">Calls (24h)</span>
+<span class="text-body-md font-bold">1,284</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-body-md">Avg Latency</span>
+<span class="text-body-md font-bold text-primary">312ms</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-body-md">Error Rate</span>
+<span class="text-body-md font-bold text-error">0.02%</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/10">
+<button class="w-full text-center text-label-md font-bold text-primary hover:underline">View Analytics →</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Spacer -->
+<div class="h-12"></div>
+</div>
+</main>
+</div>
+<script>
+        function runTest() {
+            const output = document.getElementById('console-output');
+            output.innerHTML = '<span class="text-primary-fixed-dim">Initializing request...</span>';
+            output.classList.remove('italic', 'text-on-surface-variant/80');
+            output.classList.add('text-inverse-on-surface');
+
+            setTimeout(() => {
+                output.innerHTML += '<br><span class="text-secondary-fixed-dim">Sending GET request to googleapis.com...</span>';
+            }, 500);
+
+            setTimeout(() => {
+                output.innerHTML += '<br><span class="text-white font-bold">[200 OK] Response Received</span><br><br>';
+                output.innerHTML += `<div class="text-secondary-fixed-dim">{<br>
+                    &nbsp;&nbsp;"kind": "customsearch#search",<br>
+                    &nbsp;&nbsp;"results": [<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"title": "Quantum Supremacy in 2024",<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"snippet": "Exploring the latest milestones in cryogenic processors..."<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"title": "Error Correction Breakthroughs",<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"snippet": "Top labs report 99.9% gate fidelity using topological..."<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;]<br>
+                }</div>`;
+                output.scrollTop = output.scrollHeight;
+            }, 1200);
+        }
+    </script>
+
+
+</body></html>

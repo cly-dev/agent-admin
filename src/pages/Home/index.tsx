@@ -1,17 +1,18 @@
 import { trim } from '@/utils/format';
 import { PageContainer } from '@ant-design/pro-components';
 import { history, useModel } from '@umijs/max';
-import { signOut } from '@/services/auth/session';
+import { signOut } from '@/services/auth/user';
 import { useState } from 'react';
 
 const HomePage: React.FC = () => {
-  const { name } = useModel('global');
+  const { name, clearLoginSession } = useModel('global');
   const [logoutLoading, setLogoutLoading] = useState<boolean>(false);
 
   const handleLogout = async (): Promise<void> => {
     setLogoutLoading(true);
     try {
       await signOut();
+      clearLoginSession();
       history.push('/login');
     } finally {
       setLogoutLoading(false);

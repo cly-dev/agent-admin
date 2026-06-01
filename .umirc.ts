@@ -6,8 +6,21 @@ export default defineConfig({
   model: {},
   initialState: {},
   request: {},
+  locale: {
+    default: 'zh-CN',
+    antd: true,
+    baseNavigator: true,
+    useLocalStorage: true,
+  },
+  proxy: {
+    '/api': {
+      target: 'http://localhost:3030',
+      changeOrigin: true,
+      pathRewrite: { '^/api': '' },
+    },
+  },
   layout: {
-    title: '@umijs/max',
+    title: 'agent',
   },
   routes: [
     {
@@ -15,28 +28,127 @@ export default defineConfig({
       redirect: '/login',
     },
     {
-      name: '登录',
+      name: 'login',
       path: '/login',
       component: './Login',
       layout: false,
     },
     {
-      name: '首页',
-      path: '/home',
-      component: './Home',
+      name: 'dashboard',
+      path: '/dashboard',
+      icon: 'DashboardOutlined',
+      component: './Dashboard',
     },
     {
-      name: '权限演示',
-      path: '/access',
-      component: './Access',
+      name: 'project',
+      path: '/project',
+      icon: 'ProjectOutlined',
+      component: './Project',
     },
     {
-      name: ' CRUD 示例',
-      path: '/table',
-      component: './Table',
+      name: 'agent',
+      path: '/agent',
+      icon: 'RobotOutlined',
+      routes: [
+        {
+          path: '/agent',
+          redirect: '/agent/list',
+          hideInMenu: true,
+        },
+        {
+          name: 'agentList',
+          path: '/agent/list',
+          component: './Agent',
+        },
+        {
+          name: 'agentRun',
+          path: '/agent/run',
+          component: './AgentRun',
+        },
+        {
+          path: '/agent/run/detail/:id',
+          component: './AgentRun/Detail',
+          hideInMenu: true,
+        },
+        {
+          path: '/agent/create',
+          redirect: '/agent/detail/create',
+          hideInMenu: true,
+        },
+        {
+          path: '/agent/detail/:id',
+          component: './Agent/Detail',
+          hideInMenu: true,
+        },
+      ],
+    },
+    {
+      name: 'tool',
+      path: '/tool',
+      icon: 'ToolOutlined',
+      routes: [
+        {
+          path: '/tool',
+          redirect: '/tool/list',
+          hideInMenu: true,
+        },
+        {
+          name: 'toolList',
+          path: '/tool/list',
+          component: './Tool',
+        },
+        {
+          name: 'toolCategory',
+          path: '/tool/category',
+          component: './ToolCategory',
+        },
+        {
+          path: '/tool/create',
+          component: './Tool/Detail',
+          hideInMenu: true,
+        },
+        {
+          path: '/tool/detail/:id',
+          component: './Tool/Detail',
+          hideInMenu: true,
+        },
+      ],
+    },
+    {
+      name: 'integration',
+      path: '/integration',
+      icon: 'ApiOutlined',
+      component: './Integrations',
+    },
+    {
+      name: 'chat',
+      path: '/chat',
+      icon: 'MessageOutlined',
+      component: './Chat',
+    },
+    {
+      path: '/chat/detail/:id',
+      component: './Chat/Detail',
+      hideInMenu: true,
+    },
+    {
+      name: 'user',
+      path: '/user',
+      icon: 'UserOutlined',
+      component: './User',
+    },
+    {
+      path: '/user/detail/:id',
+      component: './User/Detail',
+      hideInMenu: true,
+    },
+    {
+      name: 'setting',
+      path: '/setting',
+      icon: 'SettingOutlined',
+      component: './Setting',
     },
   ],
   npmClient: 'pnpm',
   utoopack: {},
 });
-

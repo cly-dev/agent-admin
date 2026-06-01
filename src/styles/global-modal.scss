@@ -1,0 +1,227 @@
+$modal-radius: 12px;
+$modal-mask-bg: rgb(25 28 30 / 0.38);
+$modal-border: rgb(193 198 215 / 0.22);
+$modal-shadow:
+  0 24px 60px rgb(25 28 30 / 0.14),
+  0 8px 20px rgb(25 28 30 / 0.08);
+$modal-header-gradient: linear-gradient(180deg, rgb(247 249 252) 0%, rgb(255 255 255) 100%);
+$modal-footer-bg: var(--color-surface-container-low);
+$modal-input-bg: var(--color-surface-container-low);
+$modal-tip-bg: rgb(255 237 213 / 0.75);
+$modal-tip-border: rgb(251 191 36 / 0.35);
+$modal-tip-color: rgb(154 52 18);
+
+.ant-modal-root {
+  .ant-modal-mask {
+    backdrop-filter: blur(6px);
+    background: $modal-mask-bg !important;
+  }
+
+  .ant-modal {
+    .ant-modal-content {
+      overflow: hidden;
+      padding: 0;
+      border: 1px solid $modal-border;
+      border-radius: $modal-radius;
+      box-shadow: $modal-shadow;
+    }
+
+    .ant-modal-header {
+      margin-bottom: 0;
+      padding: 22px 28px 12px;
+      border-bottom: none;
+      background: $modal-header-gradient;
+    }
+
+    .ant-modal-title {
+      color: var(--color-on-surface);
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+    }
+
+    .ant-modal-close {
+      top: 18px;
+      inset-inline-end: 20px;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-ui);
+      color: rgb(25 28 30 / 0.45);
+      transition:
+        background-color 180ms ease,
+        color 180ms ease;
+
+      &:hover {
+        color: var(--color-on-surface);
+        background: var(--color-surface-container-low);
+      }
+    }
+
+    .ant-modal-body {
+      padding: 8px 28px 4px;
+    }
+
+    .ant-modal-footer {
+      margin-top: 0;
+      padding: 14px 28px 22px;
+      border-top: 1px solid rgb(193 198 215 / 0.18);
+      background: $modal-footer-bg;
+
+      .ant-btn {
+        min-width: 88px;
+        height: 36px;
+        border-radius: var(--radius-ui);
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: none;
+      }
+
+      .ant-btn-default {
+        border: 1px solid rgb(193 198 215 / 0.35);
+        color: rgb(25 28 30 / 0.72);
+        background: var(--color-surface-container-lowest);
+
+        &:hover {
+          border-color: rgb(193 198 215 / 0.55);
+          color: var(--color-on-surface);
+          background: #fff;
+        }
+      }
+
+      .ant-btn-primary {
+        border: 0;
+        color: #fff;
+        background: var(--color-primary);
+        box-shadow: 0 6px 16px rgb(0 87 194 / 0.28);
+
+        &:hover {
+          background: #004aa6;
+        }
+      }
+
+      .ant-btn-dangerous {
+        border: 0;
+        color: #fff;
+        background: #dc2626;
+        box-shadow: 0 6px 16px rgb(220 38 38 / 0.22);
+      }
+    }
+
+    .ant-form-item {
+      margin-bottom: 18px;
+    }
+
+    .ant-form-item-label > label {
+      color: rgb(25 28 30 / 0.52);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+
+      &.ant-form-item-required {
+        &::before {
+          display: none !important;
+        }
+
+        &::after {
+          display: inline-block;
+          margin-inline-start: 4px;
+          color: #dc2626;
+          content: '*';
+        }
+      }
+    }
+
+    .ant-input,
+    .ant-input-affix-wrapper,
+    .ant-input-password,
+    .ant-select-selector,
+    .ant-picker {
+      border: 1px solid transparent !important;
+      border-radius: var(--radius-ui) !important;
+      background: $modal-input-bg !important;
+      box-shadow: none !important;
+      transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        background-color 180ms ease;
+    }
+
+    .ant-input:hover,
+    .ant-input-affix-wrapper:hover,
+    .ant-input-password:hover,
+    .ant-select:not(.ant-select-disabled):hover .ant-select-selector,
+    .ant-picker:hover {
+      background: rgb(242 244 247) !important;
+    }
+
+    .ant-input:focus,
+    .ant-input-affix-wrapper-focused,
+    .ant-input-password:focus-within,
+    .ant-select-focused .ant-select-selector,
+    .ant-picker-focused {
+      border-color: var(--color-primary) !important;
+      background: #fff !important;
+      box-shadow: 0 0 0 2px rgb(0 87 194 / 0.12) !important;
+    }
+  }
+
+  .ant-modal-confirm {
+    .ant-modal-confirm-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .ant-modal-confirm-content {
+      color: rgb(25 28 30 / 0.62);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+  }
+}
+
+.app-modal-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 28px;
+}
+
+.app-modal-title {
+  color: var(--color-on-surface);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.app-modal-subtitle {
+  margin: 0;
+  color: rgb(25 28 30 / 0.55);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.app-modal-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 18px;
+  border: 1px solid $modal-tip-border;
+  border-radius: var(--radius-ui);
+  padding: 12px 14px;
+  color: $modal-tip-color;
+  font-size: 12px;
+  line-height: 1.55;
+  background: $modal-tip-bg;
+
+  strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}

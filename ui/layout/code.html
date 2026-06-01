@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Skill Management | Cognitive Architect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#28457e",
+                        "on-primary-fixed": "#001a43",
+                        "tertiary": "#9e3d00",
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface": "#f7f9fc",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#a3befe",
+                        "primary-fixed": "#d9e2ff",
+                        "outline": "#727786",
+                        "on-surface": "#191c1e",
+                        "inverse-primary": "#afc6ff",
+                        "surface-container-highest": "#e0e3e6",
+                        "secondary": "#425d97",
+                        "primary": "#0057c2",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "secondary-fixed-dim": "#afc6ff",
+                        "on-primary-container": "#fefcff",
+                        "outline-variant": "#c1c6d7",
+                        "surface-container-low": "#f2f4f7",
+                        "primary-fixed-dim": "#afc6ff",
+                        "surface-variant": "#e0e3e6",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-dim": "#d8dadd",
+                        "surface-tint": "#0059c7",
+                        "background": "#f7f9fc",
+                        "surface-bright": "#f7f9fc",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#eff1f4",
+                        "primary-container": "#006ef2",
+                        "on-secondary-fixed": "#001a43",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#414755",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#c64f00",
+                        "on-tertiary-fixed-variant": "#7c2e00",
+                        "surface-container-high": "#e6e8eb",
+                        "secondary-fixed": "#d9e2ff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#fffbff",
+                        "on-secondary-container": "#2f4b84",
+                        "on-primary-fixed-variant": "#004398",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "surface-container": "#eceef1",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.375rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter", "sans-serif"],
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .code-editor {
+            counter-reset: line;
+        }
+        .code-line::before {
+            counter-increment: line;
+            content: counter(line);
+            display: inline-block;
+            width: 2.5rem;
+            margin-right: 1.5rem;
+            text-align: right;
+            color: #4b5563;
+            font-size: 0.75rem;
+            user-select: none;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c6d7;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #727786;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface flex h-screen overflow-hidden">
+<!-- SideNavBar (Authority: COMPONENTS_30) -->
+<aside class="flex flex-col h-screen w-64 bg-slate-50 dark:bg-slate-900 border-r border-slate-200/40 dark:border-slate-800/40 z-30 font-['Inter'] text-[13px] font-medium">
+<div class="flex items-center gap-3 px-4 py-6">
+<div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">architecture</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-slate-900 dark:text-slate-100 leading-tight">Enterprise AI</h1>
+<p class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Orchestration Layer</p>
+</div>
+</div>
+<div class="px-4 mb-4">
+<button class="flex items-center justify-center gap-2 w-full py-2 bg-blue-600 text-white rounded-md font-semibold shadow-sm hover:bg-blue-700 active:scale-95 transition-all duration-200">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Project
+            </button>
+</div>
+<nav class="flex-1 overflow-y-auto flex flex-col gap-1">
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 px-4 py-2 border-l-4 border-transparent cursor-pointer transition-all duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-l-4 border-blue-600 font-semibold px-4 py-2 cursor-pointer transition-all duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span> Agents
+            </a>
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 px-4 py-2 border-l-4 border-transparent cursor-pointer transition-all duration-150" href="#">
+<span class="material-symbols-outlined">account_tree</span> Workflows
+            </a>
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 px-4 py-2 border-l-4 border-transparent cursor-pointer transition-all duration-150" href="#">
+<span class="material-symbols-outlined">database</span> Knowledge Base
+            </a>
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 px-4 py-2 border-l-4 border-transparent cursor-pointer transition-all duration-150" href="#">
+<span class="material-symbols-outlined">key</span> API Keys
+            </a>
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 px-4 py-2 border-l-4 border-transparent cursor-pointer transition-all duration-150" href="#">
+<span class="material-symbols-outlined">group</span> Team
+            </a>
+</nav>
+<div class="mt-auto border-t border-slate-200/40 dark:border-slate-800/40 pt-2 flex flex-col gap-1 pb-4">
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 px-4 py-2 border-l-4 border-transparent cursor-pointer transition-all duration-150" href="#">
+<span class="material-symbols-outlined">help</span> Help
+            </a>
+<a class="flex items-center gap-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 px-4 py-2 border-l-4 border-transparent cursor-pointer transition-all duration-150" href="#">
+<span class="material-symbols-outlined">check_circle</span> Status
+            </a>
+</div>
+</aside>
+<div class="flex-1 flex flex-col min-w-0">
+<!-- TopNavBar (Authority: COMPONENTS_30) -->
+<header class="flex items-center justify-between px-6 py-3 w-full border-b border-slate-100 dark:border-slate-800 bg-white/85 dark:bg-slate-950/85 backdrop-blur-md sticky top-0 z-50 font-['Inter'] text-sm tracking-tight shadow-sm dark:shadow-none">
+<div class="flex items-center gap-8 flex-1">
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="w-full bg-slate-100/50 dark:bg-slate-900 border-none rounded-lg py-2 pl-10 text-[13px] focus:ring-2 focus:ring-blue-600/20 placeholder:text-slate-400 transition-all" placeholder="Search resources..." type="text"/>
+</div>
+<nav class="flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors" href="#">Orchestration</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors" href="#">Models</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors" href="#">Logs</a>
+<a class="text-blue-600 dark:text-blue-400 font-semibold border-b-2 border-blue-600 px-1 py-1" href="#">Deployments</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-slate-500 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 p-2 rounded-full transition-all active:scale-95">notifications</button>
+<button class="material-symbols-outlined text-slate-500 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 p-2 rounded-full transition-all active:scale-95">settings</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-slate-200 cursor-pointer active:scale-95 transition-all">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDslq2aQzEJZjPPV-cerBNkdJgYXWBf7N2Z9QUzq135sha3pz9EkHuxIla1_cFY-XeNvgfaPN6VyAgGLs70cSxuRjeJ1Vr_UzH7lwLvysGFfDXifEXQtTN6WsfkBdtLoDXoN1-1cWwrSOC6AHa8GvheXl49-wPY5deO17N7XkSmXHG6cFH0zhjLArRot-ldQiNz79uKCuhxsyrnzb4wQp0dfjB4zrYwnsJBtpo_hxbVp6FgBPN5hwxhvjO0QCdlcjHJKyDholRE1Ptu"/>
+</div>
+<button class="bg-blue-600 text-white px-5 py-2 rounded-lg text-[13px] font-bold shadow-md shadow-blue-600/20 active:scale-95 duration-200 transition-all">DEPLOY</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Left Side: Refined Skills Library -->
+<section class="w-80 bg-slate-50 dark:bg-slate-950/20 flex flex-col border-r border-slate-200/50 dark:border-slate-800/50">
+<div class="p-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-b border-slate-200/30 dark:border-slate-800/30">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-500 text-lg">bolt</span>
+                            Skills Library
+                        </h2>
+<button class="material-symbols-outlined text-slate-400 text-lg hover:text-blue-500 transition-colors">tune</button>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">filter_list</span>
+<input class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-2 pl-10 text-sm shadow-sm focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600/30 transition-all" placeholder="Filter skills..." type="text"/>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-3 space-y-2">
+<!-- List Item 1: Active -->
+<div class="group p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border-l-4 border-blue-600 cursor-pointer hover:shadow-md transition-all duration-200">
+<div class="flex justify-between items-start mb-1.5">
+<span class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors">DataExtractor_v2</span>
+<span class="text-[10px] font-bold text-blue-700 bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded-full uppercase tracking-wider">Active</span>
+</div>
+<p class="text-[12px] leading-relaxed text-slate-500 dark:text-slate-400 line-clamp-2 mb-2">High-precision entity extraction from unstructured financial documents.</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">schedule</span> 2h ago
+                            </span>
+<span class="material-symbols-outlined text-sm text-slate-300 hover:text-slate-600 cursor-pointer">more_horiz</span>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="group p-3 bg-white/40 dark:bg-slate-800/40 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800 cursor-pointer transition-all duration-200">
+<div class="flex justify-between items-start mb-1.5">
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-300">ComplianceScout</span>
+<span class="text-[10px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full uppercase tracking-wider">Draft</span>
+</div>
+<p class="text-[12px] leading-relaxed text-slate-500 dark:text-slate-400 line-clamp-2 mb-2">Validating output against GDPR and CCPA regulatory frameworks.</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">schedule</span> 1d ago
+                            </span>
+<span class="material-symbols-outlined text-sm text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">more_horiz</span>
+</div>
+</div>
+<!-- List Item 3 -->
+<div class="group p-3 bg-white/40 dark:bg-slate-800/40 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800 cursor-pointer transition-all duration-200">
+<div class="flex justify-between items-start mb-1.5">
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-300">TranslationPro</span>
+<span class="text-[10px] font-bold text-slate-600 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Legacy</span>
+</div>
+<p class="text-[12px] leading-relaxed text-slate-500 dark:text-slate-400 line-clamp-2 mb-2">Multi-lingual support for 14 core languages with cultural nuances.</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">schedule</span> 5d ago
+                            </span>
+<span class="material-symbols-outlined text-sm text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">more_horiz</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Side: Professional Editor View -->
+<section class="flex-1 flex flex-col bg-white dark:bg-slate-950 min-w-0">
+<!-- Skill Header -->
+<header class="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200/50 dark:border-slate-700/50">
+<span class="material-symbols-outlined text-blue-600" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">DataExtractor_v2</h3>
+<span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase">V2.4.0</span>
+</div>
+<div class="flex items-center gap-3 mt-0.5">
+<span class="text-[11px] text-slate-400 font-medium font-mono">ID: skill_8829_alpha</span>
+<span class="w-1 h-1 rounded-full bg-slate-300"></span>
+<span class="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">neurology</span> GPT-4 Turbo
+                                </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all">Discard</button>
+<button class="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-lg shadow-blue-600/10 hover:bg-blue-700 flex items-center gap-2 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">save</span>
+                            Save Changes
+                        </button>
+</div>
+</header>
+<div class="flex-1 flex flex-col overflow-hidden">
+<div class="flex-1 flex overflow-hidden">
+<!-- IDE Editor -->
+<div class="flex-1 flex flex-col bg-[#1e293b] overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 bg-[#0f172a] border-b border-white/5">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 border-b-2 border-blue-500 pb-1 pt-1 px-1">
+<span class="material-symbols-outlined text-blue-400 text-sm">javascript</span>
+<span class="text-[11px] font-mono text-slate-200 font-medium tracking-tight">prompt_template.json</span>
+</div>
+<div class="flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity cursor-pointer px-1">
+<span class="material-symbols-outlined text-slate-400 text-sm">settings_input_component</span>
+<span class="text-[11px] font-mono text-slate-400">schema.v2.json</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined text-slate-400 text-sm hover:text-white transition-colors p-1 hover:bg-white/10 rounded">content_copy</button>
+<button class="material-symbols-outlined text-slate-400 text-sm hover:text-white transition-colors p-1 hover:bg-white/10 rounded">open_in_full</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto py-4 font-mono text-[13px] leading-relaxed code-editor scrollbar-thin scrollbar-thumb-slate-700">
+<div class="code-line"><span class="text-slate-500">{</span></div>
+<div class="code-line ml-4"><span class="text-cyan-400">"instruction"</span><span class="text-slate-400">:</span> <span class="text-orange-300">"Extract structured data from the provided text."</span>,</div>
+<div class="code-line ml-4"><span class="text-cyan-400">"context"</span><span class="text-slate-400">:</span> <span class="text-orange-300">"You are an expert financial analyst focusing on 10-K filings."</span>,</div>
+<div class="code-line ml-4"><span class="text-cyan-400">"variables"</span><span class="text-slate-400">: {</span></div>
+<div class="code-line ml-10"><span class="text-cyan-400">"document_type"</span><span class="text-slate-400">:</span> <span class="text-emerald-400">"{{doc_meta.type}}"</span>,</div>
+<div class="code-line ml-10"><span class="text-cyan-400">"fiscal_year"</span><span class="text-slate-400">:</span> <span class="text-emerald-400">"{{current_year}}"</span></div>
+<div class="code-line ml-4"><span class="text-slate-400">},</span></div>
+<div class="code-line ml-4"><span class="text-cyan-400">"prompt"</span><span class="text-slate-400">:</span> <span class="text-orange-300">"Analyze the text below and return a JSON object. \n\nInput Text: <span class="bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/30">{{user_input_content}}</span>"</span></div>
+<div class="code-line"><span class="text-slate-500">}</span></div>
+</div>
+</div>
+<!-- Side Panel: Polished Associated Tools -->
+<aside class="w-72 bg-slate-50 dark:bg-slate-900 border-l border-slate-200/50 dark:border-slate-800/50 flex flex-col">
+<div class="p-5 flex-1">
+<div class="flex items-center justify-between mb-5">
+<h4 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Associated Tools</h4>
+<span class="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded font-bold">3</span>
+</div>
+<div class="space-y-3">
+<div class="group flex items-center gap-3 p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-500/50 hover:shadow-sm transition-all cursor-pointer">
+<div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg text-blue-600">search</span>
+</div>
+<div>
+<p class="text-[13px] font-semibold text-slate-900 dark:text-slate-200">Google Search</p>
+<p class="text-[10px] text-slate-400">Web retrieval active</p>
+</div>
+<button class="material-symbols-outlined text-sm text-slate-300 ml-auto opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all">close</button>
+</div>
+<div class="group flex items-center gap-3 p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-500/50 hover:shadow-sm transition-all cursor-pointer">
+<div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg text-emerald-600">database</span>
+</div>
+<div>
+<p class="text-[13px] font-semibold text-slate-900 dark:text-slate-200">PostgreSQL Read</p>
+<p class="text-[10px] text-slate-400">Read-only connection</p>
+</div>
+<button class="material-symbols-outlined text-sm text-slate-300 ml-auto opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all">close</button>
+</div>
+<div class="group flex items-center gap-3 p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-500/50 hover:shadow-sm transition-all cursor-pointer">
+<div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg text-amber-600">function</span>
+</div>
+<div>
+<p class="text-[13px] font-semibold text-slate-900 dark:text-slate-200">Currency Conv...</p>
+<p class="text-[10px] text-slate-400">Internal function</p>
+</div>
+<button class="material-symbols-outlined text-sm text-slate-300 ml-auto opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all">close</button>
+</div>
+</div>
+<button class="mt-4 w-full py-2.5 flex items-center justify-center gap-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-400 hover:text-blue-600 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all group">
+<span class="material-symbols-outlined text-sm group-hover:rotate-90 transition-transform">add</span>
+                                    Link Additional Tool
+                                </button>
+</div>
+<div class="p-5 border-t border-slate-200/50 dark:border-slate-800/50 bg-slate-100/30 dark:bg-slate-950/20">
+<h4 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">Live Metrics</h4>
+<div class="grid grid-cols-2 gap-3">
+<div class="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+<p class="text-[9px] text-slate-400 uppercase font-bold tracking-tight">Latency</p>
+<p class="text-[13px] font-bold text-slate-900 dark:text-white">1.24s</p>
+</div>
+<div class="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+<p class="text-[9px] text-slate-400 uppercase font-bold tracking-tight">Est. Cost</p>
+<p class="text-[13px] font-bold text-slate-900 dark:text-white">$0.0042</p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Debug Workbench -->
+<section class="h-72 border-t border-slate-200/60 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-950">
+<div class="h-10 bg-slate-50 dark:bg-slate-900 border-b border-slate-200/50 dark:border-slate-800 flex items-center px-4 justify-between">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">terminal</span>
+<span class="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Debug Workbench</span>
+</div>
+<div class="h-4 w-px bg-slate-300 dark:bg-slate-700"></div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-800/50">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase">Engine: Ready</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+<span class="text-[11px] font-bold">Clear</span>
+</button>
+<button class="flex items-center gap-2 bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                                    Run Simulation
+                                </button>
+</div>
+</div>
+<div class="flex-1 flex overflow-hidden">
+<!-- Workbench Left: Input -->
+<div class="flex-1 flex flex-col border-r border-slate-200/40 dark:border-slate-800/40 p-4">
+<div class="flex items-center justify-between mb-2">
+<label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Input Arguments (JSON)</label>
+<span class="text-[10px] font-mono text-blue-500 cursor-pointer hover:underline">Format JSON</span>
+</div>
+<textarea class="flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-4 font-mono text-[12px] focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600/30 resize-none text-slate-700 dark:text-slate-300 transition-all outline-none" placeholder='{
+  "doc_meta": { "type": "10-K" },
+  "user_input_content": "Microsoft reported revenue of $211 billion for fiscal year 2023..."
+}'></textarea>
+</div>
+<!-- Workbench Right: Output -->
+<div class="flex-1 flex flex-col p-4 bg-slate-50/50 dark:bg-slate-900/30">
+<div class="flex items-center justify-between mb-2">
+<label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Output Console</label>
+<div class="flex gap-2">
+<span class="text-[10px] text-slate-400 hover:text-slate-600 cursor-pointer">Logs</span>
+<span class="text-[10px] text-blue-500 font-bold border-b border-blue-500">Preview</span>
+</div>
+</div>
+<div class="flex-1 bg-[#0f172a] rounded-xl p-4 font-mono text-[12px] text-slate-300 overflow-y-auto shadow-inner border border-[#1e293b]">
+<div class="flex items-center gap-2 mb-2 text-[#64748b]">
+<span class="font-bold text-blue-400">[SYSTEM]</span>
+<span class="italic">09:41:22 - Inference request initiated...</span>
+</div>
+<div class="flex items-center gap-2 mb-3 text-[#10b981]">
+<span class="font-bold">[SUCCESS]</span>
+<span>Connection established. Latency: 45ms.</span>
+</div>
+<div class="flex items-start gap-2 border-l-2 border-blue-500/30 pl-3 py-1">
+<span class="text-amber-400 font-bold">[RESULT]</span>
+<pre class="text-slate-100">{
+  "company": "Microsoft",
+  "revenue": "$211.9B",
+  "fiscal_year": "2023",
+  "status": "extracted"
+}</pre>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</section>
+</main>
+</div>
+</body></html>

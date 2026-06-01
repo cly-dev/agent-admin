@@ -1,0 +1,147 @@
+.panel {
+  margin-bottom: 12px;
+}
+
+.mainBlock,
+.advancedBlock {
+  border: 1px solid rgb(193 198 215 / 0.18);
+  border-radius: calc(var(--radius-ui) + 2px);
+  padding: 12px 14px;
+  background: var(--color-surface-container-low);
+}
+
+.advancedBlock {
+  margin-top: 10px;
+  padding-bottom: 4px;
+}
+
+.mainBlockPlain {
+  border: 0;
+  padding: 0 0 8px;
+  background: transparent;
+}
+
+.main {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.leading {
+  flex: 0 0 auto;
+  min-width: 220px;
+}
+
+.querySide {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+
+.keyword {
+  flex: 1 1 320px;
+  min-width: 0;
+  margin-bottom: 0 !important;
+}
+
+.control {
+  width: 100%;
+}
+
+.panel :global(.ant-form-item-control-input),
+.panel :global(.ant-form-item-control-input-content) {
+  width: 100%;
+}
+
+.panel :global(.ant-input-number),
+.panel :global(.ant-select) {
+  width: 100%;
+}
+
+.panel :global(.ant-select-selector) {
+  width: 100% !important;
+}
+
+@media (max-width: 960px) {
+  .main {
+    flex-wrap: wrap;
+  }
+
+  .querySide {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+.collapse {
+  :global(.ant-collapse-header) {
+    padding: 2px 0 8px !important;
+  }
+
+  :global(.ant-collapse-content-box) {
+    padding: 0 0 8px !important;
+  }
+
+  :global(.ant-collapse-expand-icon) {
+    display: none !important;
+  }
+}
+
+.collapseLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgb(25 28 30 / 0.62);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.activeBadge {
+  border-radius: 999px;
+  padding: 1px 7px;
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 700;
+  background: rgb(0 87 194 / 0.1);
+}
+
+.bottomActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgb(193 198 215 / 0.18);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 0 12px;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.grid :global(.ant-form-item) {
+  margin-bottom: 10px;
+}
+
+.grid :global(.ant-form-item-label > label) {
+  color: rgb(25 28 30 / 0.55);
+  font-size: 12px;
+  font-weight: 600;
+}

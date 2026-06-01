@@ -1,0 +1,42 @@
+---
+description: 页面级列表查询必须使用 AppQueryPanel + AppTable，禁止 ProTable 内置搜索
+globs: src/pages/**/*.tsx
+alwaysApply: false
+---
+
+# 列表查询与表格规范
+
+新增或改造带筛选的分页列表页时，遵循 `docs/ui-list-query-convention.md`。
+
+## 必用组件
+
+- 筛选：`AppQueryPanel`（`src/components/AppQueryPanel/`）
+  - 主行：keyword（输入框使用 `AppListSearchInput`）
+  - 高级：`advancedContent` + `AppQueryPanel.Grid`（Collapse 展开）
+- 表格：`AppTable`（`src/components/AppTable/`）
+- 搜索输入框：`AppListSearchInput`（`src/components/AppQueryPanel/fields.tsx`，Tool 页面样式基准）
+
+## 页面文件组织
+
+```
+pages/Foo/
+  agentRunFilter.ts      # normalize + countActive
+  useFooList.ts          # form / appliedFilters / pagination / API
+  components/FooFilter.tsx   # AppQueryPanel 字段配置
+  components/FooTable.tsx    # AppTable 列定义
+  index.tsx
+```
+
+## 数据流
+
+1. `onSearch` → `normalizeXxxFilter` → 更新 `appliedFilters` → `load(page=1)`
+2. `onReset` → `form.resetFields()` → 清空 filters → `load(page=1)`
+3. 分页 `onChange` → `load(page, pageSize, appliedFilters)`
+
+## 禁止
+
+- `ProTable` + `search` + `request` 作为页面级查询方案
+- 在页面 scss 重复定义筛选面板样式（使用 AppQueryPanel 自带样式）
+- 手写列表搜索框（如 `SearchOutlined + input`）；必须复用 `AppListSearchInput`
+
+参考：`AgentBoundToolsFilter`、`AgentRunFilter`、`useAgentRunList`。

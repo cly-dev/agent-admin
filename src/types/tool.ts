@@ -1,0 +1,231 @@
+import type { IntegrationAuthMode } from '@/types/integration';
+
+export type ToolRiskLevel = 'L1' | 'L2' | 'L3';
+export type ToolHttpMethod = 'Get' | 'Post' | 'Put' | 'Delete';
+export type ToolStatus = 'active' | 'inactive' | 'config_required';
+
+/** inputSchema / schema：OpenAPI 风格 parameters 列表 */
+export type ToolInputSchemaPayload = {
+  parameters?: Record<string, unknown>[];
+  requestBody?: unknown;
+};
+
+export interface ToolIntegrationRef {
+  id: number;
+  name: string;
+  baseUrl?: string;
+  authMode?: IntegrationAuthMode;
+  systemConfigured?: boolean;
+}
+
+export interface ToolCategoryRef {
+  id: number;
+  label: string;
+}
+
+/** 大模型响应摘要：coreFields 可为字段路径字符串或结构化对象 */
+export type ToolCoreField = string | Record<string, unknown>;
+
+export interface ToolResponseProfile {
+  coreFields?: ToolCoreField[];
+  optionalFields?: ToolCoreField[];
+  [key: string]: unknown;
+}
+
+export interface Tool {
+  id: number;
+  appClientId: number;
+  name: string;
+  description: string;
+  riskLevel: ToolRiskLevel;
+  method: ToolHttpMethod;
+  path: string;
+  integrationId: number;
+  toolCategoryId?: number;
+  isActive: boolean;
+  timeout?: number;
+  schema?: ToolInputSchemaPayload;
+  inputSchema?: ToolInputSchemaPayload;
+  outputSchema?: object;
+  responseProfile?: ToolResponseProfile;
+  integration?: ToolIntegrationRef;
+  toolCategory?: ToolCategoryRef;
+  tags?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateToolDto {
+  /**
+   * 所属 AppClient ID
+   * @example 1
+   */
+  appClientId: number;
+  /**
+   * 工具名称（唯一标识，供 LLM tool_call）
+   * @example "getOrderList"
+   */
+  name: string;
+  /** 工具描述 */
+  description: string;
+  /**
+   * 风险等级
+   * @default "L1"
+   */
+  riskLevel?: ToolRiskLevel;
+  /** OpenAPI 参数备用 */
+  schema: ToolInputSchemaPayload;
+  /** LLM + HTTP 拆参（运行时优先） */
+  inputSchema: ToolInputSchemaPayload;
+  /** outputSchema */
+  outputSchema?: object;
+  /** HTTP 方法 */
+  method: ToolHttpMethod;
+  /**
+   * API 路径
+   * @example "/api/orders"
+   */
+  path: string;
+  /**
+   * 关联 Integration ID
+   * @example 1
+   */
+  integrationId: number;
+  /**
+   * 工具分类 ID
+   * @example 1
+   */
+  toolCategoryId?: number;
+  /**
+   * 是否启用
+   * @default true
+   */
+  isActive?: boolean;
+  /**
+   * 超时毫秒数
+   * @example 10000
+   */
+  timeout?: number;
+}
+
+export interface UpdateToolDto {
+  appClientId?: number;
+  name?: string;
+  description?: string;
+  riskLevel?: ToolRiskLevel;
+  schema?: ToolInputSchemaPayload;
+  inputSchema?: ToolInputSchemaPayload;
+  outputSchema?: object;
+  responseProfile?: ToolResponseProfile;
+  method?: ToolHttpMethod;
+  path?: string;
+  integrationId?: number;
+  toolCategoryId?: number;
+  isActive?: boolean;
+  timeout?: number;
+}
+
+export interface BatchSetToolsActiveDto {
+  /** 工具 ID 列表 */
+  ids: number[];
+  /** 目标启用状态：true 批量启用，false 批量禁用 */
+  isActive: boolean;
+}
+
+export interface BatchSetToolsActiveResult {
+  updatedCount?: number;
+  notFoundIds?: number[];
+}
+
+export interface DebugToolDto {
+  parameters?: object;
+  headers?: object;
+  apiKey?: string;
+  timeoutMs?: number;
+}
+
+export interface DebugToolResult {
+  ok?: boolean;
+  statusCode?: number;
+  durationMs?: number;
+  request?: Record<string, unknown>;
+  response?: Record<string, unknown>;
+  error?: string;
+}
+
+export interface InitToolSchemasFromDebugDto {
+  parameters?: object;
+  headers?: object;
+  apiKey?: string;
+  timeoutMs?: number;
+  /** 是否将推断结果写回 Tool.outputSchema / Tool.responseProfile */
+  persist?: boolean;
+  /** 补充说明，帮助大模型判断哪些字段应作为 coreFields */
+  hint?: string;
+}
+
+export interface ToolControllerFindPageParams {
+  page?: number;
+  pageSize?: number;
+  id?: number;
+  appClientId?: number;
+  integrationId?: number;
+  toolCategoryId?: number;
+  toolCategoryIdIsNull?: boolean;
+  name?: string;
+  description?: string;
+  path?: string;
+  keyword?: string;
+  riskLevel?: ToolRiskLevel;
+  method?: ToolHttpMethod;
+  isActive?: boolean;
+  orderBy?: 'id' | 'name' | 'createdAt' | 'updatedAt' | 'riskLevel' | 'path';
+  order?: 'asc' | 'desc';
+}
+
+/** 从 Swagger/OpenAPI URL 批量导入工具（POST admin/tool/import/swagger） */
+export interface ImportToolsFromSwaggerDto {
+  /** OpenAPI JSON 文档地址 */
+  specUrl: string;
+  /** 使用已有 Integration ID（与 autoIntegration 二选一） */
+  integrationId?: number;
+  /** 自动按 spec servers[0] 创建/复用 Integration */
+  autoIntegration?: boolean;
+  /** autoIntegration 时必填：Integration 所属 AppClient */
+  appClientId?: number;
+  /** 导入后绑定到 Agent（可选） */
+  agentId?: number;
+  integrationName?: string;
+  integrationBaseUrl?: string;
+  integrationApiKey?: string;
+  integrationAuthMode?: IntegrationAuthMode;
+  /** 仅解析不写库 */
+  dryRun?: boolean;
+  riskLevel?: ToolRiskLevel;
+  tags?: string[];
+  ops?: string[];
+  pathInclude?: string[];
+  pathExclude?: string[];
+  noDefaultPathExclude?: boolean;
+  insecure?: boolean;
+}
+
+export interface ToolControllerFindByAppClientParams {
+  page?: number;
+  pageSize?: number;
+  id?: number;
+  integrationId?: number;
+  toolCategoryId?: number;
+  toolCategoryIdIsNull?: boolean;
+  name?: string;
+  description?: string;
+  path?: string;
+  keyword?: string;
+  riskLevel?: ToolRiskLevel;
+  method?: ToolHttpMethod;
+  isActive?: boolean;
+  orderBy?: 'id' | 'name' | 'createdAt' | 'updatedAt' | 'riskLevel' | 'path';
+  order?: 'asc' | 'desc';
+  /** Query 中的 AppClient ID（路径参数优先） */
+  appClientId?: number;
+}

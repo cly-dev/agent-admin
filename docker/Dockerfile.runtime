@@ -1,0 +1,18 @@
+# 仅打包已构建好的 dist（CI 已执行 pnpm build 时使用）
+#
+#   cd agent-admin
+#   pnpm build
+#   docker build -f docker/Dockerfile.runtime -t agent-admin:latest .
+
+ARG NGINX_IMAGE=erp-prod-acr-registry-vpc.cn-hangzhou.cr.aliyuncs.com/cht-base/nginx:1.27-alpine
+FROM ${NGINX_IMAGE}
+
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY dist /usr/share/nginx/html
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget -q -O - http://127.0.0.1/healthz || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

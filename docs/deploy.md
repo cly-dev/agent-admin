@@ -34,10 +34,7 @@ UMI_APP_OMNIX_CHAT_BASE_URL=https://<你的 API 域名>
 pnpm install
 ```
 
-`omnix-chat` 当前为 `link:../agent-chat`。CI/生产机构建需满足其一：
-
-1. 与 `agent-chat` 同级目录 checkout（推荐 monorepo 布局）；
-2. 或将 `omnix-chat` 发布为 npm 包后，在 `package.json` 改为版本号依赖。
+`omnix-chat` 通过 npm 安装（当前 `1.5.5`），CI/Docker 构建只需 `pnpm install`，无需克隆 `agent-chat` 源码。
 
 ### 生产包
 
@@ -99,7 +96,106 @@ publicPath: '/admin/',
 - [ ] 嵌入聊天（若启用）DSN 与 token 链路正常
 - [ ] `.env` 未提交到 Git（已在 `.gitignore`）
 
-## 5. 常见问题
+## 5. Docker 部署
+
+项目提供两种镜像构建方式。
+
+### 方式 A：在镜像内完整构建（推荐 CI）
+
+构建上下文为 **前端仓库根目录**（`custom-no-code` / `omnix-admin`，含 `package.json`、`Dockerfile`）：
+
+```bash
+cd /path/to/omnix-admin
+
+docker build \
+  --build-arg UMI_APP_API_BASE_URL=https://api.example.com \
+  --build-arg UMI_APP_OMNIX_CHAT_BASE_URL=https://api.example.com \
+  --build-arg UMI_APP_OMNIX_CHAT_DSN=your-dsn \
+  -t omnix-admin:latest .
+
+docker run --rm -p 8080:80 agent-admin:latest
+```
+
+### 方式 B：仅打包 dist（CI 已执行 pnpm build）
+
+```bash
+cd agent-admin
+UMI_ENV=prod pnpm build
+
+docker build -f docker/Dockerfile.runtime -t agent-admin:latest .
+docker run --rm -p 8080:80 agent-admin:latest
+```
+
+### Nginx
+
+配置文件：`docker/nginx.conf`
+
+- `/`：SPA 回退 `index.html`
+- `/healthz`：健康检查
+- 静态资源 7 天缓存，`index.html` 不缓存
+
+API 地址在 **构建时** 通过 `UMI_APP_*` 写入 JS，默认由浏览器直连后端；若需同域反代，见 `nginx.conf` 内注释。
+
+### Jenkins / Kaniko 拉镜像超时
+
+若日志出现：
+
+```text
+Get "https://index.docker.io/v2/": dial tcp ...:443: i/o timeout
+```
+
+说明构建机**访问不了 Docker Hub**，不是 Dockerfile 语法错误。可选方案：
+
+1. **推荐**：在 `step-0`（`node-build` 镜像）里 `pnpm install && pnpm build`，Kaniko 只打运行镜像：
+
+   ```bash
+   cd omnix-admin   # 按仓库实际路径
+   pnpm install --frozen-lockfile
+   UMI_ENV=prod pnpm build
+   # Kaniko 构建
+   docker build -f docker/Dockerfile.runtime \
+     --build-arg NGINX_IMAGE=<内网 nginx 镜像> \
+     -t agent-admin:latest .
+   ```
+
+2. **多阶段 Dockerfile**：让 DevOps 把 `node:20-alpine`、`nginx:1.27-alpine` 同步到 ACR，构建时传入：
+
+   ```bash
+   --build-arg NODE_IMAGE=<ACR>/cht-base/node:20-alpine
+   --build-arg NGINX_IMAGE=<ACR>/cht-base/nginx:1.27-alpine
+   ```
+
+3. 或配置 Kaniko / 集群 **registry-mirror** 指向可访问的 Docker Hub 镜像加速。
+
+### Kaniko 报 `agent-admin/package.json: no such file or directory`
+
+说明流水线用的 **仍是旧 Dockerfile**（路径带 `agent-admin/` 前缀），而 `omnix-admin` 仓库里 `package.json` 在 **仓库根目录**（Jenkins 上的 `custom-no-code/`），没有 `agent-admin/` 子目录。
+
+处理：
+
+1. **提交并推送** 当前仓库根目录的 `Dockerfile`（应为 `COPY package.json`，不是 `COPY agent-admin/package.json`）。
+2. Kaniko 参数示例：
+   ```text
+   构建上下文: /home/jenkins/agent/workspace/custom-no-code
+   Dockerfile: Dockerfile          # 仓库根目录，不是 agent-admin/Dockerfile
+   ```
+3. 构建前校验：
+   ```bash
+   cd custom-no-code
+   bash docker/ci-verify.sh       # 检查路径是否正确
+   ```
+
+### Kaniko 报 `pnpm install` 找不到 `omnix-chat`
+
+确认 `package.json` 中 `omnix-chat` 为版本号（如 `1.5.5`），不是 `link:../agent-chat`。构建镜像需能访问 npm registry（或内网镜像源）。
+
+若 step-0 已 `pnpm build`，Kaniko 只打运行镜像即可：
+
+```bash
+docker build -f docker/Dockerfile.runtime --build-arg NGINX_IMAGE=<内网 nginx> -t ...
+```
+
+## 6. 常见问题
 
 **构建报 `Found conflicts in esbuild helpers`**
 

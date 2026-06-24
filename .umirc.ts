@@ -2,16 +2,12 @@ import { defineConfig } from '@umijs/max';
 import path from 'path';
 
 // Umi 仅在构建时把 UMI_APP_* 注入到浏览器；此处显式 define，避免只配 .env.dev 且未设 UMI_ENV 时读不到
-const omnixChatEnvDefine = {
+const envDefine = {
   'process.env.UMI_APP_API_BASE_URL': process.env.UMI_APP_API_BASE_URL ?? '',
-  'process.env.UMI_APP_OMNIX_CHAT_DSN':
-    process.env.UMI_APP_OMNIX_CHAT_DSN ?? '',
-  'process.env.UMI_APP_OMNIX_CHAT_BASE_URL':
-    process.env.UMI_APP_OMNIX_CHAT_BASE_URL ?? '',
 };
 
 export default defineConfig({
-  define: omnixChatEnvDefine,
+  define: envDefine,
   esbuildMinifyIIFE: true,
   antd: {},
   access: {},
@@ -254,12 +250,10 @@ export default defineConfig({
     },
   ],
   npmClient: 'pnpm',
-  // omnix-chat host: dedupe React peer deps; use package default ESM entry (react.es.js)
   alias: {
     react: path.dirname(require.resolve('react/package.json')),
     'react-dom': path.dirname(require.resolve('react-dom/package.json')),
   },
   depTranspiler: 'none',
   mfsu: false,
-  plugins: ['./plugin.omnixChatHost'],
 });

@@ -1,0 +1,16 @@
+# 复制到 monorepo 根目录（ai-agent/.dockerignore）后，从根目录构建主 Dockerfile
+**/.git
+**/.cursor
+**/node_modules
+**/dist
+**/.husky
+**/src/.umi
+**/src/.umi-production
+**/src/.umi-test
+**/.env
+**/.env.*
+!**/.env.example
+agent-server
+**/*.md
+agent-admin/docs
+agent-admin/script/archive

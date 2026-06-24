@@ -1,4 +1,5 @@
 import ContentEmpty from '@/components/ContentEmpty';
+import ListPageHeader from '@/components/ListPageHeader';
 import { PageContainer } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
 import ChatFilter from './components/ChatFilter';
@@ -27,16 +28,18 @@ const ChatPage: React.FC = () => {
     <PageContainer ghost className={styles.chatPage}>
       <div className={styles.chatPageShell}>
         <div className={styles.chatPageCard}>
-          <header className={styles.chatPageHeader}>
-            <h1 className={styles.chatPageTitle}>{intl.formatMessage({ id: 'chat.title' })}</h1>
-            <p className={styles.chatPageSubtitle}>{intl.formatMessage({ id: 'chat.subtitle' })}</p>
-          </header>
+          <ListPageHeader
+            title={intl.formatMessage({ id: 'chat.title' })}
+            description={intl.formatMessage({ id: 'chat.subtitle' })}
+          />
 
           <div className={styles.chatPageBody}>
             {!projectId ? (
               <ContentEmpty
                 title={intl.formatMessage({ id: 'chat.empty.noProject.title' })}
-                description={intl.formatMessage({ id: 'chat.empty.noProject.desc' })}
+                description={intl.formatMessage({
+                  id: 'chat.empty.noProject.desc',
+                })}
               />
             ) : (
               <>

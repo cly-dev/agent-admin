@@ -1,8 +1,12 @@
-import type { AgentListItem } from '../agentShared';
-import { getAgentListStatus } from '../agentShared';
-import { DeleteOutlined, RobotOutlined, SettingOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  RobotOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
 import { Popconfirm } from 'antd';
+import type { AgentListItem } from '../agentShared';
+import { getAgentListStatus } from '../agentShared';
 import styles from '../index.module.scss';
 
 type AgentCardProps = {
@@ -11,7 +15,11 @@ type AgentCardProps = {
   onDelete: (id: number) => void;
 };
 
-const AgentCard: React.FC<AgentCardProps> = ({ agent, onConfigure, onDelete }) => {
+const AgentCard: React.FC<AgentCardProps> = ({
+  agent,
+  onConfigure,
+  onDelete,
+}) => {
   const intl = useIntl();
   const status = getAgentListStatus(agent);
   const isInactive = status === 'inactive';
@@ -21,10 +29,7 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, onConfigure, onDelete }) =
 
   return (
     <article
-      className={[
-        styles.agentCard,
-        isInactive ? styles.agentCardInactive : '',
-      ]
+      className={[styles.agentCard, isInactive ? styles.agentCardInactive : '']
         .filter(Boolean)
         .join(' ')}
     >
@@ -54,7 +59,18 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, onConfigure, onDelete }) =
                   />
                   {intl.formatMessage({ id: statusLabelId })}
                 </span>
-                <span className={styles.agentCardBadge}>{agent.maxStepsLabel}</span>
+                <span className={styles.agentCardBadge}>
+                  {agent.maxStepsLabel}
+                </span>
+                {typeof agent.hostToolCount === 'number' &&
+                agent.hostToolCount > 0 ? (
+                  <span className={styles.agentCardBadge}>
+                    {intl.formatMessage(
+                      { id: 'agent.card.hostToolCount' },
+                      { count: agent.hostToolCount },
+                    )}
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
@@ -81,7 +97,8 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, onConfigure, onDelete }) =
         </div>
 
         <p className={styles.agentCardDescription}>
-          {agent.description || intl.formatMessage({ id: 'agent.noDescription' })}
+          {agent.description ||
+            intl.formatMessage({ id: 'agent.noDescription' })}
         </p>
 
         <p className={styles.agentCardMetaLine}>{agent.updatedAtLabel}</p>

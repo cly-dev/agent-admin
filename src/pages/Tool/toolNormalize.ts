@@ -7,6 +7,7 @@ import type {
   ToolResponseProfile,
   ToolRiskLevel,
 } from '@/types/tool';
+import { normalizeAgentMetadata } from './toolAgentMetadata';
 import { DEFAULT_TOOL_METHOD, DEFAULT_TOOL_RISK } from './toolConstants';
 
 function asRecord(raw: unknown): Record<string, unknown> | undefined {
@@ -18,7 +19,11 @@ function asRecord(raw: unknown): Record<string, unknown> | undefined {
     if (!trimmed) return undefined;
     try {
       const parsed = JSON.parse(trimmed) as unknown;
-      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        !Array.isArray(parsed)
+      ) {
         return parsed as Record<string, unknown>;
       }
     } catch {
@@ -86,7 +91,9 @@ function normalizeIntegrationRef(raw: unknown): ToolIntegrationRef | undefined {
   };
 }
 
-function normalizeResponseProfile(raw: unknown): ToolResponseProfile | undefined {
+function normalizeResponseProfile(
+  raw: unknown,
+): ToolResponseProfile | undefined {
   let source = raw;
   if (typeof source === 'string') {
     const trimmed = source.trim();
@@ -122,7 +129,8 @@ function scoreToolCandidate(item: Record<string, unknown>): number {
   if (item.name !== undefined) score += 2;
   if (item.path !== undefined) score += 2;
   if (item.method !== undefined) score += 1;
-  if (item.integrationId !== undefined || item.integration_id !== undefined) score += 1;
+  if (item.integrationId !== undefined || item.integration_id !== undefined)
+    score += 1;
   if (
     item.outputSchema !== undefined ||
     item.output_schema !== undefined ||
@@ -139,7 +147,9 @@ function findBestToolRecord(raw: unknown): Record<string, unknown> {
   const root = asRecord(raw);
   if (!root) return {};
 
-  const queue: Array<{ node: Record<string, unknown>; depth: number }> = [{ node: root, depth: 0 }];
+  const queue: Array<{ node: Record<string, unknown>; depth: number }> = [
+    { node: root, depth: 0 },
+  ];
   let best = root;
   let bestScore = scoreToolCandidate(root);
 
@@ -165,7 +175,9 @@ function findBestToolRecord(raw: unknown): Record<string, unknown> {
   return best;
 }
 
-function extractOutputSchema(item: Record<string, unknown>): object | undefined {
+function extractOutputSchema(
+  item: Record<string, unknown>,
+): object | undefined {
   const direct =
     item.outputSchema ??
     item.output_schema ??
@@ -187,11 +199,21 @@ function extractOutputSchema(item: Record<string, unknown>): object | undefined 
 
   const r200 = asRecord(responses['200']);
   if (r200) {
-    const schema200 = normalizeJsonObject(r200.schema ?? r200.response ?? r200.body);
-    if (schema200) return { '200': { schema: schema200, description: r200.description ?? '接口成功响应体' } };
+    const schema200 = normalizeJsonObject(
+      r200.schema ?? r200.response ?? r200.body,
+    );
+    if (schema200)
+      return {
+        '200': {
+          schema: schema200,
+          description: r200.description ?? '接口成功响应体',
+        },
+      };
   }
 
-  const schemaDirect = normalizeJsonObject(responses.schema ?? responses.response ?? responses.body);
+  const schemaDirect = normalizeJsonObject(
+    responses.schema ?? responses.response ?? responses.body,
+  );
   if (schemaDirect) return schemaDirect;
 
   return responses;
@@ -217,7 +239,9 @@ function normalizeCategoryRef(raw: unknown): ToolCategoryRef | undefined {
 export function normalizeTool(raw: unknown): Tool {
   const item = findBestToolRecord(raw);
   const tagsRaw = item.tags;
-  const category = normalizeCategoryRef(item.toolCategory ?? item.tool_category);
+  const category = normalizeCategoryRef(
+    item.toolCategory ?? item.tool_category,
+  );
   const responseProfileRaw =
     item.responseProfile ??
     item.response_profile ??
@@ -248,6 +272,9 @@ export function normalizeTool(raw: unknown): Tool {
     inputSchema: normalizeJsonObject(item.inputSchema ?? item.input_schema),
     outputSchema: extractOutputSchema(item),
     responseProfile: normalizeResponseProfile(responseProfileRaw),
+    agentMetadata: normalizeAgentMetadata(
+      item.agentMetadata ?? item.agent_metadata,
+    ),
     integration: normalizeIntegrationRef(item.integration),
     toolCategory: category,
     tags: Array.isArray(tagsRaw)

@@ -17,24 +17,23 @@ import type {
   ToolStatus,
   UpdateToolDto,
 } from '@/types/tool';
+import type { AgentMetadata } from '@/types/tool-agent-metadata';
 import { history, useIntl } from '@umijs/max';
 import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { buildAgentMetadataForPersist } from './toolAgentMetadata';
 
 import { DEFAULT_PAGE_SIZE } from '@/constants/pagination';
-import type { ToolParameter } from './toolSchema';
-import { buildInputSchemaFromParameters, buildSchemaFromParameters } from './toolSchema';
 import {
   buildImportToolsFromSwaggerDto,
   type ImportToolsFromSwaggerFormValues,
 } from './importSwagger';
+import { SEARCH_DEBOUNCE_MS } from './toolConstants';
+import type { ToolParameter } from './toolSchema';
 import {
-  DEFAULT_EMPTY_SCHEMA,
-  DEFAULT_TOOL_METHOD,
-  DEFAULT_TOOL_RISK,
-  SEARCH_DEBOUNCE_MS,
-} from './toolConstants';
-import { normalizeTool } from './toolNormalize';
+  buildInputSchemaFromParameters,
+  buildSchemaFromParameters,
+} from './toolSchema';
 
 export {
   DEFAULT_EMPTY_SCHEMA,
@@ -56,13 +55,21 @@ export type ToolFormValues = {
   outputSchemaFields: ToolOutputSchemaField[];
   responseCoreFields: ToolCoreFieldRow[];
   responseOptionalFields: ToolCoreFieldRow[];
+  agentMetadata: AgentMetadata | null;
 };
 
 export type ToolOutputSchemaField = {
   id: string;
   statusCode: string;
   name: string;
-  type: 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array' | 'null';
+  type:
+    | 'string'
+    | 'number'
+    | 'integer'
+    | 'boolean'
+    | 'object'
+    | 'array'
+    | 'null';
   required: boolean;
   description: string;
 };
@@ -110,7 +117,9 @@ export type UseToolsResult = {
   importIntegrationsLoading: boolean;
   openImportModal: () => void;
   onImportModalOpenChange: (open: boolean) => void;
-  handleImportFromSwagger: (values: ImportToolsFromSwaggerFormValues) => Promise<boolean>;
+  handleImportFromSwagger: (
+    values: ImportToolsFromSwaggerFormValues,
+  ) => Promise<boolean>;
 };
 
 export function getToolStatus(tool: Tool): ToolStatus {
@@ -123,7 +132,10 @@ export function getToolStatus(tool: Tool): ToolStatus {
   }
 
   const integration = tool.integration;
-  if (integration?.authMode === 'SYSTEM_ONLY' && !integration.systemConfigured) {
+  if (
+    integration?.authMode === 'SYSTEM_ONLY' &&
+    !integration.systemConfigured
+  ) {
     return 'config_required';
   }
 
@@ -183,7 +195,11 @@ function asObject(raw: unknown): Record<string, unknown> | undefined {
     if (!trimmed) return undefined;
     try {
       const parsed = JSON.parse(trimmed) as unknown;
-      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        !Array.isArray(parsed)
+      ) {
         return parsed as Record<string, unknown>;
       }
     } catch {
@@ -194,7 +210,10 @@ function asObject(raw: unknown): Record<string, unknown> | undefined {
 }
 
 function looksLikeSchemaNode(node: Record<string, unknown>): boolean {
-  if (typeof node.type === 'string' && (node.properties !== undefined || node.items !== undefined)) {
+  if (
+    typeof node.type === 'string' &&
+    (node.properties !== undefined || node.items !== undefined)
+  ) {
     return true;
   }
   if (node.properties !== undefined && typeof node.properties === 'object') {
@@ -212,7 +231,9 @@ export function extractOutputSchemaFromAny(raw: unknown): object | undefined {
   if (!root) return undefined;
 
   const visited = new Set<object>();
-  const queue: Array<{ node: Record<string, unknown>; depth: number }> = [{ node: root, depth: 0 }];
+  const queue: Array<{ node: Record<string, unknown>; depth: number }> = [
+    { node: root, depth: 0 },
+  ];
 
   while (queue.length > 0) {
     const current = queue.shift();
@@ -259,7 +280,9 @@ export function extractOutputSchemaFromAny(raw: unknown): object | undefined {
       if (looksLikeSchemaNode(responses)) {
         return responses;
       }
-      const nestedSchema = asObject(responses.schema ?? responses.response ?? responses.body);
+      const nestedSchema = asObject(
+        responses.schema ?? responses.response ?? responses.body,
+      );
       if (nestedSchema && looksLikeSchemaNode(nestedSchema)) {
         return nestedSchema;
       }
@@ -290,7 +313,9 @@ function createRowId(prefix: string, seed: string): string {
   return `${prefix}_${seed}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
-function normalizeOutputFieldType(value: unknown): ToolOutputSchemaField['type'] {
+function normalizeOutputFieldType(
+  value: unknown,
+): ToolOutputSchemaField['type'] {
   const type = String(value ?? 'string').toLowerCase();
   if (
     type === 'string' ||
@@ -323,7 +348,8 @@ function collectSchemaFields(
 ) {
   const nodeType = normalizeOutputFieldType(schemaNode.type);
   const currentPath = parentPath.trim();
-  const description = typeof schemaNode.description === 'string' ? schemaNode.description : '';
+  const description =
+    typeof schemaNode.description === 'string' ? schemaNode.description : '';
 
   if (currentPath && !skipSelfPush) {
     collector.push({
@@ -338,12 +364,15 @@ function collectSchemaFields(
 
   if (nodeType === 'object') {
     const properties =
-      typeof schemaNode.properties === 'object' && schemaNode.properties !== null
+      typeof schemaNode.properties === 'object' &&
+      schemaNode.properties !== null
         ? (schemaNode.properties as Record<string, unknown>)
         : undefined;
     if (!properties) return;
     const requiredSet = new Set(
-      Array.isArray(schemaNode.required) ? schemaNode.required.map((item) => String(item)) : [],
+      Array.isArray(schemaNode.required)
+        ? schemaNode.required.map((item) => String(item))
+        : [],
     );
     Object.entries(properties).forEach(([key, value]) => {
       if (typeof value !== 'object' || value === null) return;
@@ -373,7 +402,9 @@ export function normalizeOutputFieldPath(path: string): string {
   return path.trim().replace(/\[\]/g, '');
 }
 
-export function normalizeOutputSchemaFields(fields: ToolOutputSchemaField[]): ToolOutputSchemaField[] {
+export function normalizeOutputSchemaFields(
+  fields: ToolOutputSchemaField[],
+): ToolOutputSchemaField[] {
   const byKey = new Map<string, ToolOutputSchemaField>();
   fields.forEach((field) => {
     const name = normalizeOutputFieldPath(field.name);
@@ -387,12 +418,17 @@ export function normalizeOutputSchemaFields(fields: ToolOutputSchemaField[]): To
 export function outputSchemaToFields(schema?: object): ToolOutputSchemaField[] {
   if (!schema || typeof schema !== 'object') return [];
   const root = schema as Record<string, unknown>;
-  const looksLikeStatusMap = Object.keys(root).some((key) => /^\d{3}$/.test(key));
+  const looksLikeStatusMap = Object.keys(root).some((key) =>
+    /^\d{3}$/.test(key),
+  );
   const rows: ToolOutputSchemaField[] = [];
 
   if (looksLikeStatusMap) {
     Object.entries(root).forEach(([statusCode, value]) => {
-      const block = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+      const block =
+        typeof value === 'object' && value !== null
+          ? (value as Record<string, unknown>)
+          : {};
       const schemaNode =
         typeof block.schema === 'object' && block.schema !== null
           ? (block.schema as Record<string, unknown>)
@@ -410,7 +446,9 @@ export function outputSchemaToFields(schema?: object): ToolOutputSchemaField[] {
   return normalizeOutputSchemaFields(rows);
 }
 
-export function buildOutputSchemaFromFields(fields: ToolOutputSchemaField[]): object | undefined {
+export function buildOutputSchemaFromFields(
+  fields: ToolOutputSchemaField[],
+): object | undefined {
   const valid = fields
     .map((field) => ({
       ...field,
@@ -430,9 +468,14 @@ export function buildOutputSchemaFromFields(fields: ToolOutputSchemaField[]): ob
 
   const result: Record<string, unknown> = {};
   grouped.forEach((items, statusCode) => {
-    const rootSchema: Record<string, unknown> = { type: 'object', properties: {} };
+    const rootSchema: Record<string, unknown> = {
+      type: 'object',
+      properties: {},
+    };
     const fieldByPath = new Map<string, ToolOutputSchemaField>();
-    items.forEach((field) => fieldByPath.set(normalizeOutputFieldPath(field.name), field));
+    items.forEach((field) =>
+      fieldByPath.set(normalizeOutputFieldPath(field.name), field),
+    );
 
     const ensureObjectNode = (
       parent: Record<string, unknown>,
@@ -447,7 +490,10 @@ export function buildOutputSchemaFromFields(fields: ToolOutputSchemaField[]): ob
         if (!existing.properties) existing.properties = {};
         return existing;
       }
-      const created: Record<string, unknown> = { type: 'object', properties: {} };
+      const created: Record<string, unknown> = {
+        type: 'object',
+        properties: {},
+      };
       properties[key] = created;
       parent.properties = properties;
       return created;
@@ -559,7 +605,9 @@ function profileFieldToRow(
     const keywordsRaw = obj.keywords ?? obj.keyword;
     let keywords: string[] = [];
     if (Array.isArray(keywordsRaw)) {
-      keywords = keywordsRaw.map((value) => String(value).trim()).filter(Boolean);
+      keywords = keywordsRaw
+        .map((value) => String(value).trim())
+        .filter(Boolean);
     } else if (typeof keywordsRaw === 'string' && keywordsRaw.trim()) {
       keywords = keywordsRaw
         .split(/[,，]/)
@@ -597,7 +645,9 @@ export function rowsToProfileFields(
   options?: { includeKeywords?: boolean },
 ): import('@/types/tool').ToolResponseProfile['coreFields'] {
   const includeKeywords = options?.includeKeywords ?? false;
-  const result: NonNullable<import('@/types/tool').ToolResponseProfile['coreFields']> = [];
+  const result: NonNullable<
+    import('@/types/tool').ToolResponseProfile['coreFields']
+  > = [];
 
   rows.forEach((row) => {
     const path = row.path.trim();
@@ -605,8 +655,12 @@ export function rowsToProfileFields(
 
     const label = row.label.trim();
     const description = row.description.trim();
-    const keywords = (row.keywords ?? []).map((value) => value.trim()).filter(Boolean);
-    const hasMeta = Boolean(label || description || (includeKeywords && keywords.length > 0));
+    const keywords = (row.keywords ?? [])
+      .map((value) => value.trim())
+      .filter(Boolean);
+    const hasMeta = Boolean(
+      label || description || (includeKeywords && keywords.length > 0),
+    );
 
     if (!hasMeta) {
       result.push(path);
@@ -631,12 +685,18 @@ export function coreFieldsToRows(
 }
 
 /** @deprecated use rowsToProfileFields */
-export function rowsToCoreFields(rows: ToolCoreFieldRow[]): import('@/types/tool').ToolResponseProfile['coreFields'] {
+export function rowsToCoreFields(
+  rows: ToolCoreFieldRow[],
+): import('@/types/tool').ToolResponseProfile['coreFields'] {
   return rowsToProfileFields(rows);
 }
 
-export function buildCreateToolPayload(projectId: number, values: ToolFormValues): CreateToolDto {
+export function buildCreateToolPayload(
+  projectId: number,
+  values: ToolFormValues,
+): CreateToolDto {
   const schemaFields = buildSchemaFields(values.parameters ?? []);
+  const agentMetadata = buildAgentMetadataForPersist(values.agentMetadata);
 
   return {
     appClientId: projectId,
@@ -647,15 +707,20 @@ export function buildCreateToolPayload(projectId: number, values: ToolFormValues
     integrationId: values.integrationId,
     riskLevel: values.riskLevel,
     isActive: values.isActive,
+    ...(agentMetadata ? { agentMetadata } : {}),
     ...schemaFields,
   };
 }
 
 export function buildUpdateToolPayload(
   values: ToolFormValues,
-  responseFields?: { outputSchema?: object; responseProfile?: ToolResponseProfile },
+  responseFields?: {
+    outputSchema?: object;
+    responseProfile?: ToolResponseProfile;
+  },
 ): UpdateToolDto {
   const schemaFields = buildSchemaFields(values.parameters ?? []);
+  const agentMetadata = buildAgentMetadataForPersist(values.agentMetadata);
 
   return {
     name: values.name.trim(),
@@ -667,6 +732,7 @@ export function buildUpdateToolPayload(
     isActive: values.isActive,
     outputSchema: responseFields?.outputSchema,
     responseProfile: responseFields?.responseProfile,
+    agentMetadata: agentMetadata ?? null,
     ...schemaFields,
   };
 }
@@ -685,8 +751,11 @@ export function useTools(): UseToolsResult {
   const [batchSubmitting, setBatchSubmitting] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importSubmitting, setImportSubmitting] = useState(false);
-  const [importIntegrations, setImportIntegrations] = useState<Integration[]>([]);
-  const [importIntegrationsLoading, setImportIntegrationsLoading] = useState(false);
+  const [importIntegrations, setImportIntegrations] = useState<Integration[]>(
+    [],
+  );
+  const [importIntegrationsLoading, setImportIntegrationsLoading] =
+    useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -730,7 +799,9 @@ export function useTools(): UseToolsResult {
       }
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'tool.loadFailed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'tool.loadFailed' }),
       );
       setTools([]);
       setTotal(0);
@@ -771,7 +842,7 @@ export function useTools(): UseToolsResult {
   const toDetailPath = (toolId: number) => `/tool/detail/${toolId}`;
 
   const openCreate = () => {
-    history.push('/tool/create');
+    history.push('/tool/detail/create');
   };
 
   const openConfigure = (tool: Tool) => {
@@ -789,7 +860,9 @@ export function useTools(): UseToolsResult {
       }
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'tool.deleteFailed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'tool.deleteFailed' }),
       );
     }
   };
@@ -805,7 +878,9 @@ export function useTools(): UseToolsResult {
       await loadTools();
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'tool.actionFailed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'tool.actionFailed' }),
       );
     }
   };
@@ -839,7 +914,9 @@ export function useTools(): UseToolsResult {
 
   const toggleSelectAllCurrentPage = (checked: boolean) => {
     if (!checked) {
-      setSelectedIds((prev) => prev.filter((id) => !currentPageIds.includes(id)));
+      setSelectedIds((prev) =>
+        prev.filter((id) => !currentPageIds.includes(id)),
+      );
       return;
     }
 
@@ -860,7 +937,10 @@ export function useTools(): UseToolsResult {
 
     setBatchSubmitting(true);
     try {
-      const result = await ToolController_batchSetActive({ ids: selectedIds, isActive });
+      const result = await ToolController_batchSetActive({
+        ids: selectedIds,
+        isActive,
+      });
       const notFoundCount = result.notFoundIds?.length ?? 0;
       const succeeded =
         result.updatedCount ?? Math.max(0, selectedIds.length - notFoundCount);
@@ -888,7 +968,9 @@ export function useTools(): UseToolsResult {
       await loadTools();
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'tool.actionFailed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'tool.actionFailed' }),
       );
     } finally {
       setBatchSubmitting(false);
@@ -945,7 +1027,9 @@ export function useTools(): UseToolsResult {
     }
 
     if (values.integrationMode === 'existing' && !values.integrationId) {
-      message.error(intl.formatMessage({ id: 'tool.form.integrationRequired' }));
+      message.error(
+        intl.formatMessage({ id: 'tool.form.integrationRequired' }),
+      );
       return false;
     }
 
@@ -955,7 +1039,9 @@ export function useTools(): UseToolsResult {
       await ToolController_importFromSwagger(payload);
       message.success(
         intl.formatMessage({
-          id: values.dryRun ? 'tool.import.dryRunSuccess' : 'tool.import.success',
+          id: values.dryRun
+            ? 'tool.import.dryRunSuccess'
+            : 'tool.import.success',
         }),
       );
       if (!values.dryRun) {
@@ -965,7 +1051,9 @@ export function useTools(): UseToolsResult {
       return true;
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'tool.import.failed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'tool.import.failed' }),
       );
       return false;
     } finally {

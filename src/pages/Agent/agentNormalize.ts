@@ -1,16 +1,39 @@
+import {
+  normalizeAgentHostToolRef,
+  normalizeHostToolSummary,
+} from '@/services/host-tool';
 import type { Agent, AgentAllowedToolRef } from '@/types/agent';
+import type { AgentHostToolRef, HostToolSummary } from '@/types/host-tool';
 
 export function normalizeAgent(raw: unknown): Agent {
-  const item = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>;
+  const item = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<
+    string,
+    unknown
+  >;
   const toolIdsRaw = item.toolIds ?? item.tool_ids;
   const configRaw = item.config;
+  const hostToolCountRaw = item.hostToolCount ?? item.host_tool_count;
+  const hostToolsRaw = item.hostTools ?? item.host_tools;
+  const agentHostToolsRaw = item.agentHostTools ?? item.agent_host_tools;
+
+  const hostTools = Array.isArray(hostToolsRaw)
+    ? hostToolsRaw
+        .map((row) => normalizeHostToolSummary(row))
+        .filter((row): row is HostToolSummary => row !== null)
+    : undefined;
+  const agentHostTools = Array.isArray(agentHostToolsRaw)
+    ? agentHostToolsRaw
+        .map((row) => normalizeAgentHostToolRef(row))
+        .filter((row): row is AgentHostToolRef => row !== null)
+    : undefined;
 
   return {
     id: Number(item.id),
     appClientId: Number(item.appClientId ?? item.app_client_id),
     name: String(item.name ?? ''),
     systemPrompt: String(item.systemPrompt ?? item.system_prompt ?? ''),
-    description: typeof item.description === 'string' ? item.description : undefined,
+    description:
+      typeof item.description === 'string' ? item.description : undefined,
     toolIds: Array.isArray(toolIdsRaw)
       ? toolIdsRaw.map((id) => Number(id)).filter((id) => Number.isFinite(id))
       : undefined,
@@ -20,11 +43,19 @@ export function normalizeAgent(raw: unknown): Agent {
         : typeof item.max_steps === 'number'
           ? item.max_steps
           : undefined,
-    enableToolCall: Boolean(item.enableToolCall ?? item.enable_tool_call ?? true),
+    enableToolCall: Boolean(
+      item.enableToolCall ?? item.enable_tool_call ?? true,
+    ),
     config:
       typeof configRaw === 'object' && configRaw !== null
         ? (configRaw as Record<string, unknown>)
         : undefined,
+    hostToolCount:
+      typeof hostToolCountRaw === 'number' && Number.isFinite(hostToolCountRaw)
+        ? hostToolCountRaw
+        : (agentHostTools?.length ?? hostTools?.length),
+    hostTools,
+    agentHostTools,
     createdAt:
       typeof item.createdAt === 'string'
         ? item.createdAt
@@ -53,15 +84,22 @@ function normalizeToolMethod(value: unknown): string | undefined {
 }
 
 export function normalizeAgentAllowedTool(raw: unknown): AgentAllowedToolRef {
-  const item = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>;
+  const item = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<
+    string,
+    unknown
+  >;
   const toolRaw = item.tool;
   const tool =
     typeof toolRaw === 'object' && toolRaw !== null
       ? (toolRaw as Record<string, unknown>)
       : item;
 
-  const toolId = Number(item.toolId ?? item.tool_id ?? tool.id ?? tool.toolId ?? tool.tool_id);
-  const bindingId = Number(item.id ?? item.bindingId ?? item.binding_id ?? toolId);
+  const toolId = Number(
+    item.toolId ?? item.tool_id ?? tool.id ?? tool.toolId ?? tool.tool_id,
+  );
+  const bindingId = Number(
+    item.id ?? item.bindingId ?? item.binding_id ?? toolId,
+  );
 
   const definitionKeyRaw = tool.definitionKey ?? tool.definition_key;
   const isActiveRaw = tool.isActive ?? tool.is_active;

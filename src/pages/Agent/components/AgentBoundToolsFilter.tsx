@@ -4,14 +4,14 @@ import {
   AppQueryPanel,
   AppQuerySelect,
 } from '@/components/AppQueryPanel';
+import { useIntl } from '@umijs/max';
+import { Form } from 'antd';
+import { useMemo } from 'react';
 import {
   countActiveAgentBoundToolsFilters,
   type AgentBoundToolsFilterFormValues,
   type AgentBoundToolsFilterValues,
 } from '../agentBoundToolsFilter';
-import { useIntl } from '@umijs/max';
-import { Form } from 'antd';
-import { useMemo } from 'react';
 
 type AgentBoundToolsFilterProps = {
   form: ReturnType<typeof Form.useForm<AgentBoundToolsFilterFormValues>>[0];
@@ -33,33 +33,53 @@ const AgentBoundToolsFilter: React.FC<AgentBoundToolsFilterProps> = ({
 }) => {
   const intl = useIntl();
 
-  const triStateOptions = useMemo(
+  const anyOption = useMemo(
     () => [
-      { value: '', label: intl.formatMessage({ id: 'agent.tools.filter.any' }) },
-      { value: 'true', label: intl.formatMessage({ id: 'agent.tools.filter.yes' }) },
-      { value: 'false', label: intl.formatMessage({ id: 'agent.tools.filter.no' }) },
+      { value: '', label: intl.formatMessage({ id: 'appQueryPanel.any' }) },
     ],
     [intl],
+  );
+
+  const triStateOptions = useMemo(
+    () => [
+      ...anyOption,
+      {
+        value: 'true',
+        label: intl.formatMessage({ id: 'agent.tools.filter.yes' }),
+      },
+      {
+        value: 'false',
+        label: intl.formatMessage({ id: 'agent.tools.filter.no' }),
+      },
+    ],
+    [anyOption, intl],
   );
 
   const methodOptions = useMemo(
     () => [
-      { value: '', label: intl.formatMessage({ id: 'agent.tools.filter.any' }) },
-      ...HTTP_METHODS.map((method) => ({ value: method, label: method.toUpperCase() })),
+      ...anyOption,
+      ...HTTP_METHODS.map((method) => ({
+        value: method,
+        label: method.toUpperCase(),
+      })),
     ],
-    [intl],
+    [anyOption],
   );
 
   const riskOptions = useMemo(
     () => [
-      { value: '', label: intl.formatMessage({ id: 'agent.tools.filter.any' }) },
+      ...anyOption,
       ...RISK_LEVELS.map((level) => ({ value: level, label: level })),
     ],
-    [intl],
+    [anyOption],
   );
 
-  const selectPlaceholder = intl.formatMessage({ id: 'appQueryPanel.selectPlaceholder' });
-  const numberPlaceholder = intl.formatMessage({ id: 'appQueryPanel.numberPlaceholder' });
+  const selectPlaceholder = intl.formatMessage({
+    id: 'appQueryPanel.selectPlaceholder',
+  });
+  const numberPlaceholder = intl.formatMessage({
+    id: 'appQueryPanel.numberPlaceholder',
+  });
 
   return (
     <AppQueryPanel<AgentBoundToolsFilterFormValues>
@@ -68,8 +88,11 @@ const AgentBoundToolsFilter: React.FC<AgentBoundToolsFilterProps> = ({
       loading={loading}
       onSearch={onSearch}
       onReset={onReset}
-      keywordLabel={intl.formatMessage({ id: 'agent.tools.filter.keyword' })}
-      keywordPlaceholder={intl.formatMessage({ id: 'agent.tools.filter.keywordPlaceholder' })}
+      layout="list"
+      keywordPlaceholder={intl.formatMessage({
+        id: 'agent.tools.filter.keywordPlaceholder',
+      })}
+      keywordClassName="max-w-md"
       countActive={countActiveAgentBoundToolsFilters}
       advancedContent={
         <AppQueryPanel.Grid>
@@ -87,63 +110,99 @@ const AgentBoundToolsFilter: React.FC<AgentBoundToolsFilterProps> = ({
           </Form.Item>
           <Form.Item
             name="definitionKey"
-            label={intl.formatMessage({ id: 'agent.tools.filter.definitionKey' })}
+            label={intl.formatMessage({
+              id: 'agent.tools.filter.definitionKey',
+            })}
           >
-            <AppQueryInput placeholder={intl.formatMessage({ id: 'agent.tools.filter.definitionKeyPlaceholder' })} />
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'agent.tools.filter.definitionKeyPlaceholder',
+              })}
+            />
           </Form.Item>
           <Form.Item
             name="integrationId"
-            label={intl.formatMessage({ id: 'agent.tools.filter.integrationId' })}
+            label={intl.formatMessage({
+              id: 'agent.tools.filter.integrationId',
+            })}
           >
             <AppQueryInputNumber min={1} placeholder={numberPlaceholder} />
           </Form.Item>
           <Form.Item
             name="toolCategoryId"
-            label={intl.formatMessage({ id: 'agent.tools.filter.toolCategoryId' })}
+            label={intl.formatMessage({
+              id: 'agent.tools.filter.toolCategoryId',
+            })}
           >
             <AppQueryInputNumber min={1} placeholder={numberPlaceholder} />
           </Form.Item>
           <Form.Item
             name="toolCategoryIdIsNull"
-            label={intl.formatMessage({ id: 'agent.tools.filter.toolCategoryIdIsNull' })}
+            label={intl.formatMessage({
+              id: 'agent.tools.filter.toolCategoryIdIsNull',
+            })}
           >
-            <AppQuerySelect options={triStateOptions} placeholder={selectPlaceholder} />
+            <AppQuerySelect
+              options={triStateOptions}
+              placeholder={selectPlaceholder}
+            />
           </Form.Item>
           <Form.Item
             name="name"
             label={intl.formatMessage({ id: 'agent.tools.filter.name' })}
           >
-            <AppQueryInput placeholder={intl.formatMessage({ id: 'agent.tools.filter.namePlaceholder' })} />
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'agent.tools.filter.namePlaceholder',
+              })}
+            />
           </Form.Item>
           <Form.Item
             name="description"
             label={intl.formatMessage({ id: 'agent.tools.filter.description' })}
           >
-            <AppQueryInput placeholder={intl.formatMessage({ id: 'agent.tools.filter.descriptionPlaceholder' })} />
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'agent.tools.filter.descriptionPlaceholder',
+              })}
+            />
           </Form.Item>
           <Form.Item
             name="path"
             label={intl.formatMessage({ id: 'agent.tools.filter.path' })}
           >
-            <AppQueryInput placeholder={intl.formatMessage({ id: 'agent.tools.filter.pathPlaceholder' })} />
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'agent.tools.filter.pathPlaceholder',
+              })}
+            />
           </Form.Item>
           <Form.Item
             name="riskLevel"
             label={intl.formatMessage({ id: 'agent.tools.filter.riskLevel' })}
           >
-            <AppQuerySelect options={riskOptions} placeholder={selectPlaceholder} />
+            <AppQuerySelect
+              options={riskOptions}
+              placeholder={selectPlaceholder}
+            />
           </Form.Item>
           <Form.Item
             name="method"
             label={intl.formatMessage({ id: 'agent.tools.filter.method' })}
           >
-            <AppQuerySelect options={methodOptions} placeholder={selectPlaceholder} />
+            <AppQuerySelect
+              options={methodOptions}
+              placeholder={selectPlaceholder}
+            />
           </Form.Item>
           <Form.Item
             name="isActive"
             label={intl.formatMessage({ id: 'agent.tools.filter.isActive' })}
           >
-            <AppQuerySelect options={triStateOptions} placeholder={selectPlaceholder} />
+            <AppQuerySelect
+              options={triStateOptions}
+              placeholder={selectPlaceholder}
+            />
           </Form.Item>
         </AppQueryPanel.Grid>
       }

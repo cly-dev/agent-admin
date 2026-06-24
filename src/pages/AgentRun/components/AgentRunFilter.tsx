@@ -1,13 +1,17 @@
-import { AppQueryInput, AppQueryInputNumber, AppQueryPanel, AppQuerySelect } from '@/components/AppQueryPanel';
-import ListScopeBar from '@/components/ListScopeBar';
+import {
+  AppQueryInput,
+  AppQueryInputNumber,
+  AppQueryPanel,
+  AppQuerySelect,
+} from '@/components/AppQueryPanel';
+import { useIntl } from '@umijs/max';
+import { Form } from 'antd';
+import { useMemo } from 'react';
 import {
   countActiveAgentRunFilters,
   type AgentRunFilterFormValues,
   type AgentRunFilterValues,
 } from '../agentRunFilter';
-import { useIntl } from '@umijs/max';
-import { Form } from 'antd';
-import { useMemo } from 'react';
 
 type AgentRunFilterProps = {
   form: ReturnType<typeof Form.useForm<AgentRunFilterFormValues>>[0];
@@ -30,7 +34,9 @@ const AgentRunFilter: React.FC<AgentRunFilterProps> = ({
   const intl = useIntl();
 
   const anyOption = useMemo(
-    () => [{ value: '', label: intl.formatMessage({ id: 'appQueryPanel.any' }) }],
+    () => [
+      { value: '', label: intl.formatMessage({ id: 'appQueryPanel.any' }) },
+    ],
     [intl],
   );
 
@@ -50,8 +56,12 @@ const AgentRunFilter: React.FC<AgentRunFilterProps> = ({
     [anyOption],
   );
 
-  const selectPlaceholder = intl.formatMessage({ id: 'appQueryPanel.selectPlaceholder' });
-  const numberPlaceholder = intl.formatMessage({ id: 'appQueryPanel.numberPlaceholder' });
+  const selectPlaceholder = intl.formatMessage({
+    id: 'appQueryPanel.selectPlaceholder',
+  });
+  const numberPlaceholder = intl.formatMessage({
+    id: 'appQueryPanel.numberPlaceholder',
+  });
 
   return (
     <AppQueryPanel<AgentRunFilterFormValues>
@@ -60,9 +70,11 @@ const AgentRunFilter: React.FC<AgentRunFilterProps> = ({
       loading={loading}
       onSearch={onSearch}
       onReset={onReset}
-      plainMainBlock
-      leadingContent={<ListScopeBar compact />}
-      keywordPlaceholder={intl.formatMessage({ id: 'agentRun.filter.keywordPlaceholder' })}
+      layout="list"
+      showProjectScope
+      keywordPlaceholder={intl.formatMessage({
+        id: 'agentRun.filter.keywordPlaceholder',
+      })}
       keywordClassName="max-w-md"
       countActive={countActiveAgentRunFilters}
       advancedContent={
@@ -86,7 +98,11 @@ const AgentRunFilter: React.FC<AgentRunFilterProps> = ({
             name="sessionId"
             label={intl.formatMessage({ id: 'agentRun.column.sessionId' })}
           >
-            <AppQueryInput placeholder={intl.formatMessage({ id: 'agentRun.filter.sessionIdPlaceholder' })} />
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'agentRun.filter.sessionIdPlaceholder',
+              })}
+            />
           </Form.Item>
           <Form.Item
             name="userId"
@@ -98,19 +114,29 @@ const AgentRunFilter: React.FC<AgentRunFilterProps> = ({
             name="role"
             label={intl.formatMessage({ id: 'agentRun.column.role' })}
           >
-            <AppQuerySelect options={roleOptions} placeholder={selectPlaceholder} />
+            <AppQuerySelect
+              options={roleOptions}
+              placeholder={selectPlaceholder}
+            />
           </Form.Item>
           <Form.Item
             name="status"
             label={intl.formatMessage({ id: 'agentRun.column.status' })}
           >
-            <AppQuerySelect options={statusOptions} placeholder={selectPlaceholder} />
+            <AppQuerySelect
+              options={statusOptions}
+              placeholder={selectPlaceholder}
+            />
           </Form.Item>
           <Form.Item
             name="input"
             label={intl.formatMessage({ id: 'agentRun.filter.input' })}
           >
-            <AppQueryInput placeholder={intl.formatMessage({ id: 'agentRun.filter.inputPlaceholder' })} />
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'agentRun.filter.inputPlaceholder',
+              })}
+            />
           </Form.Item>
         </AppQueryPanel.Grid>
       }

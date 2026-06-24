@@ -1,0 +1,86 @@
+.hostToolPage :global(.ant-pro-page-container-children-content) {
+  height: 100%;
+}
+
+.hostToolPageShell {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 12px 12px 16px;
+  background: transparent;
+}
+
+@media (min-width: 768px) {
+  .hostToolPageShell {
+    padding: 16px 16px 20px;
+  }
+}
+
+.hostToolPageCard {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: auto;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+  padding: 20px;
+  box-shadow: 0 8px 32px rgb(25 28 30 / 0.04);
+}
+
+@media (min-width: 768px) {
+  .hostToolPageCard {
+    padding: 24px 28px;
+  }
+}
+
+.hostToolTabs {
+  margin-bottom: 4px;
+}
+
+.hostToolPageBody {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hostPageDetailBody {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.hostPageDetailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hostPageDetailSectionTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.hostPageDetailFormGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .hostPageDetailFormGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.hostPageDetailToolsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}

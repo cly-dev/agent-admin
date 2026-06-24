@@ -2,8 +2,13 @@
   "version": 1,
   "sourceLabel": "http://localhost:3030/docs-json",
   "operationKeys": [
-    "get:/admin/tool",
-    "post:/admin/tool/by-app-client/{appClientId}/{id}/debug/init-schemas"
+    "delete:/admin/skill/{skillId}",
+    "get:/admin/agent/{agentId}/app-client/{appClientId}/skills",
+    "get:/admin/skill/by-app-client/{appClientId}",
+    "get:/admin/skill/{skillId}",
+    "patch:/admin/skill/{skillId}",
+    "post:/admin/agent/{agentId}/app-client/{appClientId}/skills",
+    "put:/admin/skill/{skillId}/tools"
   ],
-  "savedAt": "2026-06-01T01:04:13.988Z"
+  "savedAt": "2026-06-04T06:30:21.955Z"
 }

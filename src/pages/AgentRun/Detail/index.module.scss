@@ -8,7 +8,7 @@
   flex: 1;
   flex-direction: column;
   padding: 12px 12px 16px;
-  background: var(--color-surface);
+  background: transparent;
 }
 
 @media (min-width: 768px) {
@@ -33,50 +33,6 @@
   .agentRunDetailCard {
     padding: 18px 22px 24px;
   }
-}
-
-.agentRunDetailTopBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.agentRunDetailBack {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  padding: 0;
-  color: rgb(25 28 30 / 0.62);
-  font-size: 13px;
-  font-weight: 600;
-  background: transparent;
-  cursor: pointer;
-}
-
-.agentRunDetailBack:hover {
-  color: var(--color-primary);
-}
-
-.agentRunDetailTitle {
-  margin: 0 0 4px;
-  color: var(--color-on-surface);
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.agentRunDetailSubtitle {
-  margin: 0;
-  color: rgb(25 28 30 / 0.55);
-  font-size: 13px;
-}
-
-.agentRunDetailBody {
-  min-height: 0;
-  flex: 1;
 }
 
 .agentRunDetailSection {

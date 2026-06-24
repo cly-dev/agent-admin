@@ -1,0 +1,41 @@
+.settingStack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settingSection {
+  padding: 20px 24px;
+}
+
+.settingSectionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.settingSectionTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.settingSectionDesc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: rgb(25 28 30 / 0.62);
+}
+
+.settingForm {
+  max-width: 960px;
+}
+
+.settingFormGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0 16px;
+}

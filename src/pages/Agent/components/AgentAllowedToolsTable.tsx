@@ -12,8 +12,21 @@ import {
 import type { AgentAllowedToolRef } from '@/types/agent';
 import { ExportOutlined } from '@ant-design/icons';
 import { history, useIntl } from '@umijs/max';
-import { Modal } from 'antd';
+import { Form, Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type {
+  AgentBoundToolsFilterFormValues,
+  AgentBoundToolsFilterValues,
+} from '../agentBoundToolsFilter';
+import AgentBoundToolsFilter from './AgentBoundToolsFilter';
+
+export type AgentAllowedToolsTableFilterProps = {
+  form: ReturnType<typeof Form.useForm<AgentBoundToolsFilterFormValues>>[0];
+  appliedFilters: AgentBoundToolsFilterValues;
+  loading?: boolean;
+  onSearch: (values: AgentBoundToolsFilterFormValues) => void;
+  onReset: () => void;
+};
 
 type AgentAllowedToolsTableProps = {
   tools: AgentAllowedToolRef[];
@@ -24,6 +37,7 @@ type AgentAllowedToolsTableProps = {
   unbindSubmittingId?: number | null;
   onPageChange?: (page: number, pageSize: number) => void;
   onUnbind?: (toolId: number) => void;
+  filter?: AgentAllowedToolsTableFilterProps;
 };
 
 function toolDetailPath(toolId: number) {
@@ -43,6 +57,7 @@ const AgentAllowedToolsTable: React.FC<AgentAllowedToolsTableProps> = ({
   unbindSubmittingId = null,
   onPageChange,
   onUnbind,
+  filter,
 }) => {
   const intl = useIntl();
 
@@ -87,7 +102,9 @@ const AgentAllowedToolsTable: React.FC<AgentAllowedToolsTableProps> = ({
       key: 'definitionKey',
       width: 148,
       ellipsis: true,
-      render: (definitionKey?: string) => <AppTableCodeCell value={definitionKey} />,
+      render: (definitionKey?: string) => (
+        <AppTableCodeCell value={definitionKey} />
+      ),
     },
     {
       title: intl.formatMessage({ id: 'agent.tools.column.method' }),
@@ -110,7 +127,9 @@ const AgentAllowedToolsTable: React.FC<AgentAllowedToolsTableProps> = ({
       key: 'description',
       ellipsis: true,
       render: (description?: string) => (
-        <AppTableDescription>{description || noDescription}</AppTableDescription>
+        <AppTableDescription>
+          {description || noDescription}
+        </AppTableDescription>
       ),
     },
     {
@@ -143,7 +162,11 @@ const AgentAllowedToolsTable: React.FC<AgentAllowedToolsTableProps> = ({
                 >
                   <ExportOutlined />
                 </AppTableIconLink>
-                <AppTableButton danger disabled={unbindSubmittingId === record.toolId} onClick={(event) => confirmUnbind(record.toolId, event)}>
+                <AppTableButton
+                  danger
+                  disabled={unbindSubmittingId === record.toolId}
+                  onClick={(event) => confirmUnbind(record.toolId, event)}
+                >
                   {intl.formatMessage({ id: 'agent.tools.unbind' })}
                 </AppTableButton>
               </AppTableActions>
@@ -154,29 +177,40 @@ const AgentAllowedToolsTable: React.FC<AgentAllowedToolsTableProps> = ({
   ];
 
   return (
-    <AppTable<AgentAllowedToolRef>
-      rowKey="bindingId"
-      columns={columns}
-      dataSource={tools}
-      loading={loading}
-      scroll={{ x: 880 }}
-      clickableRows
-      emptyText={intl.formatMessage({ id: 'agent.tools.empty' })}
-      onRowClick={(record) => {
-        history.push(toolDetailPath(record.toolId));
-      }}
-      pagination={
-        onPageChange
-          ? {
-              page,
-              pageSize,
-              total,
-              pageSizeOptions: [20, 50, 100],
-              onChange: onPageChange,
-            }
-          : false
-      }
-    />
+    <>
+      {filter ? (
+        <AgentBoundToolsFilter
+          form={filter.form}
+          appliedFilters={filter.appliedFilters}
+          loading={filter.loading ?? loading}
+          onSearch={filter.onSearch}
+          onReset={filter.onReset}
+        />
+      ) : null}
+      <AppTable<AgentAllowedToolRef>
+        rowKey="bindingId"
+        columns={columns}
+        dataSource={tools}
+        loading={loading}
+        scroll={{ x: 880 }}
+        clickableRows
+        emptyText={intl.formatMessage({ id: 'agent.tools.empty' })}
+        onRowClick={(record) => {
+          history.push(toolDetailPath(record.toolId));
+        }}
+        pagination={
+          onPageChange
+            ? {
+                page,
+                pageSize,
+                total,
+                pageSizeOptions: [20, 50, 100],
+                onChange: onPageChange,
+              }
+            : false
+        }
+      />
+    </>
   );
 };
 

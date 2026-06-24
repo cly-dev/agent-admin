@@ -1,11 +1,16 @@
-import { AppTable, AppTableActions, AppTableButton, AppTableCodeCell } from '@/components/AppTable';
-import type { UserAppRelation } from '@/types/user-app';
+import {
+  AppTable,
+  AppTableActions,
+  AppTableButton,
+  AppTableCodeCell,
+} from '@/components/AppTable';
+import type { User } from '@/types/user';
 import { history, useIntl } from '@umijs/max';
 import { Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 type UserTableProps = {
-  list: UserAppRelation[];
+  list: User[];
   loading?: boolean;
   page: number;
   pageSize: number;
@@ -25,7 +30,7 @@ const UserTable: React.FC<UserTableProps> = ({
 }) => {
   const intl = useIntl();
 
-  const confirmDelete = (record: UserAppRelation) => {
+  const confirmDelete = (record: User) => {
     Modal.confirm({
       title: intl.formatMessage({ id: 'user.deleteTitle' }),
       centered: true,
@@ -36,14 +41,19 @@ const UserTable: React.FC<UserTableProps> = ({
     });
   };
 
-  const columns: ColumnsType<UserAppRelation> = [
-    { title: 'ID', dataIndex: 'id', key: 'id', width: 90 },
+  const columns: ColumnsType<User> = [
     {
-      title: intl.formatMessage({ id: 'user.column.userId' }),
-      dataIndex: 'userId',
-      key: 'userId',
-      width: 110,
-      render: (value: number) => `#${value}`,
+      title: intl.formatMessage({ id: 'user.column.id' }),
+      dataIndex: 'id',
+      key: 'id',
+      width: 90,
+    },
+    {
+      title: intl.formatMessage({ id: 'user.column.email' }),
+      dataIndex: 'email',
+      key: 'email',
+      width: 220,
+      render: (value: string) => <AppTableCodeCell value={value} empty="—" />,
     },
     {
       title: intl.formatMessage({ id: 'user.column.username' }),
@@ -53,37 +63,9 @@ const UserTable: React.FC<UserTableProps> = ({
       render: (value?: string) => value || '—',
     },
     {
-      title: intl.formatMessage({ id: 'user.column.userEmail' }),
-      dataIndex: 'userEmail',
-      key: 'userEmail',
-      width: 220,
-      render: (value?: string) => <AppTableCodeCell value={value} empty="—" />,
-    },
-    {
-      title: intl.formatMessage({ id: 'user.column.appId' }),
-      dataIndex: 'appId',
-      key: 'appId',
-      width: 110,
-      render: (value: number) => `#${value}`,
-    },
-    {
-      title: intl.formatMessage({ id: 'user.column.appName' }),
-      dataIndex: 'appName',
-      key: 'appName',
-      width: 160,
-      render: (value?: string) => value || '—',
-    },
-    {
-      title: intl.formatMessage({ id: 'user.column.roleId' }),
-      dataIndex: 'roleId',
-      key: 'roleId',
-      width: 110,
-      render: (value: number) => `#${value}`,
-    },
-    {
-      title: intl.formatMessage({ id: 'user.column.roleName' }),
-      dataIndex: 'roleName',
-      key: 'roleName',
+      title: intl.formatMessage({ id: 'user.column.employeeId' }),
+      dataIndex: 'employeeId',
+      key: 'employeeId',
       width: 140,
       render: (value?: string) => value || '—',
     },
@@ -98,13 +80,19 @@ const UserTable: React.FC<UserTableProps> = ({
       title: intl.formatMessage({ id: 'user.column.actions' }),
       key: 'actions',
       align: 'right',
-      width: 180,
+      width: 220,
       render: (_, record) => (
         <AppTableActions>
-          <AppTableButton onClick={() => history.push(`/user/detail/${record.userId}`)}>
-            {intl.formatMessage({ id: 'common.configure' })}
+          <AppTableButton
+            variant="edit"
+            onClick={() => history.push(`/user/detail/${record.id}`)}
+          >
+            {intl.formatMessage({ id: 'common.edit' })}
           </AppTableButton>
-          <AppTableButton danger onClick={() => confirmDelete(record)}>
+          <AppTableButton
+            variant="danger"
+            onClick={() => confirmDelete(record)}
+          >
             {intl.formatMessage({ id: 'common.delete' })}
           </AppTableButton>
         </AppTableActions>
@@ -113,12 +101,12 @@ const UserTable: React.FC<UserTableProps> = ({
   ];
 
   return (
-    <AppTable<UserAppRelation>
+    <AppTable<User>
       rowKey="id"
       columns={columns}
       dataSource={list}
       loading={loading}
-      scroll={{ x: 1500 }}
+      scroll={{ x: 1100 }}
       emptyText={intl.formatMessage({ id: 'user.empty.none' })}
       pagination={{
         page,
@@ -127,6 +115,8 @@ const UserTable: React.FC<UserTableProps> = ({
         pageSizeOptions: [20, 50, 100],
         onChange: onPageChange,
       }}
+      clickableRows
+      onRowClick={(record) => history.push(`/user/detail/${record.id}`)}
     />
   );
 };

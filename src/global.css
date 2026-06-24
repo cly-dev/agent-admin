@@ -6,26 +6,42 @@
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
-  --color-surface: #f7f9fc;
-  --color-surface-container-low: #f2f4f7;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-high: #e6e8eb;
-  --color-surface-container-highest: #e0e3e6;
-
-  --color-primary: #0057c2;
-  --color-primary-container: #006ef2;
-  --color-surface-tint: #0059c7;
-  --color-on-surface: #191c1e;
-  --color-on-surface-variant: #414755;
-  --color-outline-variant: #c1c6d7;
-  --color-inverse-surface: #2d3133;
-  --color-inverse-primary: #afc6ff;
+  /* Blue-tinted surfaces — gradient on shell, white cards on top */
+  --color-surface: #e8eff9;
+  --color-surface-container-low: #e2eaf6;
+  --color-surface-container-lowest: #fff;
+  --color-surface-container-high: #d5dff0;
+  --color-surface-container-highest: #c8d4eb;
+  --gradient-layout-bg: linear-gradient(
+    165deg,
+    #f6f9fe 0%,
+    #edf3fc 46%,
+    #dde8f6 100%
+  );
+  --gradient-sider-bg: linear-gradient(
+    180deg,
+    #fbfcff 0%,
+    #f0f5fc 42%,
+    #e4ebf8 100%
+  );
+  --color-primary: #003d8f;
+  --color-primary-container: #004aad;
+  --color-surface-tint: #003d8f;
+  --color-on-surface: #12161f;
+  --color-on-surface-variant: #3d4554;
+  --color-outline-variant: #c5cad3;
+  --color-inverse-surface: #12161f;
+  --color-inverse-primary: #9eb8f5;
   --color-tertiary: #9e3d00;
   --color-tertiary-fixed-dim: #ffb695;
-  --color-secondary-container: #a3befe;
-
+  --color-secondary-container: #8eb0f0;
+  --color-border-accent: rgb(0 61 143 / 22%);
+  --color-border-subtle: rgb(0 61 143 / 10%);
+  --color-accent-subtle: rgb(0 61 143 / 6%);
+  --color-accent-muted: rgb(0 61 143 / 10%);
   --radius-ui: 0.375rem;
-  --shadow-floating: 0 8px 32px rgb(25 28 30 / 0.06);
+  --shadow-floating: 0 8px 32px rgb(15 30 60 / 8%);
+  --shadow-command: 0 4px 20px rgb(0 40 90 / 6%);
 }
 
 @layer base {
@@ -38,7 +54,8 @@
   body {
     margin: 0;
     color: var(--color-on-surface);
-    background: var(--color-surface);
+    background: var(--gradient-layout-bg);
+    background-attachment: fixed;
     font-family: var(--font-sans);
   }
 }
@@ -55,7 +72,7 @@
   }
 
   .app-frosted-header {
-    background: rgb(255 255 255 / 0.85);
+    background: rgb(255 255 255 / 85%);
     backdrop-filter: blur(20px);
   }
 
@@ -63,6 +80,14 @@
     border-radius: var(--radius-ui);
     box-shadow: var(--shadow-floating);
     background: var(--color-surface-container-lowest);
+  }
+
+  /* Optional bordered panel — use sparingly, not on every list row */
+  .app-command-bar {
+    border: 1px solid var(--color-border-subtle);
+    border-radius: calc(var(--radius-ui) + 2px);
+    background: var(--color-surface-container-lowest);
+    box-shadow: none;
   }
 
   .app-editor-surface {
@@ -89,8 +114,8 @@
   }
 
   .app-status-active {
-    color: #1d4ed8;
-    background: #dbeafe;
+    color: var(--color-primary);
+    background: var(--color-accent-muted);
   }
 
   .app-status-draft {
@@ -113,9 +138,9 @@
     align-items: center;
     justify-content: space-between;
     padding-inline: 16px;
-    background: rgb(255 255 255 / 0.85);
+    background: rgb(255 255 255 / 85%);
     backdrop-filter: blur(20px);
-    box-shadow: 0 1px 2px rgb(25 28 30 / 0.04);
+    box-shadow: 0 1px 2px rgb(25 28 30 / 4%);
   }
 
   @media (min-width: 768px) {
@@ -125,13 +150,14 @@
   }
 
   .app-layout-shell {
-    background: var(--color-surface);
+    background: var(--gradient-layout-bg);
   }
 
   .app-layout-body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: var(--gradient-layout-bg);
   }
 
   .content-empty {
@@ -153,8 +179,8 @@
     border-radius: 50%;
     background: radial-gradient(
       circle,
-      rgb(0 87 194 / 0.1) 0%,
-      rgb(0 110 242 / 0.04) 45%,
+      rgb(0 87 194 / 10%) 0%,
+      rgb(0 110 242 / 4%) 45%,
       transparent 72%
     );
     pointer-events: none;
@@ -178,8 +204,8 @@
       var(--color-primary-container)
     );
     box-shadow:
-      0 12px 28px rgb(0 87 194 / 0.22),
-      0 2px 8px rgb(0 87 194 / 0.12);
+      0 12px 28px rgb(0 87 194 / 22%),
+      0 2px 8px rgb(0 87 194 / 12%);
   }
 
   .content-empty-title {
@@ -198,7 +224,7 @@
     z-index: 1;
     max-width: 26rem;
     margin: 8px 0 0;
-    color: rgb(25 28 30 / 0.55);
+    color: var(--color-on-surface-variant);
     font-size: 0.875rem;
     line-height: 1.6;
   }
@@ -246,10 +272,21 @@ body button.app-button-primary {
 }
 
 body button.app-button-secondary {
-  border: 0;
-  color: var(--color-on-surface);
+  border: 1px solid var(--color-border-accent);
+  color: var(--color-primary);
   border-radius: var(--radius-ui);
-  background: var(--color-surface-container-highest);
+  background: var(--color-surface-container-lowest);
+  box-shadow: 0 1px 2px rgb(0 40 90 / 5%);
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+body button.app-button-secondary:hover:not(:disabled) {
+  border-color: rgb(0 87 194 / 32%);
+  background: var(--color-accent-subtle);
+  box-shadow: 0 2px 8px rgb(0 87 194 / 10%);
 }
 
 body button.app-button-tertiary {
@@ -281,12 +318,21 @@ body button.app-button-delete:hover {
 body input.app-input,
 body textarea.app-input,
 body select.app-input {
-  border: 1px solid rgb(193 198 215 / 0.3);
+  border: 1px solid var(--color-border-subtle);
   outline: none;
   color: var(--color-on-surface);
   border-radius: var(--radius-ui);
   background: var(--color-surface-container-lowest);
-  transition: background-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+body input.app-input:hover,
+body textarea.app-input:hover,
+body select.app-input:hover {
+  border-color: var(--color-border-accent);
 }
 
 body input.app-input:focus,
@@ -294,7 +340,7 @@ body textarea.app-input:focus,
 body select.app-input:focus {
   border-color: var(--color-primary);
   background: var(--color-surface-container-lowest);
-  box-shadow: 0 0 0 2px rgb(0 89 199 / 0.1);
+  box-shadow: 0 0 0 3px rgb(0 61 143 / 12%);
 }
 
 body button.app-header-user {
@@ -348,19 +394,34 @@ body button.app-header-user:hover {
   overflow: hidden;
   max-width: 100%;
   margin-top: 2px;
-  color: rgb(25 28 30 / 0.55);
+  color: rgb(25 28 30 / 55%);
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ant-pro-layout .ant-pro-layout-bg-list {
-  background: var(--color-surface) !important;
+  background: var(--gradient-layout-bg) !important;
 }
 
 .ant-pro-layout .ant-pro-sider .ant-layout-sider-children {
-  background: var(--color-surface-container-low) !important;
-  border-right: 0 !important;
+  background: var(--gradient-sider-bg) !important;
+  border-right: 1px solid var(--color-border-subtle) !important;
+}
+
+.ant-pro-layout .ant-pro-layout-content {
+  padding-block: 0 !important;
+  padding-inline: 0 !important;
+  height: 100%;
+  background: var(--gradient-layout-bg) !important;
+}
+
+.ant-pro-layout .ant-pro-page-container {
+  background: transparent !important;
+}
+
+.ant-pro-layout .ant-pro-page-container-children-container {
+  background: transparent !important;
 }
 
 .ant-pro-layout .ant-pro-sider .ant-layout-sider-children .ant-pro-sider-logo {
@@ -368,10 +429,10 @@ body button.app-header-user:hover {
 }
 
 .ant-pro-layout .ant-pro-layout-header {
-  background: rgb(255 255 255 / 0.85) !important;
+  background: rgb(255 255 255 / 85%) !important;
   backdrop-filter: blur(20px);
   border-bottom: 0 !important;
-  box-shadow: 0 1px 2px rgb(25 28 30 / 0.04);
+  box-shadow: 0 1px 2px rgb(25 28 30 / 4%);
 }
 
 .ant-pro-layout .ant-menu-light {
@@ -388,12 +449,12 @@ body button.app-header-user:hover {
 
 .ant-pro-layout .ant-menu-light .ant-menu-item-selected {
   font-weight: 600 !important;
-  border-left: 4px solid var(--color-primary) !important;
-  border-radius: 0 var(--radius-ui) var(--radius-ui) 0 !important;
+  color: var(--color-primary) !important;
+  background: var(--color-accent-subtle) !important;
 }
 
 .ant-pro-layout .ant-menu-light .ant-menu-item:not(.ant-menu-item-selected):hover {
-  background: rgb(255 255 255 / 0.5) !important;
+  background: rgb(255 255 255 / 50%) !important;
 }
 
 .ant-pro-page-container .ant-pro-page-container-warp-page-header {
@@ -408,12 +469,6 @@ body button.app-header-user:hover {
   padding: 0 !important;
   margin: 0 !important;
   min-height: 0 !important;
-}
-
-.ant-pro-layout .ant-pro-layout-content {
-  padding-block: 0 !important;
-  padding-inline: 0 !important;
-  height: 100%;
 }
 
 .ant-pro-layout .ant-pro-layout-container {

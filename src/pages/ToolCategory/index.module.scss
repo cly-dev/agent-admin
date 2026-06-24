@@ -8,7 +8,7 @@
   flex: 1;
   flex-direction: column;
   padding: 12px 12px 16px;
-  background: var(--color-surface);
+  background: transparent;
 }
 
 @media (min-width: 768px) {
@@ -35,24 +35,50 @@
   }
 }
 
-.toolCategoryPageHeader {
+.toolCategoryDetailBody {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.toolCategoryPageTitle {
-  margin: 0;
+.toolCategoryDetailSection {
+  border-radius: calc(var(--radius-ui) - 2px);
+  padding: 16px 18px;
+  background: var(--color-surface-container-low);
+}
+
+.toolCategoryDetailSectionTitle {
+  margin: 0 0 14px;
   color: var(--color-on-surface);
-  font-size: 1.25rem;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: -0.02em;
 }
 
-.toolCategoryPageSubtitle {
-  margin: 4px 0 0;
+.toolCategoryDetailFormGrid {
+  display: grid;
+  gap: 0 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .toolCategoryDetailFormGrid {
+    grid-template-columns: 1fr 160px;
+  }
+}
+
+.toolCategoryDetailFormActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.toolCategoryDetailToolsHeader {
+  margin-bottom: 12px;
+}
+
+.toolCategoryDetailToolsSubtitle {
+  margin: 6px 0 0;
   color: rgb(25 28 30 / 0.5);
   font-size: 12px;
+  line-height: 1.5;
 }

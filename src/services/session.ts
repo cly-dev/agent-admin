@@ -1,5 +1,3 @@
-import { http } from '@/utils/request';
-import { normalizePageResult } from '@/utils/api-page';
 import type { PageResult } from '@/types/integration';
 import type {
   CreateSessionDto,
@@ -7,6 +5,8 @@ import type {
   SessionControllerFindPageParams,
   UpdateSessionDto,
 } from '@/types/session';
+import { normalizePageResult } from '@/utils/api-page';
+import { http } from '@/utils/request';
 
 const SESSION_BASE = 'admin/session';
 
@@ -41,19 +41,28 @@ export async function SessionController_findPage(
   appClientId: number,
   params?: SessionControllerFindPageParams,
 ): Promise<PageResult<Session>> {
-  const response = await http.get<unknown>(`${SESSION_BASE}/by-app-client/${appClientId}`, params);
+  const response = await http.get<unknown>(
+    `${SESSION_BASE}/by-app-client/${appClientId}`,
+    params,
+  );
   return normalizePageResult(response, normalizeSession);
 }
 
 /** 按 AppClient 创建 Session */
-export async function SessionController_create(appClientId: number, data: CreateSessionDto) {
-  const response = await http.post<unknown>(`${SESSION_BASE}/by-app-client/${appClientId}`, data);
+export async function SessionController_create(
+  appClientId: number,
+  data: CreateSessionDto,
+) {
+  const response = await http.post<unknown>(
+    `${SESSION_BASE}/by-app-client/${appClientId}`,
+    data,
+  );
   return normalizeSession(response);
 }
 
-/** 按 AppClient + Session ID 查询详情 */
-export async function SessionController_findOne(appClientId: number, id: string) {
-  const response = await http.get<unknown>(`${SESSION_BASE}/by-app-client/${appClientId}/${id}`);
+/** 按 Session ID 查询详情 */
+export async function SessionController_findOne(id: string) {
+  const response = await http.get<unknown>(`${SESSION_BASE}/${id}`);
   return normalizeSession(response);
 }
 
@@ -63,11 +72,16 @@ export async function SessionController_update(
   id: string,
   data: UpdateSessionDto,
 ) {
-  const response = await http.patch<unknown>(`${SESSION_BASE}/by-app-client/${appClientId}/${id}`, data);
+  const response = await http.patch<unknown>(
+    `${SESSION_BASE}/by-app-client/${appClientId}/${id}`,
+    data,
+  );
   return normalizeSession(response);
 }
 
 /** 按 AppClient + Session ID 删除 Session */
 export function SessionController_remove(appClientId: number, id: string) {
-  return http.delete<void>(`${SESSION_BASE}/by-app-client/${appClientId}/${id}`);
+  return http.delete<void>(
+    `${SESSION_BASE}/by-app-client/${appClientId}/${id}`,
+  );
 }

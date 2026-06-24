@@ -1,4 +1,9 @@
-import { FilterOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import ListScopeBar from '@/components/ListScopeBar';
+import {
+  FilterOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
 import { Collapse, Form } from 'antd';
 import type { FormInstance } from 'antd/es/form';
@@ -7,12 +12,21 @@ import { AppListSearchInput } from './fields';
 import styles from './index.module.scss';
 import { countActiveFilters } from './utils';
 
+export type AppQueryPanelLayout = 'default' | 'list';
+
 export type AppQueryPanelProps<T extends Record<string, unknown>> = {
   form: FormInstance<T>;
   appliedFilters: Record<string, unknown>;
   loading?: boolean;
   onSearch: (values: T) => void;
   onReset: () => void;
+  /**
+   * list：列表页标准布局（透明主行、与 AppListQueryToolbar 对齐）
+   * default：带边框的主搜索区
+   */
+  layout?: AppQueryPanelLayout;
+  /** 左侧展示项目切换器（layout=list 时常用） */
+  showProjectScope?: boolean;
   leadingContent?: ReactNode;
   plainMainBlock?: boolean;
   /** 主搜索字段名，默认 keyword */
@@ -33,8 +47,10 @@ function AppQueryPanelRoot<T extends Record<string, unknown>>({
   loading = false,
   onSearch,
   onReset,
+  layout = 'default',
+  showProjectScope = false,
   leadingContent,
-  plainMainBlock = false,
+  plainMainBlock,
   keywordName = 'keyword' as keyof T & string,
   keywordLabel,
   keywordPlaceholder,
@@ -45,6 +61,10 @@ function AppQueryPanelRoot<T extends Record<string, unknown>>({
 }: AppQueryPanelProps<T>) {
   const intl = useIntl();
   const activeCount = countActive(appliedFilters);
+  const isListLayout = layout === 'list';
+  const resolvedPlainMain = plainMainBlock ?? isListLayout;
+  const resolvedLeading =
+    leadingContent ?? (showProjectScope ? <ListScopeBar compact /> : undefined);
 
   return (
     <div className={`${styles.panel} ${className ?? ''}`.trim()}>
@@ -54,9 +74,13 @@ function AppQueryPanelRoot<T extends Record<string, unknown>>({
         requiredMark={false}
         onFinish={onSearch}
       >
-        <div className={`${styles.mainBlock} ${plainMainBlock ? styles.mainBlockPlain : ''}`.trim()}>
+        <div
+          className={`${styles.mainBlock} ${resolvedPlainMain ? styles.mainBlockPlain : ''}`.trim()}
+        >
           <div className={styles.main}>
-            {leadingContent ? <div className={styles.leading}>{leadingContent}</div> : null}
+            {resolvedLeading ? (
+              <div className={styles.leading}>{resolvedLeading}</div>
+            ) : null}
             <div className={styles.querySide}>
               <Form.Item
                 name={keywordName as never}
@@ -66,7 +90,9 @@ function AppQueryPanelRoot<T extends Record<string, unknown>>({
                 <AppListSearchInput
                   placeholder={
                     keywordPlaceholder ??
-                    intl.formatMessage({ id: 'appQueryPanel.keywordPlaceholder' })
+                    intl.formatMessage({
+                      id: 'appQueryPanel.keywordPlaceholder',
+                    })
                   }
                 />
               </Form.Item>
@@ -89,7 +115,9 @@ function AppQueryPanelRoot<T extends Record<string, unknown>>({
                       <FilterOutlined />
                       {intl.formatMessage({ id: 'appQueryPanel.advanced' })}
                       {activeCount > 0 ? (
-                        <span className={styles.activeBadge}>{activeCount}</span>
+                        <span className={styles.activeBadge}>
+                          {activeCount}
+                        </span>
                       ) : null}
                     </span>
                   ),

@@ -1,12 +1,12 @@
 .shell {
+  composes: app-command-bar from global;
   overflow: hidden;
-  border: 1px solid rgb(193 198 215 / 0.22);
-  border-radius: calc(var(--radius-ui) + 2px);
-  background: var(--color-surface-container-lowest);
-  box-shadow: 0 1px 2px rgb(25 28 30 / 0.04);
 }
 
 .table {
+  position: relative;
+  z-index: 2;
+
   :global(.ant-table) {
     background: transparent;
   }
@@ -16,11 +16,11 @@
   }
 
   :global(.ant-table-thead > tr > th) {
-    padding: 10px 14px !important;
-    border-bottom: 1px solid rgb(193 198 215 / 0.2) !important;
-    color: rgb(25 28 30 / 0.45) !important;
+    padding: 11px 14px !important;
+    border-bottom: 1px solid var(--color-border-subtle) !important;
+    color: var(--color-on-surface-variant) !important;
     font-size: 11px !important;
-    font-weight: 700 !important;
+    font-weight: 600 !important;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     background: var(--color-surface-container-low) !important;
@@ -32,10 +32,12 @@
 
   :global(.ant-table-tbody > tr > td) {
     padding: 12px 14px !important;
-    border-bottom: 1px solid rgb(193 198 215 / 0.12) !important;
+    border-bottom: 1px solid var(--color-border-subtle) !important;
     color: var(--color-on-surface);
     font-size: 13px;
     vertical-align: middle;
+    background: var(--color-surface-container-lowest);
+    transition: background 140ms ease;
   }
 
   :global(.ant-table-tbody > tr:last-child > td) {
@@ -47,37 +49,49 @@
   }
 
   :global(.ant-table-tbody > tr.clickableRow:hover > td) {
-    background: rgb(0 87 194 / 0.04) !important;
+    background: rgb(0 87 194 / 0.05) !important;
+  }
+
+  :global(.ant-table-tbody > tr.ant-table-row-selected > td) {
+    background: rgb(0 87 194 / 0.07) !important;
   }
 
   :global(.ant-table-placeholder > td) {
     border-bottom: none !important;
+    background: var(--color-surface-container-lowest) !important;
   }
 
   :global(.ant-pagination) {
     margin: 0 !important;
     padding: 12px 14px !important;
-    border-top: 1px solid rgb(193 198 215 / 0.14);
+    border-top: 1px solid var(--color-border-subtle);
+    background: linear-gradient(180deg, transparent 0%, rgb(0 87 194 / 0.02) 100%);
   }
 }
 
 .pagination {
   :global(.ant-pagination-item-active) {
-    border-color: rgb(0 87 194 / 0.35) !important;
-    background: rgb(0 87 194 / 0.08) !important;
+    border-color: rgb(0 87 194 / 0.4) !important;
+    background: var(--color-accent-muted) !important;
 
     a {
       color: var(--color-primary) !important;
+      font-weight: 600;
     }
+  }
+
+  :global(.ant-pagination-item:hover) {
+    border-color: var(--color-border-accent) !important;
   }
 }
 
 .muted {
-  color: rgb(25 28 30 / 0.32);
+  color: var(--color-on-surface-variant);
+  opacity: 0.65;
 }
 
 .description {
-  color: rgb(25 28 30 / 0.58);
+  color: var(--color-on-surface-variant);
   line-height: 1.45;
 }
 
@@ -94,7 +108,7 @@
 }
 
 .primaryMeta {
-  color: rgb(25 28 30 / 0.38);
+  color: rgb(0 87 194 / 0.55);
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
@@ -115,16 +129,17 @@
   display: inline-block;
   max-width: 100%;
   overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
   border-radius: 6px;
   padding: 2px 7px;
-  color: rgb(25 28 30 / 0.72);
+  color: var(--color-on-surface-variant);
   font-family: var(--font-mono);
   font-size: 11px;
   line-height: 1.45;
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: middle;
-  background: var(--color-surface-container-low);
+  background: var(--color-accent-subtle);
 }
 
 .method {
@@ -143,27 +158,32 @@
 
 .methodGet {
   color: #0d6b4d;
-  background: rgb(13 107 77 / 0.1);
+  background: rgb(13 107 77 / 0.12);
+  border: 1px solid rgb(13 107 77 / 0.15);
 }
 
 .methodPost {
   color: #0057c2;
-  background: rgb(0 87 194 / 0.1);
+  background: rgb(0 87 194 / 0.12);
+  border: 1px solid rgb(0 87 194 / 0.18);
 }
 
 .methodPut {
   color: #9e3d00;
   background: rgb(158 61 0 / 0.1);
+  border: 1px solid rgb(158 61 0 / 0.15);
 }
 
 .methodDelete {
   color: #b3261e;
   background: rgb(179 38 30 / 0.1);
+  border: 1px solid rgb(179 38 30 / 0.15);
 }
 
 .methodDefault {
-  color: rgb(25 28 30 / 0.55);
-  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-border-subtle);
 }
 
 .statusBadge {
@@ -186,19 +206,22 @@
 
 .statusActive {
   color: #0d6b4d;
-  background: rgb(13 107 77 / 0.1);
+  background: rgb(13 107 77 / 0.12);
+  border: 1px solid rgb(13 107 77 / 0.18);
 
   .statusDot {
     background: #0d6b4d;
+    box-shadow: 0 0 0 2px rgb(13 107 77 / 0.2);
   }
 }
 
 .statusInactive {
-  color: rgb(25 28 30 / 0.5);
-  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-border-subtle);
 
   .statusDot {
-    background: rgb(25 28 30 / 0.28);
+    background: var(--color-outline-variant);
   }
 }
 
@@ -209,35 +232,41 @@
   gap: 6px;
 }
 
+.actionsStart {
+  justify-content: flex-start;
+}
+
 .iconBtn {
   display: inline-flex;
   width: 28px;
   height: 28px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgb(193 198 215 / 0.32);
+  border: 1px solid var(--color-border-accent);
   border-radius: var(--radius-ui);
-  color: rgb(25 28 30 / 0.55);
+  color: var(--color-primary);
   font-size: 13px;
   text-decoration: none;
   background: var(--color-surface-container-lowest);
   transition:
     border-color 160ms ease,
     color 160ms ease,
-    background 160ms ease;
+    background 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .iconBtn:hover {
-  border-color: rgb(0 87 194 / 0.28);
+  border-color: rgb(0 87 194 / 0.35);
   color: var(--color-primary);
-  background: rgb(0 87 194 / 0.06);
+  background: var(--color-accent-subtle);
+  box-shadow: 0 2px 8px rgb(0 87 194 / 0.1);
 }
 
 .ghostBtn {
-  border: 1px solid rgb(193 198 215 / 0.32);
+  border: 1px solid var(--color-border-accent);
   border-radius: var(--radius-ui);
   padding: 4px 10px;
-  color: rgb(25 28 30 / 0.62);
+  color: var(--color-on-surface-variant);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.2;
@@ -250,26 +279,74 @@
 }
 
 .ghostBtn:hover:not(:disabled) {
-  border-color: rgb(193 198 215 / 0.55);
-  color: var(--color-on-surface);
-  background: var(--color-surface-container-low);
+  border-color: rgb(0 87 194 / 0.32);
+  color: var(--color-primary);
+  background: var(--color-accent-subtle);
 }
 
-.ghostBtn:disabled {
+.ghostBtn:disabled,
+.editBtn:disabled,
+.primaryBtn:disabled,
+.dangerBtn:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
 
-.dangerBtn {
-  border: 1px solid rgb(193 198 215 / 0.32);
+.editBtn {
+  border: 1px solid rgb(0 87 194 / 0.22);
   border-radius: var(--radius-ui);
   padding: 4px 10px;
-  color: rgb(25 28 30 / 0.62);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  background: var(--color-accent-subtle);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.editBtn:hover:not(:disabled) {
+  border-color: rgb(0 87 194 / 0.45);
+  color: #004a9e;
+  background: var(--color-accent-muted);
+}
+
+.primaryBtn {
+  border: 1px solid rgb(0 87 194 / 0.35);
+  border-radius: var(--radius-ui);
+  padding: 4px 10px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-container));
+  cursor: pointer;
+  transition:
+    filter 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  filter: brightness(1.05);
+  box-shadow: 0 2px 8px rgb(0 87 194 / 0.22);
+}
+
+.dangerBtn {
+  border: 1px solid rgb(179 38 30 / 0.28);
+  border-radius: var(--radius-ui);
+  padding: 4px 10px;
+  color: #b3261e;
   font-size: 12px;
   white-space: nowrap;
   font-weight: 600;
   line-height: 1.2;
-  background: var(--color-surface-container-lowest);
+  background: rgb(179 38 30 / 0.06);
   cursor: pointer;
   transition:
     border-color 160ms ease,
@@ -278,7 +355,7 @@
 }
 
 .dangerBtn:hover:not(:disabled) {
-  border-color: rgb(179 38 30 / 0.35);
-  color: #b3261e;
-  background: rgb(179 38 30 / 0.06);
+  border-color: rgb(179 38 30 / 0.5);
+  color: #8c1d18;
+  background: rgb(179 38 30 / 0.12);
 }

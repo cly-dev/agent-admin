@@ -1,7 +1,10 @@
-import { AppQueryInput, AppQueryInputNumber, AppQueryPanel } from '@/components/AppQueryPanel';
-import ListScopeBar from '@/components/ListScopeBar';
-import { Form } from 'antd';
+import {
+  AppQueryInput,
+  AppQueryInputNumber,
+  AppQueryPanel,
+} from '@/components/AppQueryPanel';
 import { useIntl } from '@umijs/max';
+import { Form } from 'antd';
 import {
   countActiveChatFilters,
   type ChatFilterFormValues,
@@ -24,7 +27,9 @@ const ChatFilter: React.FC<ChatFilterProps> = ({
   onReset,
 }) => {
   const intl = useIntl();
-  const numberPlaceholder = intl.formatMessage({ id: 'appQueryPanel.numberPlaceholder' });
+  const numberPlaceholder = intl.formatMessage({
+    id: 'appQueryPanel.numberPlaceholder',
+  });
 
   return (
     <AppQueryPanel<ChatFilterFormValues>
@@ -33,24 +38,46 @@ const ChatFilter: React.FC<ChatFilterProps> = ({
       loading={loading}
       onSearch={onSearch}
       onReset={onReset}
-      plainMainBlock
-      leadingContent={<ListScopeBar compact />}
-      keywordPlaceholder={intl.formatMessage({ id: 'chat.filter.keywordPlaceholder' })}
+      layout="list"
+      showProjectScope
+      keywordPlaceholder={intl.formatMessage({
+        id: 'chat.filter.keywordPlaceholder',
+      })}
       keywordClassName="max-w-md"
       countActive={countActiveChatFilters}
       advancedContent={
         <AppQueryPanel.Grid>
-          <Form.Item name="id" label={intl.formatMessage({ id: 'chat.column.id' })}>
-            <AppQueryInput placeholder={intl.formatMessage({ id: 'chat.filter.idPlaceholder' })} />
+          <Form.Item
+            name="id"
+            label={intl.formatMessage({ id: 'chat.column.id' })}
+          >
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'chat.filter.idPlaceholder',
+              })}
+            />
           </Form.Item>
-          <Form.Item name="userId" label={intl.formatMessage({ id: 'chat.column.user' })}>
+          <Form.Item
+            name="userId"
+            label={intl.formatMessage({ id: 'chat.column.user' })}
+          >
             <AppQueryInputNumber min={1} placeholder={numberPlaceholder} />
           </Form.Item>
-          <Form.Item name="agentId" label={intl.formatMessage({ id: 'chat.column.agent' })}>
+          <Form.Item
+            name="agentId"
+            label={intl.formatMessage({ id: 'chat.column.agent' })}
+          >
             <AppQueryInputNumber min={1} placeholder={numberPlaceholder} />
           </Form.Item>
-          <Form.Item name="title" label={intl.formatMessage({ id: 'chat.column.project' })}>
-            <AppQueryInput placeholder={intl.formatMessage({ id: 'chat.filter.titlePlaceholder' })} />
+          <Form.Item
+            name="title"
+            label={intl.formatMessage({ id: 'chat.column.project' })}
+          >
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'chat.filter.titlePlaceholder',
+              })}
+            />
           </Form.Item>
         </AppQueryPanel.Grid>
       }

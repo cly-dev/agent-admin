@@ -1,9 +1,9 @@
-import { DownOutlined } from '@ant-design/icons';
 import { useProjectRoute } from '@/hooks/useProjectRoute';
 import { getPageKeyFromPath, type AppPageKey } from '@/utils/project-path';
+import { DownOutlined } from '@ant-design/icons';
 import { useIntl, useLocation } from '@umijs/max';
-import { Dropdown, Spin } from 'antd';
 import type { MenuProps } from 'antd';
+import { Dropdown, Spin } from 'antd';
 import { useMemo } from 'react';
 
 const PAGE_MENU_IDS: Record<AppPageKey, string> = {
@@ -11,7 +11,6 @@ const PAGE_MENU_IDS: Record<AppPageKey, string> = {
   project: 'menu.project',
   agent: 'menu.agent',
   tool: 'menu.tool',
-  integration: 'menu.integration',
   chat: 'menu.chat',
   user: 'menu.user',
   setting: 'menu.setting',
@@ -19,23 +18,29 @@ const PAGE_MENU_IDS: Record<AppPageKey, string> = {
 
 type ProjectSwitcherProps = {
   showPageLabel?: boolean;
-  minimal?: boolean;
 };
 
-const ProjectSwitcher: React.FC<ProjectSwitcherProps> = ({ showPageLabel = true, minimal = false }) => {
+const ProjectSwitcher: React.FC<ProjectSwitcherProps> = ({
+  showPageLabel = true,
+}) => {
   const intl = useIntl();
   const { pathname } = useLocation();
-  const { currentProject, projects, loading, switchProject } = useProjectRoute();
+  const { currentProject, projects, loading, switchProject } =
+    useProjectRoute();
 
   const pageKey = getPageKeyFromPath(pathname);
-  const currentPageLabel = pageKey ? intl.formatMessage({ id: PAGE_MENU_IDS[pageKey] }) : '';
+  const currentPageLabel = pageKey
+    ? intl.formatMessage({ id: PAGE_MENU_IDS[pageKey] })
+    : '';
 
   const menuItems = useMemo<MenuProps['items']>(() => {
     const projectItems: MenuProps['items'] = projects.map((project) => ({
       key: String(project.id),
       label: (
         <div className="flex min-w-[220px] items-center justify-between gap-3 py-0.5">
-          <span className="truncate text-sm font-medium text-on-surface">{project.name}</span>
+          <span className="truncate text-sm font-medium text-on-surface">
+            {project.name}
+          </span>
           {project.isActive ? (
             <span className="app-status-active shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
               {intl.formatMessage({ id: 'status.active' })}
@@ -68,9 +73,7 @@ const ProjectSwitcher: React.FC<ProjectSwitcherProps> = ({ showPageLabel = true,
           className={`flex max-w-full items-center gap-2 text-left transition-colors ${
             showPageLabel
               ? 'rounded-[--radius-ui] px-2 py-1.5 hover:bg-surface-container-low'
-              : minimal
-                ? 'rounded-md px-1.5 py-1.5 hover:bg-transparent'
-                : 'rounded-md border border-surface-container-high bg-surface px-2.5 py-1.5 shadow-sm hover:border-primary/30 hover:bg-surface-container-low'
+              : 'rounded-md border border-surface-container-high bg-surface px-2.5 py-1.5 shadow-sm hover:border-primary/30 hover:bg-surface-container-low'
           }`}
         >
           {showPageLabel ? (
@@ -84,15 +87,16 @@ const ProjectSwitcher: React.FC<ProjectSwitcherProps> = ({ showPageLabel = true,
           <Spin spinning={loading && !currentProject} size="small">
             <span
               className={`truncate text-sm font-semibold ${
-                showPageLabel ? 'text-on-surface' : minimal ? 'text-on-surface/78' : 'text-on-surface/88'
+                showPageLabel ? 'text-on-surface' : 'text-on-surface/88'
               }`}
             >
-              {currentProject?.name ?? intl.formatMessage({ id: 'project.select' })}
+              {currentProject?.name ??
+                intl.formatMessage({ id: 'project.select' })}
             </span>
           </Spin>
           <DownOutlined
             className={`shrink-0 text-[10px] ${
-              showPageLabel ? 'text-on-surface/40' : minimal ? 'text-on-surface/45' : 'text-on-surface/55'
+              showPageLabel ? 'text-on-surface/40' : 'text-on-surface/55'
             }`}
           />
         </button>

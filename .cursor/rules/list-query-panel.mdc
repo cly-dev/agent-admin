@@ -10,9 +10,11 @@ alwaysApply: false
 
 ## 必用组件
 
-- 筛选：`AppQueryPanel`（`src/components/AppQueryPanel/`）
-  - 主行：keyword（输入框使用 `AppListSearchInput`）
+- 顶栏：`ListPageHeader`（`src/components/ListPageHeader/`）— 主标题、说明、可选 `meta` 与 `actions`
+- 筛选（带高级条件）：`AppQueryPanel` + `layout="list"` + 按需 `showProjectScope`
+  - 主行：keyword（`AppListSearchInput`）
   - 高级：`advancedContent` + `AppQueryPanel.Grid`（Collapse 展开）
+- 筛选（仅关键词）：`AppListQueryToolbar` + `AppListSearchInput`，项目页加 `showProjectScope`
 - 表格：`AppTable`（`src/components/AppTable/`）
 - 搜索输入框：`AppListSearchInput`（`src/components/AppQueryPanel/fields.tsx`，Tool 页面样式基准）
 
@@ -27,16 +29,30 @@ pages/Foo/
   index.tsx
 ```
 
+## 详情页顶栏
+
+- 使用 `AppDetailHeader` 或 `AppDetailPage`（`src/components/AppDetailHeader/`）
+- 左侧：`onBack` → 返回列表（文案 `common.backToList`）
+- 右侧：可编辑页传 `onSave` → 保存（文案 `common.save`）；只读详情不传 `onSave`
+- 见 `docs/ui-list-query-convention.md` 详情页一节
+
 ## 数据流
 
 1. `onSearch` → `normalizeXxxFilter` → 更新 `appliedFilters` → `load(page=1)`
 2. `onReset` → `form.resetFields()` → 清空 filters → `load(page=1)`
 3. 分页 `onChange` → `load(page, pageSize, appliedFilters)`
 
+## 行内操作按钮
+
+- 使用 `AppTableButton` + `variant`：`neutral`（查看）、`edit`（编辑/配置）、`primary`（发布）、`danger`（删除）
+- 详情抽屉工具栏与表格行内保持一致，套 `AppTableActions`
+- 详见 `docs/ui-list-query-convention.md` 中「行内操作按钮颜色」一节
+
 ## 禁止
 
 - `ProTable` + `search` + `request` 作为页面级查询方案
 - 在页面 scss 重复定义筛选面板样式（使用 AppQueryPanel 自带样式）
 - 手写列表搜索框（如 `SearchOutlined + input`）；必须复用 `AppListSearchInput`
+- 行内操作用纯文字链接冒充按钮（`text-primary` / `text-error`）
 
-参考：`AgentBoundToolsFilter`、`AgentRunFilter`、`useAgentRunList`。
+参考：`AgentBoundToolsFilter`、`AgentRunFilter`、`useAgentRunList`、`PromptTemplateTable`。

@@ -1,4 +1,5 @@
 import type { IntegrationAuthMode } from '@/types/integration';
+import type { AgentMetadata } from '@/types/tool-agent-metadata';
 
 export type ToolRiskLevel = 'L1' | 'L2' | 'L3';
 export type ToolHttpMethod = 'Get' | 'Post' | 'Put' | 'Delete';
@@ -48,6 +49,8 @@ export interface Tool {
   inputSchema?: ToolInputSchemaPayload;
   outputSchema?: object;
   responseProfile?: ToolResponseProfile;
+  /** Agent 选工具元数据 */
+  agentMetadata?: AgentMetadata | null;
   integration?: ToolIntegrationRef;
   toolCategory?: ToolCategoryRef;
   tags?: string[];
@@ -106,6 +109,7 @@ export interface CreateToolDto {
    * @example 10000
    */
   timeout?: number;
+  agentMetadata?: AgentMetadata | null;
 }
 
 export interface UpdateToolDto {
@@ -123,6 +127,7 @@ export interface UpdateToolDto {
   toolCategoryId?: number;
   isActive?: boolean;
   timeout?: number;
+  agentMetadata?: AgentMetadata | null;
 }
 
 export interface BatchSetToolsActiveDto {

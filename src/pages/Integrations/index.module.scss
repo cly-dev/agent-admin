@@ -8,7 +8,7 @@
   flex: 1;
   flex-direction: column;
   padding: 12px 12px 16px;
-  background: var(--color-surface);
+  background: transparent;
 }
 
 @media (min-width: 768px) {
@@ -32,36 +32,6 @@
 @media (min-width: 768px) {
   .integrationPageCard {
     padding: 24px 28px;
-  }
-}
-
-.integrationPageHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-@media (min-width: 1024px) {
-  .integrationPageHeader {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-}
-
-.integrationPageSearch {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-@media (min-width: 640px) {
-  .integrationPageSearch {
-    flex-direction: row;
-    align-items: center;
-    // justify-content: space-between;
   }
 }
 

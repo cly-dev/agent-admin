@@ -5,15 +5,20 @@ export const APP_PAGE_KEYS = [
   'project',
   'agent',
   'tool',
-  'integration',
   'chat',
   'user',
   'setting',
 ] as const;
 
+/** 入口路由 `/integration/:projectId` 等旧路径映射到实际页面 */
+const ENTRY_PATH_ALIASES: Record<string, string> = {
+  integration: '/tool/integration',
+};
+
 export type AppPageKey = (typeof APP_PAGE_KEYS)[number];
 
-const ENTRY_PATH_REGEX = /^\/(dashboard|project|agent|tool|integration|chat|user|setting)\/(\d+)$/;
+const ENTRY_PATH_REGEX =
+  /^\/(dashboard|project|agent|tool|integration|chat|user|setting)\/(\d+)$/;
 
 export function isAppPageKey(value: string): value is AppPageKey {
   return (APP_PAGE_KEYS as readonly string[]).includes(value);
@@ -37,12 +42,23 @@ export function getCleanPathFromEntry(pathname: string): string | null {
     return null;
   }
 
-  return `/${match[1]}`;
+  const pageKey = match[1];
+  if (pageKey === 'chat') {
+    return '/chat/list';
+  }
+  return ENTRY_PATH_ALIASES[pageKey] ?? `/${pageKey}`;
 }
 
 export function getPageKeyFromPath(pathname: string): AppPageKey {
   if (pathname.startsWith('/chat/detail/')) {
     return 'chat';
+  }
+
+  if (
+    pathname.startsWith('/tool/integration') ||
+    pathname.startsWith('/integration')
+  ) {
+    return 'tool';
   }
 
   const segments = pathname.split('/').filter(Boolean);
@@ -86,7 +102,10 @@ export function buildPagePath(pageKey: string, subPath?: string): string {
 }
 
 /** 带来 projectId 的入口链接，仅用于分享/外部跳转 */
-export function buildEntryPath(pageKey: string, projectId: string | number): string {
+export function buildEntryPath(
+  pageKey: string,
+  projectId: string | number,
+): string {
   return `/${pageKey}/${projectId}`;
 }
 

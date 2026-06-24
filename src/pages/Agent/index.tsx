@@ -1,6 +1,9 @@
+import {
+  AppListQueryToolbar,
+  AppListSearchInput,
+} from '@/components/AppQueryPanel';
 import ContentEmpty from '@/components/ContentEmpty';
-import { AppListSearchInput } from '@/components/AppQueryPanel';
-import ListScopeBar from '@/components/ListScopeBar';
+import ListPageHeader from '@/components/ListPageHeader';
 import ListPagination from '@/components/ListPagination';
 import { PlusOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
@@ -20,7 +23,7 @@ const AgentPage: React.FC = () => {
     page,
     pageSize,
     total,
-   
+
     summaryText,
     showEmpty,
     showSearchEmpty,
@@ -36,32 +39,25 @@ const AgentPage: React.FC = () => {
     <PageContainer ghost className={styles.agentPage}>
       <div className={styles.agentPageShell}>
         <div className={styles.agentPageCard}>
-          <header className={styles.agentPageHeader}>
-            <div className="min-w-0 flex-1">
-              <h1 className={styles.agentPageTitle}>
-                {intl.formatMessage({ id: 'agent.title' })}
-              </h1>
-              {summaryText ? (
-                <p className={styles.agentPageSummary}>{summaryText}</p>
-              ) : (
-                <p className={styles.agentPageSummaryMuted}>
-                  {intl.formatMessage({ id: 'agent.subtitle' })}
-                </p>
-              )}
-            </div>
-            <button
-              type="button"
-              className="app-button-primary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold shadow-sm transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!projectId}
-              onClick={openCreate}
-            >
-              <PlusOutlined />
-              {intl.formatMessage({ id: 'agent.add' })}
-            </button>
-          </header>
+          <ListPageHeader
+            title={intl.formatMessage({ id: 'agent.title' })}
+            description={
+              summaryText ?? intl.formatMessage({ id: 'agent.subtitle' })
+            }
+            actions={
+              <button
+                type="button"
+                className="app-button-primary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold shadow-sm transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!projectId}
+                onClick={openCreate}
+              >
+                <PlusOutlined />
+                {intl.formatMessage({ id: 'agent.add' })}
+              </button>
+            }
+          />
 
-          <div className={styles.agentPageToolbar}>
-            <ListScopeBar compact />
+          <AppListQueryToolbar showProjectScope>
             <AppListSearchInput
               className="max-w-md"
               placeholder={intl.formatMessage({ id: 'agent.search' })}
@@ -69,19 +65,25 @@ const AgentPage: React.FC = () => {
               disabled={!projectId}
               onChange={(event) => setKeyword(event.target.value)}
             />
-          </div>
+          </AppListQueryToolbar>
 
           <Spin spinning={loading}>
             <div className={styles.agentPageBody}>
               {!projectId ? (
                 <ContentEmpty
-                  title={intl.formatMessage({ id: 'agent.empty.noProject.title' })}
-                  description={intl.formatMessage({ id: 'agent.empty.noProject.desc' })}
+                  title={intl.formatMessage({
+                    id: 'agent.empty.noProject.title',
+                  })}
+                  description={intl.formatMessage({
+                    id: 'agent.empty.noProject.desc',
+                  })}
                 />
               ) : showEmpty ? (
                 <ContentEmpty
                   title={intl.formatMessage({ id: 'agent.empty.none.title' })}
-                  description={intl.formatMessage({ id: 'agent.empty.none.desc' })}
+                  description={intl.formatMessage({
+                    id: 'agent.empty.none.desc',
+                  })}
                   action={
                     <button
                       type="button"
@@ -96,7 +98,9 @@ const AgentPage: React.FC = () => {
               ) : showSearchEmpty ? (
                 <ContentEmpty
                   title={intl.formatMessage({ id: 'agent.empty.search.title' })}
-                  description={intl.formatMessage({ id: 'agent.empty.search.desc' })}
+                  description={intl.formatMessage({
+                    id: 'agent.empty.search.desc',
+                  })}
                   action={
                     <button
                       type="button"

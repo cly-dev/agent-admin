@@ -1,3 +1,5 @@
+import type { AgentHostToolRef, HostToolSummary } from '@/types/host-tool';
+
 export interface Agent {
   id: number;
   appClientId: number;
@@ -8,9 +10,14 @@ export interface Agent {
   maxSteps?: number;
   enableToolCall?: boolean;
   config?: Record<string, unknown>;
+  hostToolCount?: number;
+  hostTools?: HostToolSummary[];
+  agentHostTools?: AgentHostToolRef[];
   createdAt?: string;
   updatedAt?: string;
 }
+
+export type AgentDetail = Agent;
 
 /** Agent 与 Tool 的绑定记录（列表项） */
 export interface AgentAllowedToolRef {
@@ -82,7 +89,14 @@ export interface BindAgentToolsDto {
 export interface AgentControllerGetAgentToolsParams {
   page?: number;
   pageSize?: number;
-  orderBy?: 'toolId' | 'id' | 'name' | 'createdAt' | 'updatedAt' | 'riskLevel' | 'path';
+  orderBy?:
+    | 'toolId'
+    | 'id'
+    | 'name'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'riskLevel'
+    | 'path';
   order?: 'asc' | 'desc';
   /** 绑定记录 ID */
   id?: number;

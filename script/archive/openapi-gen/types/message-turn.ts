@@ -1,9 +1,9 @@
 // AUTO-GENERATED — DO NOT EDIT MANUALLY
 // Run: npm run gen:api to regenerate
-// Output: src/types/api-gen/ — merge into src/types/ manually when ready
+// Output: script/archive/openapi-gen/types/ — merge into src/types/ manually when ready
 // Source: http://localhost:3030/docs-json
 
-export interface SessionTurnControllerFindPageBySessionIdParams {
+export interface MessageTurnControllerFindPageBySessionIdParams {
   /**
    * 页码，从 1 开始
    * @default 1
@@ -16,8 +16,10 @@ export interface SessionTurnControllerFindPageBySessionIdParams {
    * @example 20
    */
   pageSize?: number;
-  /** SessionTurn ID（精确） */
+  /** MessageTurn ID（精确） */
   id?: number;
+  /** 触发 Message ID（精确） */
+  messageId?: number;
   /** User ID（精确） */
   userId?: number;
   /** AppClient ID（精确） */
@@ -25,20 +27,29 @@ export interface SessionTurnControllerFindPageBySessionIdParams {
   /** Primary Agent ID（精确） */
   primaryAgentId?: number;
   /** 运行状态 */
-  status?: "running" | "success" | "failed";
+  status?: 'running' | 'success' | 'failed';
   /** 用户输入（模糊，忽略大小写） */
   userInput?: string;
   /** 关键词：匹配 userInput / finalOutput */
   keyword?: string;
+  /** 工具 low 质量最小次数（基于 toolsUsed.qualityCounts.low） */
+  minLowQualityCount?: number;
   /**
    * 排序字段
    * @default "id"
    */
-  orderBy?: "id" | "createdAt" | "updatedAt" | "startedAt" | "finishedAt" | "durationMs" | "totalTokens";
+  orderBy?:
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'startedAt'
+    | 'finishedAt'
+    | 'durationMs'
+    | 'totalTokens';
   /**
    * 排序方向
    * @default "desc"
    */
-  order?: "asc" | "desc";
+  order?: 'asc' | 'desc';
   sessionId: string;
 }

@@ -1,11 +1,12 @@
+import ListPageHeader from '@/components/ListPageHeader';
 import { PageContainer } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
-import { Form, InputNumber, Modal } from 'antd';
+import { Form, Input, Modal } from 'antd';
 import { useEffect } from 'react';
 import UserFilter from './components/UserFilter';
 import UserTable from './components/UserTable';
 import styles from './index.module.scss';
-import { useUserAppList } from './useUserAppList';
+import { useUserList } from './useUserList';
 
 const UserPage: React.FC = () => {
   const intl = useIntl();
@@ -20,7 +21,6 @@ const UserPage: React.FC = () => {
     loading,
     submitting,
     editorOpen,
-    editing,
     loadAll,
     handleFilterSearch,
     handleFilterReset,
@@ -29,7 +29,7 @@ const UserPage: React.FC = () => {
     closeEditor,
     submitEditor,
     remove,
-  } = useUserAppList();
+  } = useUserList();
 
   useEffect(() => {
     void loadAll();
@@ -39,19 +39,19 @@ const UserPage: React.FC = () => {
     <PageContainer ghost className={styles.userPage}>
       <div className={styles.userPageShell}>
         <div className={styles.userPageCard}>
-          <header className={styles.userPageHeader}>
-            <div>
-              <h1 className={styles.userPageTitle}>{intl.formatMessage({ id: 'user.title' })}</h1>
-              <p className={styles.userPageSubtitle}>{intl.formatMessage({ id: 'user.subtitle' })}</p>
-            </div>
-            <button
-              type="button"
-              className="app-button-primary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold"
-              onClick={openCreate}
-            >
-              {intl.formatMessage({ id: 'user.add' })}
-            </button>
-          </header>
+          <ListPageHeader
+            title={intl.formatMessage({ id: 'user.title' })}
+            description={intl.formatMessage({ id: 'user.subtitle' })}
+            actions={
+              <button
+                type="button"
+                className="app-button-primary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold shadow-sm transition-transform active:scale-[0.98]"
+                onClick={openCreate}
+              >
+                {intl.formatMessage({ id: 'user.add' })}
+              </button>
+            }
+          />
 
           <UserFilter
             form={filterForm}
@@ -74,37 +74,65 @@ const UserPage: React.FC = () => {
       </div>
 
       <Modal
-        title={
-          editing
-            ? intl.formatMessage({ id: 'user.editTitle' })
-            : intl.formatMessage({ id: 'user.createTitle' })
-        }
+        title={intl.formatMessage({ id: 'user.createTitle' })}
         open={editorOpen}
         onCancel={closeEditor}
         onOk={() => void submitEditor()}
         confirmLoading={submitting}
+        destroyOnClose
       >
         <Form form={editorForm} layout="vertical" requiredMark={false}>
           <Form.Item
-            name="userId"
-            label={intl.formatMessage({ id: 'user.column.userId' })}
-            rules={[{ required: true, message: intl.formatMessage({ id: 'user.form.userIdRequired' }) }]}
+            name="email"
+            label={intl.formatMessage({ id: 'user.column.email' })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({ id: 'user.form.emailRequired' }),
+              },
+              {
+                type: 'email',
+                message: intl.formatMessage({ id: 'user.form.emailInvalid' }),
+              },
+            ]}
           >
-            <InputNumber className="app-input w-full" controls={false} min={1} />
+            <Input
+              className="app-input"
+              placeholder={intl.formatMessage({
+                id: 'user.form.emailPlaceholder',
+              })}
+            />
           </Form.Item>
           <Form.Item
-            name="appId"
-            label={intl.formatMessage({ id: 'user.column.appId' })}
-            rules={[{ required: true, message: intl.formatMessage({ id: 'user.form.appIdRequired' }) }]}
+            name="username"
+            label={intl.formatMessage({ id: 'user.column.username' })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: 'user.form.usernameRequired',
+                }),
+              },
+            ]}
           >
-            <InputNumber className="app-input w-full" controls={false} min={1} />
+            <Input
+              className="app-input"
+              placeholder={intl.formatMessage({
+                id: 'user.form.usernamePlaceholder',
+              })}
+            />
           </Form.Item>
           <Form.Item
-            name="roleId"
-            label={intl.formatMessage({ id: 'user.column.roleId' })}
-            rules={[{ required: true, message: intl.formatMessage({ id: 'user.form.roleIdRequired' }) }]}
+            name="employeeId"
+            label={intl.formatMessage({ id: 'user.column.employeeId' })}
+            extra={intl.formatMessage({ id: 'user.form.employeeIdHint' })}
           >
-            <InputNumber className="app-input w-full" controls={false} min={1} />
+            <Input
+              className="app-input"
+              placeholder={intl.formatMessage({
+                id: 'user.form.employeeIdPlaceholder',
+              })}
+            />
           </Form.Item>
         </Form>
       </Modal>

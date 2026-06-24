@@ -11,5 +11,6 @@ export {
   AppTableMuted,
   AppTablePrimaryCell,
   AppTableStatusCell,
+  type AppTableButtonVariant,
 } from './cells';
 export { shouldIgnoreTableRowClick } from './utils';

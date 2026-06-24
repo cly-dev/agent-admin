@@ -1,17 +1,21 @@
-import { AppQueryInputNumber, AppQueryPanel } from '@/components/AppQueryPanel';
-import { Form } from 'antd';
-import { useIntl } from '@umijs/max';
 import {
-  countActiveUserAppFilters,
-  type UserAppFilterFormValues,
-  type UserAppFilterValues,
-} from '../userAppFilter';
+  AppQueryInput,
+  AppQueryInputNumber,
+  AppQueryPanel,
+} from '@/components/AppQueryPanel';
+import { useIntl } from '@umijs/max';
+import { Form } from 'antd';
+import {
+  countActiveUserFilters,
+  type UserFilterFormValues,
+  type UserFilterValues,
+} from '../userFilter';
 
 type UserFilterProps = {
-  form: ReturnType<typeof Form.useForm<UserAppFilterFormValues>>[0];
-  appliedFilters: UserAppFilterValues;
+  form: ReturnType<typeof Form.useForm<UserFilterFormValues>>[0];
+  appliedFilters: UserFilterValues;
   loading?: boolean;
-  onSearch: (values: UserAppFilterFormValues) => void;
+  onSearch: (values: UserFilterFormValues) => void;
   onReset: () => void;
 };
 
@@ -25,39 +29,59 @@ const UserFilter: React.FC<UserFilterProps> = ({
   const intl = useIntl();
 
   return (
-    <AppQueryPanel<UserAppFilterFormValues>
+    <AppQueryPanel<UserFilterFormValues>
       form={form}
       appliedFilters={appliedFilters as Record<string, unknown>}
       loading={loading}
       onSearch={onSearch}
       onReset={onReset}
-      keywordPlaceholder={intl.formatMessage({ id: 'user.filter.keywordPlaceholder' })}
+      layout="list"
+      keywordPlaceholder={intl.formatMessage({
+        id: 'user.filter.keywordPlaceholder',
+      })}
       keywordClassName="max-w-md"
-      countActive={countActiveUserAppFilters}
+      countActive={countActiveUserFilters}
       advancedContent={
         <AppQueryPanel.Grid>
-          <Form.Item name="id" label="ID">
+          <Form.Item
+            name="id"
+            label={intl.formatMessage({ id: 'user.column.id' })}
+          >
             <AppQueryInputNumber
               min={1}
-              placeholder={intl.formatMessage({ id: 'appQueryPanel.numberPlaceholder' })}
+              placeholder={intl.formatMessage({
+                id: 'appQueryPanel.numberPlaceholder',
+              })}
             />
           </Form.Item>
-          <Form.Item name="userId" label={intl.formatMessage({ id: 'user.column.userId' })}>
-            <AppQueryInputNumber
-              min={1}
-              placeholder={intl.formatMessage({ id: 'appQueryPanel.numberPlaceholder' })}
+          <Form.Item
+            name="email"
+            label={intl.formatMessage({ id: 'user.column.email' })}
+          >
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'user.filter.emailPlaceholder',
+              })}
             />
           </Form.Item>
-          <Form.Item name="appId" label={intl.formatMessage({ id: 'user.column.appId' })}>
-            <AppQueryInputNumber
-              min={1}
-              placeholder={intl.formatMessage({ id: 'appQueryPanel.numberPlaceholder' })}
+          <Form.Item
+            name="username"
+            label={intl.formatMessage({ id: 'user.column.username' })}
+          >
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'user.filter.usernamePlaceholder',
+              })}
             />
           </Form.Item>
-          <Form.Item name="roleId" label={intl.formatMessage({ id: 'user.column.roleId' })}>
-            <AppQueryInputNumber
-              min={1}
-              placeholder={intl.formatMessage({ id: 'appQueryPanel.numberPlaceholder' })}
+          <Form.Item
+            name="employeeId"
+            label={intl.formatMessage({ id: 'user.column.employeeId' })}
+          >
+            <AppQueryInput
+              placeholder={intl.formatMessage({
+                id: 'user.filter.employeeIdPlaceholder',
+              })}
             />
           </Form.Item>
         </AppQueryPanel.Grid>

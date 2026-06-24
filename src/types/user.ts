@@ -1,3 +1,5 @@
+export type UserStatus = 'ACTIVE' | 'DISABLED';
+
 export interface CreateUserDto {
   /**
    * 用户邮箱（用于登录）
@@ -18,6 +20,8 @@ export interface CreateUserDto {
   userType?: 'C_END' | 'B_END';
   /** 业务角色（用于 Tool 子集授权） */
   userRole?: 'C_END_USER' | 'CUSTOMER_SERVICE' | 'OPERATOR';
+  /** RBAC 角色 ID（权限设置中的角色） */
+  roleId?: number;
 }
 
 export interface UpdateUserDto {
@@ -40,6 +44,10 @@ export interface UpdateUserDto {
   userType?: 'C_END' | 'B_END';
   /** 业务角色（用于 Tool 子集授权） */
   userRole?: 'C_END_USER' | 'CUSTOMER_SERVICE' | 'OPERATOR';
+  /** RBAC 角色 ID */
+  roleId?: number | null;
+  /** 用户状态 */
+  status?: UserStatus;
 }
 
 export interface User {
@@ -51,7 +59,7 @@ export interface User {
   userRole?: 'C_END_USER' | 'CUSTOMER_SERVICE' | 'OPERATOR';
   role?: string;
   roleId?: number | null;
-  isActive?: boolean;
+  status?: UserStatus;
   createdAt?: string;
   updatedAt?: string;
 }

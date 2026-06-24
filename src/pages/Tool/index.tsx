@@ -1,6 +1,9 @@
+import {
+  AppListQueryToolbar,
+  AppListSearchInput,
+} from '@/components/AppQueryPanel';
 import ContentEmpty from '@/components/ContentEmpty';
-import { AppListSearchInput } from '@/components/AppQueryPanel';
-import ListScopeBar from '@/components/ListScopeBar';
+import ListPageHeader from '@/components/ListPageHeader';
 import ListPagination from '@/components/ListPagination';
 import { CloudDownloadOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
@@ -56,44 +59,35 @@ const ToolPage: React.FC = () => {
     <PageContainer ghost className={styles.toolPage}>
       <div className={styles.toolPageShell}>
         <div className={styles.toolPageCard}>
-          <header className={styles.toolPageHeader}>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-2xl font-bold tracking-[-0.02em] text-on-surface">
-                {intl.formatMessage({ id: 'tool.title' })}
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-on-surface/60">
-                {intl.formatMessage({ id: 'tool.subtitle' })}
-                {summaryText ? (
-                  <span className="mt-1 block text-xs font-medium text-on-surface/45">
-                    {summaryText}
-                  </span>
-                ) : null}
-              </p>
-            </div>
-            <div className={styles.toolPageHeaderActions}>
-              <button
-                type="button"
-                className="app-button-secondary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!projectId}
-                onClick={openImportModal}
-              >
-                <CloudDownloadOutlined />
-                {intl.formatMessage({ id: 'tool.import.action' })}
-              </button>
-              <button
-                type="button"
-                className="app-button-primary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold shadow-sm transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!projectId}
-                onClick={openCreate}
-              >
-                <PlusOutlined />
-                {intl.formatMessage({ id: 'tool.add' })}
-              </button>
-            </div>
-          </header>
+          <ListPageHeader
+            title={intl.formatMessage({ id: 'tool.title' })}
+            description={intl.formatMessage({ id: 'tool.subtitle' })}
+            meta={summaryText || undefined}
+            actions={
+              <>
+                <button
+                  type="button"
+                  className="app-button-secondary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!projectId}
+                  onClick={openImportModal}
+                >
+                  <CloudDownloadOutlined />
+                  {intl.formatMessage({ id: 'tool.import.action' })}
+                </button>
+                <button
+                  type="button"
+                  className="app-button-primary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold shadow-sm transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!projectId}
+                  onClick={openCreate}
+                >
+                  <PlusOutlined />
+                  {intl.formatMessage({ id: 'tool.add' })}
+                </button>
+              </>
+            }
+          />
 
-          <div className={styles.toolPageToolbar}>
-            <ListScopeBar compact />
+          <AppListQueryToolbar showProjectScope>
             <AppListSearchInput
               className="max-w-md"
               placeholder={intl.formatMessage({ id: 'tool.search' })}
@@ -101,7 +95,7 @@ const ToolPage: React.FC = () => {
               disabled={!projectId}
               onChange={(event) => setKeyword(event.target.value)}
             />
-          </div>
+          </AppListQueryToolbar>
 
           {showBatchBar ? (
             <div className={styles.toolBatchBar}>
@@ -109,7 +103,9 @@ const ToolPage: React.FC = () => {
                 checked={isAllCurrentPageSelected}
                 indeterminate={isSelectionIndeterminate}
                 disabled={loading || batchSubmitting || tools.length === 0}
-                onChange={(event) => toggleSelectAllCurrentPage(event.target.checked)}
+                onChange={(event) =>
+                  toggleSelectAllCurrentPage(event.target.checked)
+                }
               >
                 {intl.formatMessage({ id: 'tool.batch.selectAllPage' })}
               </Checkbox>
@@ -118,7 +114,10 @@ const ToolPage: React.FC = () => {
                 <>
                   <span className={styles.toolBatchDivider} aria-hidden />
                   <span className={styles.toolBatchCount}>
-                    {intl.formatMessage({ id: 'tool.batch.selected' }, { count: selectedCount })}
+                    {intl.formatMessage(
+                      { id: 'tool.batch.selected' },
+                      { count: selectedCount },
+                    )}
                   </span>
                   <div className={styles.toolBatchActions}>
                     <button
@@ -155,8 +154,12 @@ const ToolPage: React.FC = () => {
             <div className={styles.toolPageBody}>
               {!projectId ? (
                 <ContentEmpty
-                  title={intl.formatMessage({ id: 'tool.empty.noProject.title' })}
-                  description={intl.formatMessage({ id: 'tool.empty.noProject.desc' })}
+                  title={intl.formatMessage({
+                    id: 'tool.empty.noProject.title',
+                  })}
+                  description={intl.formatMessage({
+                    id: 'tool.empty.noProject.desc',
+                  })}
                 />
               ) : showEmpty ? (
                 <ContentEmpty
@@ -199,7 +202,9 @@ const ToolPage: React.FC = () => {
                         key={tool.id}
                         tool={tool}
                         selected={selectedIds.includes(tool.id)}
-                        onSelectChange={(checked) => toggleSelect(tool.id, checked)}
+                        onSelectChange={(checked) =>
+                          toggleSelect(tool.id, checked)
+                        }
                         onConfigure={openConfigure}
                         onToggleActive={handleToggleActive}
                         onDelete={handleDelete}

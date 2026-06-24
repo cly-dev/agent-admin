@@ -1,6 +1,24 @@
-# README
+# agent-admin
 
-`@umijs/max` 模板项目，更多功能参考 [Umi Max 简介](https://umijs.org/docs/max/introduce)
+Enterprise AI 管理控制台（Umi Max）。
+
+## 开发
+
+```bash
+pnpm install
+pnpm dev
+```
+
+默认 `http://localhost:8000`，API 通过 `.env.dev` 的 `/api` 代理到本地后端。
+
+## 构建与上线
+
+```bash
+# 先编辑 .env.prod 填入生产 API 地址
+pnpm build
+```
+
+产物在 `dist/`。完整步骤、环境变量与 Nginx 示例见 **[docs/deploy.md](./docs/deploy.md)**。
 
 ## UI Theme Rules
 

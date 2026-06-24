@@ -3,13 +3,13 @@ import { Tooltip } from 'antd';
 import type { ReactNode } from 'react';
 import styles from './index.module.scss';
 
-export const AppTableMuted: React.FC<{ children?: ReactNode }> = ({ children = '—' }) => (
-  <span className={styles.muted}>{children}</span>
-);
+export const AppTableMuted: React.FC<{ children?: ReactNode }> = ({
+  children = '—',
+}) => <span className={styles.muted}>{children}</span>;
 
-export const AppTableDescription: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <span className={styles.description}>{children}</span>
-);
+export const AppTableDescription: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => <span className={styles.description}>{children}</span>;
 
 type AppTablePrimaryCellProps = {
   title: ReactNode;
@@ -49,7 +49,10 @@ type AppTableCodeCellProps = {
   empty?: ReactNode;
 };
 
-export const AppTableCodeCell: React.FC<AppTableCodeCellProps> = ({ value, empty }) => {
+export const AppTableCodeCell: React.FC<AppTableCodeCellProps> = ({
+  value,
+  empty,
+}) => {
   if (!value) {
     return <AppTableMuted>{empty}</AppTableMuted>;
   }
@@ -73,12 +76,16 @@ type AppTableMethodCellProps = {
   method?: string;
 };
 
-export const AppTableMethodCell: React.FC<AppTableMethodCellProps> = ({ method }) => {
+export const AppTableMethodCell: React.FC<AppTableMethodCellProps> = ({
+  method,
+}) => {
   if (!method) {
     return <AppTableMuted />;
   }
   return (
-    <span className={`${styles.method} ${methodClassName(method)}`}>{method.toUpperCase()}</span>
+    <span className={`${styles.method} ${methodClassName(method)}`}>
+      {method.toUpperCase()}
+    </span>
   );
 };
 
@@ -107,11 +114,9 @@ type AppTableBooleanStatusCellProps = {
   inactiveLabel: string;
 };
 
-export const AppTableBooleanStatusCell: React.FC<AppTableBooleanStatusCellProps> = ({
-  value,
-  activeLabel,
-  inactiveLabel,
-}) => {
+export const AppTableBooleanStatusCell: React.FC<
+  AppTableBooleanStatusCellProps
+> = ({ value, activeLabel, inactiveLabel }) => {
   if (value === undefined) {
     return <AppTableMuted />;
   }
@@ -124,8 +129,21 @@ export const AppTableBooleanStatusCell: React.FC<AppTableBooleanStatusCellProps>
   );
 };
 
-export const AppTableActions: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <div className={styles.actions}>{children}</div>
+type AppTableActionsProps = {
+  children: ReactNode;
+  /** 表格列默认右对齐；抽屉工具栏等场景用 start */
+  align?: 'start' | 'end';
+};
+
+export const AppTableActions: React.FC<AppTableActionsProps> = ({
+  children,
+  align = 'end',
+}) => (
+  <div
+    className={`${styles.actions} ${align === 'start' ? styles.actionsStart : ''}`}
+  >
+    {children}
+  </div>
 );
 
 type AppTableIconLinkProps = {
@@ -148,22 +166,44 @@ export const AppTableIconLink: React.FC<AppTableIconLinkProps> = ({
   </Tooltip>
 );
 
+export type AppTableButtonVariant = 'neutral' | 'edit' | 'primary' | 'danger';
+
 type AppTableButtonProps = {
   children: ReactNode;
   disabled?: boolean;
+  /** @deprecated 请使用 variant="danger" */
   danger?: boolean;
+  variant?: AppTableButtonVariant;
   onClick?: (event: React.MouseEvent) => void;
 };
+
+function resolveButtonClassName(
+  variant: AppTableButtonVariant,
+  danger?: boolean,
+): string {
+  const resolved = danger ? 'danger' : variant;
+  switch (resolved) {
+    case 'danger':
+      return styles.dangerBtn;
+    case 'primary':
+      return styles.primaryBtn;
+    case 'edit':
+      return styles.editBtn;
+    default:
+      return styles.ghostBtn;
+  }
+}
 
 export const AppTableButton: React.FC<AppTableButtonProps> = ({
   children,
   disabled,
   danger,
+  variant = 'neutral',
   onClick,
 }) => (
   <button
     type="button"
-    className={danger ? styles.dangerBtn : styles.ghostBtn}
+    className={resolveButtonClassName(variant, danger)}
     disabled={disabled}
     onClick={onClick}
   >

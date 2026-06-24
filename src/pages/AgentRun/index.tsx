@@ -1,4 +1,5 @@
 import ContentEmpty from '@/components/ContentEmpty';
+import ListPageHeader from '@/components/ListPageHeader';
 import { PageContainer } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
 import AgentRunFilter from './components/AgentRunFilter';
@@ -27,20 +28,20 @@ const AgentRunPage: React.FC = () => {
     <PageContainer ghost className={styles.agentRunPage}>
       <div className={styles.agentRunPageShell}>
         <div className={styles.agentRunPageCard}>
-          <header className={styles.agentRunPageHeader}>
-            <h1 className={styles.agentRunPageTitle}>
-              {intl.formatMessage({ id: 'agentRun.title' })}
-            </h1>
-            <p className={styles.agentRunPageSubtitle}>
-              {intl.formatMessage({ id: 'agentRun.subtitle' })}
-            </p>
-          </header>
+          <ListPageHeader
+            title={intl.formatMessage({ id: 'agentRun.title' })}
+            description={intl.formatMessage({ id: 'agentRun.subtitle' })}
+          />
 
           <div className={styles.agentRunPageBody}>
             {!projectId ? (
               <ContentEmpty
-                title={intl.formatMessage({ id: 'agentRun.empty.noProject.title' })}
-                description={intl.formatMessage({ id: 'agentRun.empty.noProject.desc' })}
+                title={intl.formatMessage({
+                  id: 'agentRun.empty.noProject.title',
+                })}
+                description={intl.formatMessage({
+                  id: 'agentRun.empty.noProject.desc',
+                })}
               />
             ) : (
               <>

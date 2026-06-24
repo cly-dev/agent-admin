@@ -1,0 +1,103 @@
+.promptTemplatePage :global(.ant-pro-page-container-children-content) {
+  height: 100%;
+}
+
+.promptTemplatePageShell {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 12px 12px 16px;
+  background: transparent;
+}
+
+@media (min-width: 768px) {
+  .promptTemplatePageShell {
+    padding: 16px 16px 20px;
+  }
+}
+
+.promptTemplatePageCard {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: auto;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+  padding: 20px;
+  box-shadow: 0 8px 32px rgb(25 28 30 / 0.04);
+}
+
+@media (min-width: 768px) {
+  .promptTemplatePageCard {
+    padding: 24px 28px;
+  }
+}
+
+.promptTemplatePageBody {
+  min-height: 0;
+  flex: 1;
+}
+
+.promptTemplateDetailMeta {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.promptTemplateDetailMeta dt {
+  margin-bottom: 4px;
+  color: rgb(25 28 30 / 0.5);
+  font-weight: 600;
+}
+
+.promptTemplateDetailMeta dd {
+  margin: 0;
+  color: var(--color-on-surface);
+}
+
+.promptTemplateDetailToolbar {
+  margin-bottom: 16px;
+}
+
+.promptTemplateDetailSection {
+  margin-bottom: 20px;
+}
+
+.promptTemplateDetailDescription {
+  margin: 0;
+  color: rgb(25 28 30 / 0.75);
+  font-size: 14px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.promptTemplateDetailSectionTitle {
+  margin: 0 0 10px;
+  color: var(--color-on-surface);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.promptTemplateDetailTitle {
+  margin: 0 0 8px;
+  color: rgb(25 28 30 / 0.7);
+  font-size: 13px;
+}
+
+.promptTemplateDetailContent {
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  border-radius: calc(var(--radius-ui) - 2px);
+  padding: 12px 14px;
+  color: rgb(25 28 30 / 0.82);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--color-surface-container-low);
+}

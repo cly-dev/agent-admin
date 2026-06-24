@@ -17,13 +17,18 @@
     "@ant-design/pro-components": "^2.8.10",
     "@uiw/react-json-view": "2.0.0-alpha.43",
     "@umijs/max": "^4.6.46",
-    "antd": "^6.3.6"
+    "antd": "^6.3.6",
+    "omnix-chat": "link:../agent-chat",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-mentions": "^4.4.10"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^22.15.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/react-mentions": "^4.4.1",
     "autoprefixer": "^10.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",

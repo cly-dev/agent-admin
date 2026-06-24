@@ -1,16 +1,6 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { useState } from 'react';
-
-const NAV_ITEMS = [
-  { key: 'orchestration', label: 'Orchestration' },
-  { key: 'models', label: 'Models' },
-  { key: 'logs', label: 'Logs' },
-  { key: 'deployments', label: 'Deployments' },
-] as const;
 
 const AppHeader: React.FC = () => {
-  const [activeNav, setActiveNav] = useState<string>('deployments');
-
   return (
     <div className="flex flex-1 items-center gap-8 overflow-hidden">
       <div className="relative w-72 shrink-0">
@@ -21,7 +11,6 @@ const AppHeader: React.FC = () => {
           placeholder="Search resources..."
         />
       </div>
-    
     </div>
   );
 };

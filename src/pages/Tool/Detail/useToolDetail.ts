@@ -16,11 +16,32 @@ import {
   ToolController_update,
 } from '@/services/tool';
 import type { Integration } from '@/types/integration';
-import type { Tool, ToolHttpMethod, ToolResponseProfile, ToolRiskLevel } from '@/types/tool';
-import type { ToolFormValues } from '../useTools';
-import { history, useIntl, useParams } from '@umijs/max';
+import type {
+  Tool,
+  ToolHttpMethod,
+  ToolResponseProfile,
+  ToolRiskLevel,
+} from '@/types/tool';
+import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  isAgentMetadataFormComplete,
+  normalizeAgentMetadata,
+  syncParamFormatHintsWithParameters,
+} from '../toolAgentMetadata';
+import {
+  DEFAULT_TOOL_METHOD,
+  DEFAULT_TOOL_RISK,
+  isToolCreateRoute,
+} from '../toolConstants';
+import {
+  buildTestParamsFromToolParameters,
+  getParameterValidationMessage,
+  parametersFromToolSchemas,
+  validateToolParameters,
+} from '../toolSchema';
+import type { ToolFormValues } from '../useTools';
 import {
   buildCreateToolPayload,
   buildOutputSchemaFromFields,
@@ -32,13 +53,6 @@ import {
   rowsToProfileFields,
   type ToolOutputSchemaField,
 } from '../useTools';
-import { DEFAULT_TOOL_METHOD, DEFAULT_TOOL_RISK } from '../toolConstants';
-import {
-  buildTestParamsFromToolParameters,
-  getParameterValidationMessage,
-  parametersFromToolSchemas,
-  validateToolParameters,
-} from '../toolSchema';
 
 const HTTP_METHODS: ToolHttpMethod[] = ['Get', 'Post', 'Put', 'Delete'];
 const RISK_LEVELS: ToolRiskLevel[] = ['L1', 'L2', 'L3'];
@@ -46,6 +60,7 @@ const RISK_LEVELS: ToolRiskLevel[] = ['L1', 'L2', 'L3'];
 export function useToolDetail() {
   const intl = useIntl();
   const { id } = useParams<{ id: string }>();
+  const { pathname } = useLocation();
   const { projectId } = useProjectRoute();
   const [form] = Form.useForm<ToolFormValues>();
   const [tool, setTool] = useState<Tool | null>(null);
@@ -55,17 +70,24 @@ export function useToolDetail() {
   const [testing, setTesting] = useState(false);
   const [generatingSchemas, setGeneratingSchemas] = useState(false);
   const [testResult, setTestResult] = useState<ApiTestRunResult | null>(null);
-  const [testParams, setTestParams] = useState<ApiTestParamsByIn>(createEmptyApiTestParams);
+  const [testParams, setTestParams] = useState<ApiTestParamsByIn>(
+    createEmptyApiTestParams,
+  );
   const [testApiKey, setTestApiKey] = useState('');
   const [schemaHint, setSchemaHint] = useState('');
-  const [outputSchemaFields, setOutputSchemaFields] = useState<ToolOutputSchemaField[]>([]);
+  const [outputSchemaFields, setOutputSchemaFields] = useState<
+    ToolOutputSchemaField[]
+  >([]);
 
-  const isCreateMode = id === 'create';
+  const isCreateMode = isToolCreateRoute(pathname, id);
   const toolId = isCreateMode ? 0 : Number(id);
 
   const applyToolToForm = useCallback(
     (detail: Tool) => {
-      const parameters = parametersFromToolSchemas(detail.inputSchema, detail.schema);
+      const parameters = parametersFromToolSchemas(
+        detail.inputSchema,
+        detail.schema,
+      );
       const schemaCandidates: Array<unknown> = [
         detail.outputSchema,
         extractOutputSchemaFromAny(detail.outputSchema),
@@ -86,9 +108,11 @@ export function useToolDetail() {
           ? detail.responseProfile?.coreFields
           : [];
         const listMetaFields = Array.isArray(
-          (detail.responseProfile as Record<string, unknown> | undefined)?.listMetaFields,
+          (detail.responseProfile as Record<string, unknown> | undefined)
+            ?.listMetaFields,
         )
-          ? ((detail.responseProfile as Record<string, unknown>).listMetaFields as unknown[])
+          ? ((detail.responseProfile as Record<string, unknown>)
+              .listMetaFields as unknown[])
           : [];
 
         const inferredPaths = [
@@ -114,13 +138,27 @@ export function useToolDetail() {
           fallbackOutputFields = inferredPaths.map((path, idx) => ({
             id: `infer_${idx}_${path}`,
             statusCode: '200',
-            name: path.startsWith('data.') || path === 'data' ? path : `data.${path}`,
+            name:
+              path.startsWith('data.') || path === 'data'
+                ? path
+                : `data.${path}`,
             type: 'string',
             required: false,
             description: 'inferred from responseProfile',
           }));
         }
       }
+      const rawMeta = normalizeAgentMetadata(detail.agentMetadata);
+      const agentMetadata = rawMeta
+        ? {
+            ...rawMeta,
+            paramFormatHints: syncParamFormatHintsWithParameters(
+              parameters,
+              rawMeta.paramFormatHints,
+            ),
+          }
+        : null;
+
       setTool(detail);
       setOutputSchemaFields(normalizeOutputSchemaFields(fallbackOutputFields));
       form.setFieldsValue({
@@ -133,8 +171,13 @@ export function useToolDetail() {
         isActive: detail.isActive,
         parameters,
         outputSchemaFields: normalizeOutputSchemaFields(fallbackOutputFields),
-        responseCoreFields: profileFieldsToRows(detail.responseProfile?.coreFields),
-        responseOptionalFields: profileFieldsToRows(detail.responseProfile?.optionalFields),
+        responseCoreFields: profileFieldsToRows(
+          detail.responseProfile?.coreFields,
+        ),
+        responseOptionalFields: profileFieldsToRows(
+          detail.responseProfile?.optionalFields,
+        ),
+        agentMetadata,
       });
       setTestParams(buildTestParamsFromToolParameters(parameters));
     },
@@ -151,12 +194,15 @@ export function useToolDetail() {
 
     setLoading(true);
     try {
-      const integrationResult = await IntegrationController_findByAppClient(projectId, {
-        page: 1,
-        pageSize: 100,
-        orderBy: 'name',
-        order: 'asc',
-      });
+      const integrationResult = await IntegrationController_findByAppClient(
+        projectId,
+        {
+          page: 1,
+          pageSize: 100,
+          orderBy: 'name',
+          order: 'asc',
+        },
+      );
       setIntegrations(integrationResult.list);
 
       if (isCreateMode) {
@@ -173,6 +219,7 @@ export function useToolDetail() {
           outputSchemaFields: [],
           responseCoreFields: [],
           responseOptionalFields: [],
+          agentMetadata: null,
         });
         setTestParams(createEmptyApiTestParams());
         setTestApiKey('');
@@ -189,7 +236,9 @@ export function useToolDetail() {
       applyToolToForm(detail);
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'tool.loadFailed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'tool.loadFailed' }),
       );
       history.push('/tool');
     } finally {
@@ -219,7 +268,9 @@ export function useToolDetail() {
     if (!watchedIntegrationId) {
       return tool?.integration;
     }
-    const matched = integrations.find((item) => item.id === watchedIntegrationId);
+    const matched = integrations.find(
+      (item) => item.id === watchedIntegrationId,
+    );
     if (matched) {
       return matched;
     }
@@ -237,7 +288,9 @@ export function useToolDetail() {
     }
 
     if (!values.integrationId) {
-      message.warning(intl.formatMessage({ id: 'tool.form.integrationRequired' }));
+      message.warning(
+        intl.formatMessage({ id: 'tool.form.integrationRequired' }),
+      );
       return;
     }
 
@@ -247,17 +300,32 @@ export function useToolDetail() {
       return;
     }
 
+    if (
+      values.agentMetadata &&
+      !isAgentMetadataFormComplete(values.agentMetadata)
+    ) {
+      message.error(intl.formatMessage({ id: 'tool.agentMetadata.invalid' }));
+      return;
+    }
+
     const outputSchema = isCreateMode
       ? undefined
       : buildOutputSchemaFromFields(
-          values.outputSchemaFields?.length ? values.outputSchemaFields : outputSchemaFields,
+          values.outputSchemaFields?.length
+            ? values.outputSchemaFields
+            : outputSchemaFields,
         );
     let responseProfile: ToolResponseProfile | undefined;
     if (!isCreateMode) {
-      const nextCoreFields = rowsToProfileFields(values.responseCoreFields ?? []);
-      const nextOptionalFields = rowsToProfileFields(values.responseOptionalFields ?? [], {
-        includeKeywords: true,
-      });
+      const nextCoreFields = rowsToProfileFields(
+        values.responseCoreFields ?? [],
+      );
+      const nextOptionalFields = rowsToProfileFields(
+        values.responseOptionalFields ?? [],
+        {
+          includeKeywords: true,
+        },
+      );
       const baseProfile =
         tool?.responseProfile && typeof tool.responseProfile === 'object'
           ? { ...tool.responseProfile }
@@ -283,7 +351,9 @@ export function useToolDetail() {
     setSubmitting(true);
     try {
       if (isCreateMode) {
-        const created = await ToolController_create(buildCreateToolPayload(projectId, values));
+        const created = await ToolController_create(
+          buildCreateToolPayload(projectId, values),
+        );
         message.success(intl.formatMessage({ id: 'tool.created' }));
         history.replace(`/tool/detail/${created.id}`);
         return;
@@ -302,7 +372,9 @@ export function useToolDetail() {
       applyToolToForm(refreshed);
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'tool.actionFailed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'tool.actionFailed' }),
       );
     } finally {
       setSubmitting(false);
@@ -317,11 +389,18 @@ export function useToolDetail() {
 
     const invalidBody = findInvalidApiTestBodyParam(testParams);
     if (invalidBody) {
-      message.error(intl.formatMessage({ id: 'apiTestPanel.bodyJsonInvalid' }, { name: invalidBody }));
+      message.error(
+        intl.formatMessage(
+          { id: 'apiTestPanel.bodyJsonInvalid' },
+          { name: invalidBody },
+        ),
+      );
       return;
     }
 
-    const debugPayload = buildDebugToolRequest(testParams, { apiKey: testApiKey });
+    const debugPayload = buildDebugToolRequest(testParams, {
+      apiKey: testApiKey,
+    });
 
     setTesting(true);
     setTestResult(null);
@@ -345,7 +424,9 @@ export function useToolDetail() {
       }
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'tool.actionFailed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'tool.actionFailed' }),
       );
     } finally {
       setTesting(false);
@@ -354,13 +435,20 @@ export function useToolDetail() {
 
   const handleGenerateResponseSchemas = async () => {
     if (isCreateMode || !tool || !projectId) {
-      message.warning(intl.formatMessage({ id: 'tool.detail.saveBeforeGenerateSchemas' }));
+      message.warning(
+        intl.formatMessage({ id: 'tool.detail.saveBeforeGenerateSchemas' }),
+      );
       return;
     }
 
     const invalidBody = findInvalidApiTestBodyParam(testParams);
     if (invalidBody) {
-      message.error(intl.formatMessage({ id: 'apiTestPanel.bodyJsonInvalid' }, { name: invalidBody }));
+      message.error(
+        intl.formatMessage(
+          { id: 'apiTestPanel.bodyJsonInvalid' },
+          { name: invalidBody },
+        ),
+      );
       return;
     }
 
@@ -373,7 +461,9 @@ export function useToolDetail() {
     setGeneratingSchemas(true);
     try {
       await ToolController_initSchemasFromDebug(projectId, tool.id, payload);
-      message.success(intl.formatMessage({ id: 'tool.detail.generateSchemasSuccess' }));
+      message.success(
+        intl.formatMessage({ id: 'tool.detail.generateSchemasSuccess' }),
+      );
       const refreshed = await ToolController_findOne(tool.id);
       applyToolToForm(refreshed);
     } catch (error: unknown) {
@@ -392,10 +482,13 @@ export function useToolDetail() {
     setTestParams(buildTestParamsFromToolParameters(parameters));
   };
 
-  const handleOutputSchemaFieldsChange = useCallback((fields: ToolOutputSchemaField[]) => {
-    setOutputSchemaFields(fields);
-    form.setFieldValue('outputSchemaFields', fields);
-  }, [form]);
+  const handleOutputSchemaFieldsChange = useCallback(
+    (fields: ToolOutputSchemaField[]) => {
+      setOutputSchemaFields(fields);
+      form.setFieldValue('outputSchemaFields', fields);
+    },
+    [form],
+  );
 
   const handleFormValuesChange = useCallback(
     (_changed: Partial<ToolFormValues>, allValues: ToolFormValues) => {

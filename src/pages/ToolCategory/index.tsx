@@ -3,7 +3,13 @@ import {
   AppQueryInputNumber,
   AppQueryPanel,
 } from '@/components/AppQueryPanel';
-import { AppTable, AppTableActions, AppTableButton } from '@/components/AppTable';
+import {
+  AppTable,
+  AppTableActions,
+  AppTableButton,
+} from '@/components/AppTable';
+import ListPageHeader from '@/components/ListPageHeader';
+import { useProjectRoute } from '@/hooks/useProjectRoute';
 import {
   ToolCategoryController_create,
   ToolCategoryController_findPage,
@@ -18,7 +24,7 @@ import type {
 } from '@/types/tool-category';
 import { PlusOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
-import { useIntl } from '@umijs/max';
+import { history, useIntl } from '@umijs/max';
 import { Form, Input, InputNumber, Modal, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useState } from 'react';
@@ -34,6 +40,7 @@ const DEFAULT_PAGE_SIZE = 20;
 
 const ToolCategoryPage: React.FC = () => {
   const intl = useIntl();
+  const { toPagePath } = useProjectRoute();
   const [filterForm] = Form.useForm<ToolCategoryFilterFormValues>();
   const [editorForm] = Form.useForm<CreateToolCategoryDto>();
   const [list, setList] = useState<ToolCategory[]>([]);
@@ -42,7 +49,8 @@ const ToolCategoryPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [total, setTotal] = useState(0);
-  const [appliedFilters, setAppliedFilters] = useState<ToolCategoryControllerFindPageParams>({});
+  const [appliedFilters, setAppliedFilters] =
+    useState<ToolCategoryControllerFindPageParams>({});
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<ToolCategory | null>(null);
 
@@ -84,7 +92,9 @@ const ToolCategoryPage: React.FC = () => {
     void loadList(1, DEFAULT_PAGE_SIZE, {});
   }, [loadList]);
 
-  const normalizeFilters = (values: ToolCategoryFilterFormValues): ToolCategoryControllerFindPageParams => ({
+  const normalizeFilters = (
+    values: ToolCategoryFilterFormValues,
+  ): ToolCategoryControllerFindPageParams => ({
     keyword: values.keyword?.trim() || undefined,
     id: values.id,
     label: values.label?.trim() || undefined,
@@ -109,14 +119,8 @@ const ToolCategoryPage: React.FC = () => {
     setEditorOpen(true);
   };
 
-  const openEdit = (record: ToolCategory) => {
-    setEditing(record);
-    editorForm.setFieldsValue({
-      label: record.label,
-      description: record.description,
-      sortOrder: record.sortOrder,
-    });
-    setEditorOpen(true);
+  const openConfigure = (record: ToolCategory) => {
+    history.push(toPagePath('tool', `category/detail/${record.id}`));
   };
 
   const handleEditorSubmit = async () => {
@@ -143,7 +147,11 @@ const ToolCategoryPage: React.FC = () => {
       setEditorOpen(false);
       void loadList(page, pageSize, appliedFilters);
     } catch (error: unknown) {
-      if (typeof error === 'object' && error !== null && 'errorFields' in error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'errorFields' in error
+      ) {
         return;
       }
       message.error(
@@ -216,12 +224,12 @@ const ToolCategoryPage: React.FC = () => {
       width: 180,
       render: (_, record) => (
         <AppTableActions>
-          <AppTableButton onClick={() => openEdit(record)}>
+          <AppTableButton onClick={() => openConfigure(record)}>
             {intl.formatMessage({ id: 'common.configure' })}
           </AppTableButton>
-            <AppTableButton danger onClick={() => confirmDelete(record)}>
-              {intl.formatMessage({ id: 'common.delete' })}
-            </AppTableButton>
+          <AppTableButton danger onClick={() => confirmDelete(record)}>
+            {intl.formatMessage({ id: 'common.delete' })}
+          </AppTableButton>
         </AppTableActions>
       ),
     },
@@ -231,24 +239,20 @@ const ToolCategoryPage: React.FC = () => {
     <PageContainer ghost className={styles.toolCategoryPage}>
       <div className={styles.toolCategoryPageShell}>
         <div className={styles.toolCategoryPageCard}>
-          <header className={styles.toolCategoryPageHeader}>
-            <div>
-              <h1 className={styles.toolCategoryPageTitle}>
-                {intl.formatMessage({ id: 'toolCategory.title' })}
-              </h1>
-              <p className={styles.toolCategoryPageSubtitle}>
-                {intl.formatMessage({ id: 'toolCategory.subtitle' })}
-              </p>
-            </div>
-            <button
-              type="button"
-              className="app-button-primary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold"
-              onClick={openCreate}
-            >
-              <PlusOutlined />
-              {intl.formatMessage({ id: 'toolCategory.add' })}
-            </button>
-          </header>
+          <ListPageHeader
+            title={intl.formatMessage({ id: 'toolCategory.title' })}
+            description={intl.formatMessage({ id: 'toolCategory.subtitle' })}
+            actions={
+              <button
+                type="button"
+                className="app-button-primary inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold shadow-sm transition-transform active:scale-[0.98]"
+                onClick={openCreate}
+              >
+                <PlusOutlined />
+                {intl.formatMessage({ id: 'toolCategory.add' })}
+              </button>
+            }
+          />
 
           <AppQueryPanel<ToolCategoryFilterFormValues>
             form={filterForm}
@@ -256,22 +260,31 @@ const ToolCategoryPage: React.FC = () => {
             loading={loading}
             onSearch={handleFilterSearch}
             onReset={handleFilterReset}
-            keywordPlaceholder={intl.formatMessage({ id: 'toolCategory.filter.keywordPlaceholder' })}
+            layout="list"
+            keywordPlaceholder={intl.formatMessage({
+              id: 'toolCategory.filter.keywordPlaceholder',
+            })}
             keywordClassName="max-w-md"
             advancedContent={
               <AppQueryPanel.Grid>
                 <Form.Item name="id" label="ID">
                   <AppQueryInputNumber
                     min={1}
-                    placeholder={intl.formatMessage({ id: 'appQueryPanel.numberPlaceholder' })}
+                    placeholder={intl.formatMessage({
+                      id: 'appQueryPanel.numberPlaceholder',
+                    })}
                   />
                 </Form.Item>
                 <Form.Item
                   name="label"
-                  label={intl.formatMessage({ id: 'toolCategory.column.label' })}
+                  label={intl.formatMessage({
+                    id: 'toolCategory.column.label',
+                  })}
                 >
                   <AppQueryInput
-                    placeholder={intl.formatMessage({ id: 'toolCategory.filter.labelPlaceholder' })}
+                    placeholder={intl.formatMessage({
+                      id: 'toolCategory.filter.labelPlaceholder',
+                    })}
                   />
                 </Form.Item>
               </AppQueryPanel.Grid>
@@ -307,30 +320,42 @@ const ToolCategoryPage: React.FC = () => {
         onOk={() => void handleEditorSubmit()}
         confirmLoading={submitting}
       >
-        <Form<CreateToolCategoryDto> form={editorForm} layout="vertical" requiredMark={false}>
+        <Form<CreateToolCategoryDto>
+          form={editorForm}
+          layout="vertical"
+          requiredMark={false}
+        >
           <Form.Item
             name="label"
             label={intl.formatMessage({ id: 'toolCategory.column.label' })}
             rules={[
               {
                 required: true,
-                message: intl.formatMessage({ id: 'toolCategory.form.labelRequired' }),
+                message: intl.formatMessage({
+                  id: 'toolCategory.form.labelRequired',
+                }),
               },
             ]}
           >
             <Input
               className="app-input"
-              placeholder={intl.formatMessage({ id: 'toolCategory.form.labelPlaceholder' })}
+              placeholder={intl.formatMessage({
+                id: 'toolCategory.form.labelPlaceholder',
+              })}
               maxLength={64}
             />
           </Form.Item>
           <Form.Item
             name="description"
-            label={intl.formatMessage({ id: 'toolCategory.column.description' })}
+            label={intl.formatMessage({
+              id: 'toolCategory.column.description',
+            })}
           >
             <Input.TextArea
               className="app-input"
-              placeholder={intl.formatMessage({ id: 'toolCategory.form.descriptionPlaceholder' })}
+              placeholder={intl.formatMessage({
+                id: 'toolCategory.form.descriptionPlaceholder',
+              })}
               autoSize={{ minRows: 2, maxRows: 4 }}
               maxLength={200}
             />

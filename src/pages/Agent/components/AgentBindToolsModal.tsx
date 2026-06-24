@@ -1,3 +1,4 @@
+import { AppListSearchInput } from '@/components/AppQueryPanel';
 import {
   AppTable,
   AppTableCodeCell,
@@ -5,9 +6,8 @@ import {
   AppTablePrimaryCell,
 } from '@/components/AppTable';
 import type { Tool } from '@/types/tool';
-import { SearchOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Input, Modal } from 'antd';
+import { Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useState } from 'react';
 import styles from '../index.module.scss';
@@ -120,10 +120,7 @@ const AgentBindToolsModal: React.FC<AgentBindToolsModalProps> = ({
         {intl.formatMessage({ id: 'agent.tools.bindHint' })}
       </p>
       <div className={styles.agentBindModalToolbar}>
-        <Input
-          className="app-input"
-          allowClear
-          prefix={<SearchOutlined className="text-black/35" />}
+        <AppListSearchInput
           placeholder={intl.formatMessage({ id: 'tool.search' })}
           value={keyword}
           onChange={(event) => onKeywordChange(event.target.value)}

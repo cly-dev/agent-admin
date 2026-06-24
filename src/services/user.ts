@@ -3,8 +3,23 @@
 // Hand-maintained — OpenAPI stubs: script/archive/openapi-gen/services/
 // Source: http://localhost:3030/docs-json
 
-import { http } from "@/utils/request";
-import type { CreateUserDto, UpdateUserDto, User } from '@/types/user';
+import type {
+  CreateUserDto,
+  UpdateUserDto,
+  User,
+  UserStatus,
+} from '@/types/user';
+import { http } from '@/utils/request';
+
+function normalizeUserStatus(raw: Record<string, unknown>): UserStatus {
+  if (raw.status === 'ACTIVE' || raw.status === 'DISABLED') {
+    return raw.status;
+  }
+  if (typeof raw.isActive === 'boolean') {
+    return raw.isActive ? 'ACTIVE' : 'DISABLED';
+  }
+  return 'ACTIVE';
+}
 
 function normalizeUser(raw: unknown): User {
   if (typeof raw !== 'object' || raw === null) {
@@ -15,13 +30,18 @@ function normalizeUser(raw: unknown): User {
     id: Number(item.id ?? 0) || 0,
     email: typeof item.email === 'string' ? item.email : '',
     username: typeof item.username === 'string' ? item.username : '',
-    employeeId: typeof item.employeeId === 'string' ? item.employeeId : undefined,
+    employeeId:
+      typeof item.employeeId === 'string' ? item.employeeId : undefined,
     userType: item.userType as User['userType'],
     userRole: item.userRole as User['userRole'],
     role: typeof item.role === 'string' ? item.role : undefined,
     roleId:
-      typeof item.roleId === 'number' ? item.roleId : item.roleId === null ? null : undefined,
-    isActive: typeof item.isActive === 'boolean' ? item.isActive : undefined,
+      typeof item.roleId === 'number'
+        ? item.roleId
+        : item.roleId === null
+          ? null
+          : undefined,
+    status: normalizeUserStatus(item),
     createdAt: typeof item.createdAt === 'string' ? item.createdAt : undefined,
     updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : undefined,
   };
@@ -35,7 +55,8 @@ function unwrapList(raw: unknown): unknown[] {
     typeof payload.data === 'object' && payload.data !== null
       ? (payload.data as Record<string, unknown>)
       : payload;
-  const list = nested.list ?? nested.items ?? nested.records ?? nested.rows ?? nested;
+  const list =
+    nested.list ?? nested.items ?? nested.records ?? nested.rows ?? nested;
   return Array.isArray(list) ? list : [];
 }
 
@@ -44,7 +65,7 @@ function unwrapList(raw: unknown): unknown[] {
  * @tags user
  */
 export async function UserController_findAll(): Promise<User[]> {
-  const response = await http.get<unknown>("admin/user");
+  const response = await http.get<unknown>('admin/user');
   return unwrapList(response).map(normalizeUser);
 }
 
@@ -53,7 +74,7 @@ export async function UserController_findAll(): Promise<User[]> {
  * @tags user
  */
 export function UserController_create(data: CreateUserDto) {
-  return http.post<void>("admin/user", data);
+  return http.post<void>('admin/user', data);
 }
 
 /**
@@ -61,7 +82,7 @@ export function UserController_create(data: CreateUserDto) {
  * @tags user
  */
 export function UserController_getPasswordReminder() {
-  return http.get<void>("admin/user/password-reminder");
+  return http.get<void>('admin/user/password-reminder');
 }
 
 /**
@@ -85,8 +106,12 @@ export async function UserController_findOne(id: number): Promise<User> {
  * 更新用户信息
  * @tags user
  */
-export function UserController_update(id: number, data: UpdateUserDto) {
-  return http.patch<void>(`admin/user/${id}`, data);
+export async function UserController_update(
+  id: number,
+  data: UpdateUserDto,
+): Promise<User> {
+  const response = await http.patch<unknown>(`admin/user/${id}`, data);
+  return normalizeUser(response);
 }
 
 /**

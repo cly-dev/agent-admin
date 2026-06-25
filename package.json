@@ -2,15 +2,16 @@
   "private": true,
   "author": "Carlos-Chen <2663118046@qq.com>",
   "scripts": {
-    "dev": "PORT=8000 UMI_ENV=dev max dev",
     "build": "UMI_ENV=prod max build",
+    "build:prod": "UMI_ENV=prod max build",
     "build:test": "UMI_ENV=test max build",
+    "dev": "PORT=8000 UMI_ENV=dev max dev",
     "format": "prettier --cache --write .",
-    "prepare": "husky",
+    "gen:api": "ts-node script/api.ts",
     "postinstall": "max setup && npx -y @apdesign/aicodingtracker-cursor-cli install-hooks --auto",
+    "prepare": "husky",
     "setup": "max setup",
-    "start": "npm run dev",
-    "gen:api": "ts-node script/api.ts"
+    "start": "npm run dev"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.1",

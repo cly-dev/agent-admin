@@ -1,5 +1,9 @@
 # omnix-admin 生产镜像（Kaniko / 内网 ACR）
-# 构建上下文 = 仓库根目录（custom-no-code）
+#
+# 构建上下文 = Jenkins 工作区（custom-no-code）
+# 兼容两种目录：
+#   A) package.json 在上下文根目录（git clone .）
+#   B) package.json 在 omnix-admin/ 子目录（git clone ... omnix-admin）
 #
 # docker build \
 #   --build-arg UMI_APP_API_BASE_URL=https://api.example.com \
@@ -14,9 +18,29 @@ FROM erp-prod-acr-registry-vpc.cn-hangzhou.cr.aliyuncs.com/cht-base/node:22.18-c
 
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
+WORKDIR /build
+
+# 先整包拷入，再解析项目根（Jenkins 常见：代码在 omnix-admin/ 子目录）
+COPY . /build/context/
+
+RUN set -eux; \
+    if [ -f /build/context/package.json ]; then \
+      echo /build/context > /build/APP_ROOT; \
+    elif [ -f /build/context/omnix-admin/package.json ]; then \
+      echo /build/context/omnix-admin > /build/APP_ROOT; \
+    else \
+      echo "ERROR: package.json not found at ./ or ./omnix-admin/"; \
+      ls -la /build/context; \
+      find /build/context -maxdepth 3 -name package.json 2>/dev/null || true; \
+      exit 1; \
+    fi
+
 WORKDIR /build/app
 
-COPY package.json pnpm-lock.yaml .npmrc ./
+RUN set -eux; \
+    APP_ROOT=$(cat /build/APP_ROOT); \
+    cp "${APP_ROOT}/package.json" "${APP_ROOT}/pnpm-lock.yaml" /build/app/; \
+    if [ -f "${APP_ROOT}/.npmrc" ]; then cp "${APP_ROOT}/.npmrc" /build/app/; fi
 
 ENV CI=true \
     HUSKY=0
@@ -24,7 +48,10 @@ ENV CI=true \
 RUN pnpm install --frozen-lockfile --ignore-scripts \
     && pnpm exec max setup
 
-COPY . .
+RUN set -eux; \
+    APP_ROOT=$(cat /build/APP_ROOT); \
+    cd "${APP_ROOT}"; \
+    tar cf - --exclude=node_modules --exclude=.git . | tar xf - -C /build/app
 
 ARG UMI_APP_API_BASE_URL
 ARG UMI_APP_OMNIX_CHAT_DSN=
@@ -40,11 +67,11 @@ ENV NODE_ENV=production \
 RUN pnpm build
 
 # -----------------------------------------------------------------------------
-# Stage 2: nginx（FROM 写死镜像名，Kaniko 对 ARG+FROM 多阶段支持不稳定）
+# Stage 2: nginx
 # -----------------------------------------------------------------------------
 FROM erp-prod-acr-registry-vpc.cn-hangzhou.cr.aliyuncs.com/cht-base/nginx:1.27-alpine AS runtime
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /build/app/docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /build/app/dist /usr/share/nginx/html
 
 EXPOSE 80

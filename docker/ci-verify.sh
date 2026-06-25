@@ -7,18 +7,18 @@ cd "${ROOT}"
 
 missing=0
 
-if [ ! -f package.json ]; then
-  echo "ERROR: 缺少 ${ROOT}/package.json"
-  echo "       构建上下文必须是前端仓库根目录，不是 agent-admin/ 子目录。"
+if [ ! -f package.json ] && [ ! -f omnix-admin/package.json ]; then
+  echo "ERROR: 缺少 package.json（./ 或 ./omnix-admin/）"
+  echo "       Jenkins 克隆后常见结构：custom-no-code/omnix-admin/package.json"
   missing=1
 fi
 
-if [ ! -f pnpm-lock.yaml ]; then
+if [ ! -f pnpm-lock.yaml ] && [ ! -f omnix-admin/pnpm-lock.yaml ]; then
   echo "ERROR: 缺少 pnpm-lock.yaml"
   missing=1
 fi
 
-if [ ! -f docker/nginx.conf ]; then
+if [ ! -f docker/nginx.conf ] && [ ! -f omnix-admin/docker/nginx.conf ]; then
   echo "ERROR: 缺少 docker/nginx.conf"
   missing=1
 fi

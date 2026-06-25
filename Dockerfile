@@ -10,14 +10,12 @@
 # -----------------------------------------------------------------------------
 # Stage 1: build
 # -----------------------------------------------------------------------------
-ARG NODE_IMAGE=erp-prod-acr-registry-vpc.cn-hangzhou.cr.aliyuncs.com/cht-base/node:22.18-chrome
-FROM ${NODE_IMAGE} AS builder
+FROM erp-prod-acr-registry-vpc.cn-hangzhou.cr.aliyuncs.com/cht-base/node:22.18-chrome AS builder
 
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
 WORKDIR /build/app
 
-# omnix-chat 为 npm 依赖（package.json 版本号），无需 COPY agent-chat
 COPY package.json pnpm-lock.yaml .npmrc ./
 
 ENV CI=true \
@@ -42,10 +40,9 @@ ENV NODE_ENV=production \
 RUN pnpm build
 
 # -----------------------------------------------------------------------------
-# Stage 2: nginx
+# Stage 2: nginx（FROM 写死镜像名，Kaniko 对 ARG+FROM 多阶段支持不稳定）
 # -----------------------------------------------------------------------------
-ARG NGINX_IMAGE=erp-prod-acr-registry-vpc.cn-hangzhou.cr.aliyuncs.com/cht-base/nginx:1.27-alpine
-FROM ${NGINX_IMAGE} AS runtime
+FROM erp-prod-acr-registry-vpc.cn-hangzhou.cr.aliyuncs.com/cht-base/nginx:1.27-alpine AS runtime
 
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /build/app/dist /usr/share/nginx/html

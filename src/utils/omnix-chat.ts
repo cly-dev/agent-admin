@@ -9,9 +9,9 @@ export const OMNIX_CHAT_UPDATED_EVENT = 'omnix-chat:updated';
 const DEFAULT_OMNIX_CHAT_BASE_URL = 'http://localhost:3030';
 const DEV_PROXY_PREFIX = '/api';
 
-const isDevelopment = (): boolean => {
+const usesLocalApiProxy = (): boolean => {
   return (
-    process.env.NODE_ENV === 'development' || process.env.UMI_ENV === 'dev'
+    process.env.NODE_ENV === 'development' && process.env.UMI_ENV !== 'test'
   );
 };
 
@@ -29,7 +29,7 @@ export function getOmnixChatBaseUrl(): string {
     DEFAULT_OMNIX_CHAT_BASE_URL
   ).replace(/\/+$/, '');
 
-  if (isDevelopment() && rawBaseUrl.startsWith('/')) {
+  if (usesLocalApiProxy() && rawBaseUrl.startsWith('/')) {
     if (typeof window !== 'undefined') {
       return `${window.location.origin}${rawBaseUrl}`;
     }
@@ -37,7 +37,7 @@ export function getOmnixChatBaseUrl(): string {
   }
 
   if (
-    isDevelopment() &&
+    usesLocalApiProxy() &&
     !process.env.UMI_APP_OMNIX_CHAT_BASE_URL &&
     !process.env.UMI_APP_API_BASE_URL
   ) {

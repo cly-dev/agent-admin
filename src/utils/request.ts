@@ -30,9 +30,10 @@ const API_ERROR_STATUSES = new Set<number>([
 ]);
 let unauthorizedHandling = false;
 
-const isDevelopment = (): boolean => {
+/** Local `max dev` with UMI_ENV=dev uses the `/api` proxy; test/staging uses env URLs as-is. */
+const usesLocalApiProxy = (): boolean => {
   return (
-    process.env.NODE_ENV === 'development' || process.env.UMI_ENV === 'dev'
+    process.env.NODE_ENV === 'development' && process.env.UMI_ENV !== 'test'
   );
 };
 
@@ -55,7 +56,7 @@ export const getApiBaseUrl = (): string => {
   const rawBaseUrl = (
     process.env.UMI_APP_API_BASE_URL ?? DEFAULT_API_BASE_URL
   ).replace(/\/+$/, '');
-  if (!isDevelopment()) {
+  if (!usesLocalApiProxy()) {
     return rawBaseUrl;
   }
 

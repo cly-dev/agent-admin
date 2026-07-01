@@ -1,10 +1,12 @@
 import { defineConfig } from '@umijs/max';
 import path from 'path';
+import { buildUmiAppEnvDefine, loadEnv } from './script/load-env';
 
-// Umi 仅在构建时把 UMI_APP_* 注入到浏览器；此处显式 define，避免只配 .env.dev 且未设 UMI_ENV 时读不到
-const envDefine = {
-  'process.env.UMI_APP_API_BASE_URL': process.env.UMI_APP_API_BASE_URL ?? '',
-};
+loadEnv();
+
+const envDefine = buildUmiAppEnvDefine();
+
+const useLocalDevProxy = process.env.UMI_ENV !== 'test';
 
 export default defineConfig({
   define: envDefine,
@@ -20,13 +22,15 @@ export default defineConfig({
     baseNavigator: true,
     useLocalStorage: true,
   },
-  proxy: {
-    '/api': {
-      target: 'http://localhost:3030',
-      changeOrigin: true,
-      pathRewrite: { '^/api': '' },
-    },
-  },
+  proxy: useLocalDevProxy
+    ? {
+        '/api': {
+          target: 'http://localhost:3030',
+          changeOrigin: true,
+          pathRewrite: { '^/api': '' },
+        },
+      }
+    : undefined,
   layout: {
     title: 'agent',
   },

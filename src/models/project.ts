@@ -1,5 +1,6 @@
 import { AppClientController_findAll } from '@/services/admin-app-client';
 import type { AppClient } from '@/types/admin-app-client';
+import { getAuthSnapshot } from '@/services/auth/user';
 import {
   CURRENT_PROJECT_STORAGE_KEY,
   getCleanPathFromEntry,
@@ -33,6 +34,10 @@ const useProject = () => {
   }, []);
 
   const refreshProjects = useCallback(async (): Promise<AppClient[]> => {
+    if (!getAuthSnapshot().isAuthenticated) {
+      return [];
+    }
+
     setLoading(true);
     try {
       const list = await AppClientController_findAll().catch(() => [] as AppClient[]);
@@ -46,7 +51,7 @@ const useProject = () => {
 
       setCurrentProjectId((prev) => {
         const routeProjectId = getRouteProjectIdFromPath(history.location.pathname);
-        if (routeProjectId) {
+        if (routeProjectId && list.some((item) => item.id === routeProjectId)) {
           localStorage.setItem(CURRENT_PROJECT_STORAGE_KEY, String(routeProjectId));
           return routeProjectId;
         }
@@ -96,12 +101,32 @@ const useProject = () => {
     [setProjectId],
   );
 
-  useEffect(() => {
-    applyRouteProjectId(history.location.pathname);
-    void refreshProjects();
+  const resetProjects = useCallback(() => {
+    setProjects([]);
+    setCurrentProjectId(null);
+    localStorage.removeItem(CURRENT_PROJECT_STORAGE_KEY);
+  }, []);
 
+  useEffect(() => {
+    const pathname = history.location.pathname;
+    applyRouteProjectId(pathname);
+
+    if (getAuthSnapshot().isAuthenticated) {
+      void refreshProjects();
+    }
+
+    const previousPathRef = { current: pathname };
     const unlisten = history.listen(({ location }) => {
+      const previousPath = previousPathRef.current;
+      previousPathRef.current = location.pathname;
+
       applyRouteProjectId(location.pathname);
+
+      const leftLogin =
+        previousPath === '/login' && location.pathname !== '/login';
+      if (leftLogin && getAuthSnapshot().isAuthenticated) {
+        void refreshProjects();
+      }
     });
 
     return unlisten;
@@ -113,6 +138,7 @@ const useProject = () => {
     currentProjectId,
     loading,
     refreshProjects,
+    resetProjects,
     switchProject,
     setProjectId,
     applyRouteProjectId,

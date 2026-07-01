@@ -9,7 +9,6 @@ import {
 import type {
   CreateHostToolDto,
   HostTool,
-  HostToolExposure,
   UpdateHostToolDto,
 } from '@/types/host-tool';
 import { useIntl } from '@umijs/max';
@@ -25,7 +24,6 @@ export type HostToolFormValues = {
   definitionKey: string;
   name: string;
   description: string;
-  exposure: HostToolExposure;
   argsSchemaJson: string;
   argsTemplateJson?: string;
   isActive?: boolean;
@@ -159,7 +157,6 @@ export function useHostToolList(options: UseHostToolListOptions = {}) {
     setEditing(null);
     toolForm.resetFields();
     toolForm.setFieldsValue({
-      exposure: 'CATALOG',
       isActive: true,
       argsSchemaJson: '{\n  "type": "object",\n  "properties": {}\n}',
     });
@@ -172,7 +169,6 @@ export function useHostToolList(options: UseHostToolListOptions = {}) {
       definitionKey: record.definitionKey,
       name: record.name,
       description: record.description,
-      exposure: (record.exposure as HostToolExposure) || 'CATALOG',
       argsSchemaJson: stringifyJson(record.argsSchema),
       argsTemplateJson: stringifyJson(record.argsTemplate),
       isActive: record.isActive ?? true,
@@ -215,7 +211,6 @@ export function useHostToolList(options: UseHostToolListOptions = {}) {
           definitionKey: values.definitionKey.trim(),
           name: values.name.trim(),
           description: values.description.trim(),
-          exposure: values.exposure,
           argsSchema,
           argsTemplate,
           isActive: values.isActive,
@@ -229,7 +224,6 @@ export function useHostToolList(options: UseHostToolListOptions = {}) {
           definitionKey: values.definitionKey.trim(),
           name: values.name.trim(),
           description: values.description.trim(),
-          exposure: values.exposure,
           argsSchema,
           argsTemplate,
           isActive: values.isActive,

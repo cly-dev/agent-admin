@@ -1,0 +1,930 @@
+/* ── List page ── */
+
+.workflowPage :global(.ant-pro-page-container-children-content) {
+  height: 100%;
+}
+
+.workflowPageShell {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 12px 12px 16px;
+}
+
+@media (min-width: 768px) {
+  .workflowPageShell {
+    padding: 16px 16px 20px;
+  }
+}
+
+.workflowPageCard {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: auto;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: calc(var(--radius-ui) + 2px);
+  background: var(--color-surface-container-lowest);
+  padding: 20px;
+  box-shadow: var(--shadow-floating);
+}
+
+@media (min-width: 768px) {
+  .workflowPageCard {
+    padding: 24px 28px;
+  }
+}
+
+.workflowPageBody {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.workflowListContent {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerSecondaryAction,
+.headerPrimaryAction {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.headerPrimaryAction {
+  box-shadow: 0 1px 2px rgb(25 28 30 / 0.08);
+  transition: transform 0.15s ease;
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+/* Concept strip: linear pipeline metaphor */
+.conceptStrip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px 20px;
+  align-items: center;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: calc(var(--radius-ui) + 2px);
+  padding: 14px 18px;
+  background: var(--color-surface-container-low);
+}
+
+@media (min-width: 900px) {
+  .conceptStrip {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+}
+
+.conceptStripRail {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding-inline: 2px;
+}
+
+.conceptStripNode {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border: 2px solid var(--color-outline-variant);
+  border-radius: 50%;
+  background: var(--color-surface-container-lowest);
+}
+
+.conceptStripNodeEnd {
+  border-color: var(--color-on-surface-variant);
+  background: var(--color-surface-container-high);
+}
+
+.conceptStripConnector {
+  width: 18px;
+  height: 2px;
+  flex-shrink: 0;
+  background: var(--color-outline-variant);
+}
+
+.conceptStripBody {
+  min-width: 0;
+}
+
+.conceptStripHint {
+  margin: 0;
+  color: rgb(25 28 30 / 0.78);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.conceptStripMeta {
+  margin: 4px 0 0;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.conceptStripLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.conceptStripLegendCount {
+  min-width: 1.25rem;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.profilePill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.profilePill_chat_skill {
+  border: 1px solid rgb(91 71 196 / 0.22);
+  color: rgb(68 52 160);
+  background: rgb(91 71 196 / 0.08);
+}
+
+.profilePill_page_action {
+  border: 1px solid rgb(0 120 105 / 0.24);
+  color: rgb(0 88 78);
+  background: rgb(0 120 105 / 0.08);
+}
+
+.profilePill_shared {
+  border: 1px solid rgb(180 120 0 / 0.24);
+  color: rgb(130 86 0);
+  background: rgb(180 120 0 / 0.08);
+}
+
+.workflowTable {
+  min-height: 0;
+  flex: 1;
+}
+
+.nodeRail {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nodeRailTrack {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.nodeRailDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-outline-variant);
+}
+
+.nodeRailDotLast {
+  background: var(--color-on-surface-variant);
+}
+
+.nodeRailCount {
+  min-width: 1.25rem;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.versionBadge {
+  display: inline-block;
+  border-radius: 6px;
+  padding: 2px 8px;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  background: rgb(25 28 30 / 0.04);
+}
+
+.refBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.refBadgeSkill,
+.refBadgePage {
+  display: inline-flex;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.refBadgeSkill {
+  color: rgb(68 52 160);
+  background: rgb(91 71 196 / 0.07);
+}
+
+.refBadgePage {
+  color: rgb(0 88 78);
+  background: rgb(0 120 105 / 0.08);
+}
+
+.rowOpenHint {
+  color: rgb(25 28 30 / 0.28);
+  font-size: 11px;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.workflowTable :global(.clickableRow:hover) .rowOpenHint {
+  color: var(--color-primary);
+  transform: translateX(2px);
+}
+
+/* ── Detail / shared ── */
+
+$workflow-neutral-border: #e4e7ec;
+$workflow-neutral-panel: #fff;
+$workflow-neutral-muted: #f8f9fb;
+$workflow-neutral-grid: rgb(15 23 42 / 0.045);
+
+.workflowPage :global(.ant-pro-page-container),
+.workflowPage :global(.ant-pro-page-container-children-content) {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+}
+
+.workflowDetailCard {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+
+  :global(.ant-spin-nested-loading),
+  :global(.ant-spin-container),
+  :global(.ant-spin-container > div) {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+  }
+}
+
+.workflowDetailBody {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  margin-top: 12px !important;
+  padding: 0;
+  gap: 0;
+}
+
+.workflowDetailLayout {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workflowDetailBasics {
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: $workflow-neutral-panel;
+
+  :global(.ant-collapse) {
+    background: transparent;
+  }
+
+  :global(.ant-collapse-item) {
+    border: none !important;
+  }
+
+  :global(.ant-collapse-header) {
+    align-items: center !important;
+    padding: 10px 14px !important;
+    color: var(--color-on-surface);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  :global(.ant-collapse-content-box) {
+    padding: 0 14px 14px !important;
+  }
+
+  :global(.ant-form-item) {
+    margin-bottom: 0;
+  }
+
+  :global(.ant-form-item-label > label) {
+    font-size: 12px;
+  }
+}
+
+.workflowDetailBasicsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workflowDetailBasicsPrimary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 12px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.workflowDetailBasicsSecondary {
+  display: grid;
+  grid-template-columns: 120px 100px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 12px;
+  align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.workflowDetailBasicsWide {
+  min-width: 0;
+}
+
+.workflowDetailWorkspace {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) 272px;
+  gap: 12px;
+  align-items: stretch;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(420px, 1fr) auto;
+  }
+}
+
+.workflowDetailCanvasSection {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: $workflow-neutral-panel;
+  padding: 12px 14px 10px;
+}
+
+.workflowConfigModeBar {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.workflowConfigModeHint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowPresetPanel {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+}
+
+.workflowPresetHint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowPresetScenarioAlert {
+  margin-bottom: 4px;
+}
+
+.workflowPresetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.workflowPresetCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+  padding: 12px 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background: var(--color-surface-container-low);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.workflowPresetCardActive {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-container-lowest));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 24%, transparent);
+}
+
+.workflowPresetCardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.workflowPresetCardDesc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowPresetCardPipeline {
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--color-on-surface-variant);
+  opacity: 0.85;
+}
+
+.workflowPresetForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workflowPresetBindings {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.workflowPresetField {
+  display: flex;
+  flex-direction: column;
+}
+
+.workflowPresetAdvanced {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workflowPresetSwitchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--color-on-surface);
+}
+
+.workflowPresetObjectives {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.workflowPresetObjectivesHint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowPresetEmpty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowAssetSelectOption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.workflowAssetSelectOptionTitle {
+  font-size: 13px;
+  color: var(--color-on-surface);
+}
+
+.workflowAssetSelectOptionDesc {
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowDetailAside {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+
+  @media (min-width: 1025px) {
+    position: sticky;
+    top: 0;
+    max-height: 100%;
+  }
+}
+
+.workflowAsidePanel {
+  flex-shrink: 0;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: $workflow-neutral-panel;
+  padding: 12px 14px;
+}
+
+.workflowAsideTitle {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowMetaList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.workflowMetaItem {
+  display: grid;
+  gap: 2px;
+
+  dt {
+    margin: 0;
+    font-size: 11px;
+    color: var(--color-on-surface-variant);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-on-surface);
+  }
+}
+
+.workflowDetailShell {
+  padding: 0 0 24px;
+}
+
+.workflowFieldLabel {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowBindingPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workflowBindingHint,
+.workflowBindingFieldHint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowBindingField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.workflowBindingLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-on-surface);
+}
+
+.workflowBindingAlert {
+  margin: 0;
+}
+
+.workflowBindingSyncRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.workflowBindingLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-primary);
+}
+
+.workflowBindingLoading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowRequiredBindings {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.workflowRequiredBindingGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.workflowRequiredBindingList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.workflowRequiredBindingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-ui);
+  font-size: 13px;
+}
+
+.workflowNodeEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workflowNodeEditorHeader {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 2px;
+}
+
+.workflowNodeEditorTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-on-surface);
+}
+
+.workflowNodeEditorEmpty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowNodeList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workflowNodeCard {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-ui);
+  background: var(--color-surface);
+  padding: 12px;
+}
+
+.workflowNodeCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.workflowNodeCardIndex {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.workflowNodeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.workflowNodeGridFull {
+  grid-column: 1 / -1;
+}
+
+.workflowFlowCanvas {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.workflowFlowCanvasViewport {
+  position: relative;
+  min-height: 420px;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background:
+    radial-gradient(circle at 1px 1px, $workflow-neutral-grid 1px, transparent 0) 0 0 /
+      20px 20px,
+    $workflow-neutral-muted;
+}
+
+.workflowFlowCanvasSurface {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.workflowFlowCanvasEmpty {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgb(255 255 255 / 0.88);
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+}
+
+.workflowFlowCanvasHint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowPhaseLegend {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: $workflow-neutral-muted;
+  padding: 8px 12px;
+}
+
+.workflowPhaseLegendTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.workflowPhaseLegendItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.workflowPhaseLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-on-surface);
+}
+
+.workflowPhaseLegendSwatch {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.revisionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.revisionItem {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--color-outline-variant);
+  font-size: 12px;
+}
+
+.revisionVersion {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.revisionDate {
+  color: var(--color-on-surface-variant);
+}
+
+.revisionNote {
+  color: rgb(25 28 30 / 0.72);
+  line-height: 1.45;
+}

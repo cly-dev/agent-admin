@@ -143,18 +143,18 @@ export function useSkillList() {
     history.push('/agent/skill/detail/create');
   };
 
-  const skillDetailPath = (agentId: number, skillId: number) =>
-    `/agent/skill/detail/${agentId}/${skillId}`;
+  const skillDetailPath = (skillId: number) =>
+    `/agent/skill/detail/${skillId}`;
 
   const openDetail = (record: Skill) => {
-    if (!record.agentId || !record.id) {
+    if (!record.id) {
       return;
     }
-    history.push(skillDetailPath(record.agentId, record.id));
+    history.push(skillDetailPath(record.id));
   };
 
   const handleDelete = async (record: Skill) => {
-    if (!projectId || !record.agentId) {
+    if (!projectId) {
       return;
     }
     try {

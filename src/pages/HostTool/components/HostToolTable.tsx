@@ -83,20 +83,6 @@ const HostToolTable: React.FC<HostToolTableProps> = ({
         ]
       : []),
     {
-      title: intl.formatMessage({ id: 'hostTool.column.exposure' }),
-      dataIndex: 'exposure',
-      key: 'exposure',
-      width: 120,
-      render: (value: string) => (
-        <Tag>
-          {intl.formatMessage({
-            id: `hostTool.exposure.${value}`,
-            defaultMessage: value,
-          })}
-        </Tag>
-      ),
-    },
-    {
       title: intl.formatMessage({ id: 'hostTool.column.description' }),
       dataIndex: 'description',
       key: 'description',

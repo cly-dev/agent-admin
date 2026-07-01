@@ -1,0 +1,444 @@
+.pageActionPage :global(.ant-pro-page-container-children-content) {
+  height: 100%;
+}
+
+.pageActionPageShell {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 12px 12px 16px;
+  background: transparent;
+}
+
+@media (min-width: 768px) {
+  .pageActionPageShell {
+    padding: 16px 16px 20px;
+  }
+}
+
+.pageActionPageCard {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: auto;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: calc(var(--radius-ui) + 2px);
+  background: var(--color-surface-container-lowest);
+  padding: 20px;
+  box-shadow: var(--shadow-floating);
+}
+
+@media (min-width: 768px) {
+  .pageActionPageCard {
+    padding: 24px 28px;
+  }
+}
+
+.pageActionPageBody {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pageActionListContent {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Create / edit form ── */
+
+.formPage {
+  :global(.ant-form-item) {
+    margin-bottom: 0;
+  }
+
+  :global(.ant-form-item-explain-error) {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+}
+
+.formLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contextStrip {
+  margin: 0;
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 var(--radius-ui) var(--radius-ui) 0;
+  padding: 12px 14px;
+  color: rgb(25 28 30 / 0.72);
+  font-size: 13px;
+  line-height: 1.55;
+  background: rgb(0 87 194 / 0.05);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.formMain {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.formAside {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (min-width: 1100px) {
+  .formGridPage {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+    gap: 24px;
+  }
+
+  .formAsideSticky {
+    position: sticky;
+    top: 8px;
+  }
+}
+
+.formPanel {
+  border: 1px solid rgb(193 198 215 / 0.22);
+  border-radius: calc(var(--radius-ui) + 2px);
+  padding: 18px 20px;
+  background: var(--color-surface-container-lowest);
+  box-shadow: 0 4px 16px rgb(25 28 30 / 0.03);
+}
+
+.formPanelPrompt {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.formPanelHeader {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.formPanelIcon {
+  display: flex;
+  height: 36px;
+  width: 36px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: var(--color-primary);
+  font-size: 1rem;
+  background: rgb(0 87 194 / 0.08);
+}
+
+.formPanelIconAccent {
+  color: rgb(0 110 120);
+  background: rgb(0 110 120 / 0.1);
+}
+
+.formPanelTitle {
+  margin: 0;
+  color: var(--color-on-surface);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.formPanelHint {
+  margin: 4px 0 0;
+  color: rgb(25 28 30 / 0.48);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.formPanelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formPanelBodyGrow {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formFieldGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .formFieldGrid2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .formFieldSpan2 {
+    grid-column: 1 / -1;
+  }
+}
+
+.formFieldGrid3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .formFieldGrid3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.formSwitchRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+}
+
+.formSwitchItem {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: var(--radius-ui);
+  padding: 10px 12px;
+  background: var(--color-surface-container-low);
+}
+
+.formSwitchLabel {
+  color: var(--color-on-surface);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.promptField {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  :global(.ant-form-item-control-input) {
+    flex: 1;
+  }
+
+  :global(textarea.ant-input) {
+    min-height: 280px;
+    resize: vertical;
+  }
+}
+
+.promptToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.promptCounter {
+  color: rgb(25 28 30 / 0.45);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.promptTemplateBtn {
+  border: 0;
+  padding: 0;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: rgb(0 70 160);
+  }
+}
+
+.hostToolSummary {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+  border-radius: var(--radius-ui);
+  padding: 12px 14px;
+  background: var(--color-surface-container-low);
+}
+
+@media (min-width: 480px) {
+  .hostToolSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.hostToolSummaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hostToolSummaryItemWide {
+  grid-column: 1 / -1;
+}
+
+.hostToolSummaryLabel {
+  color: rgb(25 28 30 / 0.45);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hostToolSummaryValue {
+  color: var(--color-on-surface);
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.hostToolSummaryValueMono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.hostToolAppliedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: rgb(0 110 60);
+  font-size: 12px;
+  font-weight: 600;
+  background: rgb(0 140 70 / 0.1);
+}
+
+.formCompactStack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Detail drawer ── */
+
+.detailLoading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.detailHero {
+  margin-bottom: 20px;
+  border: 1px solid rgb(0 87 194 / 0.12);
+  border-radius: calc(var(--radius-ui) + 2px);
+  padding: 16px 18px;
+  background:
+    linear-gradient(135deg, rgb(0 87 194 / 0.06) 0%, transparent 55%),
+    var(--color-surface-container-lowest);
+}
+
+.detailHeroKey {
+  margin: 0 0 6px;
+  color: var(--color-on-surface);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.detailHeroName {
+  margin: 0;
+  color: rgb(25 28 30 / 0.55);
+  font-size: 13px;
+}
+
+.detailMeta {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.detailMeta dt {
+  margin-bottom: 4px;
+  color: rgb(25 28 30 / 0.5);
+  font-weight: 600;
+}
+
+.detailMeta dd {
+  margin: 0;
+  color: var(--color-on-surface);
+  word-break: break-word;
+}
+
+.detailSection {
+  margin-bottom: 20px;
+}
+
+.detailSectionTitle {
+  margin: 0 0 10px;
+  color: var(--color-on-surface);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.detailDescription {
+  margin: 0;
+  color: rgb(25 28 30 / 0.75);
+  font-size: 14px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.workflowBindingSection {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed rgb(193 198 215 / 0.35);
+}
+
+.workflowBindingTitle {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.detailPrompt {
+  margin: 0;
+  max-height: 420px;
+  overflow: auto;
+  border-radius: calc(var(--radius-ui) - 2px);
+  padding: 12px 14px;
+  color: rgb(25 28 30 / 0.82);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--color-surface-container-low);
+}

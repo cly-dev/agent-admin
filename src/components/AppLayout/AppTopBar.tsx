@@ -1,6 +1,11 @@
 import HeaderActions from '@/components/HeaderActions';
 import { getCurrentPagePath } from '@/utils/project-path';
-import { MenuOutlined, RightOutlined } from '@ant-design/icons';
+import {
+  MenuFoldOutlined,
+  MenuOutlined,
+  MenuUnfoldOutlined,
+  RightOutlined,
+} from '@ant-design/icons';
 import { useIntl, useLocation } from '@umijs/max';
 
 type AppTopBarProps = {
@@ -29,10 +34,19 @@ const AppTopBar: React.FC<AppTopBarProps> = ({
   return (
     <header className="app-top-bar">
       <div className="flex min-w-0 flex-1 items-center gap-4">
+        <button
+          type="button"
+          className="app-sider-toggle"
+          aria-label={intl.formatMessage({ id: 'layout.toggleMenu' })}
+          onClick={() => onCollapse?.(!collapsed)}
+        >
+          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        </button>
+
         {isMobile ? (
           <button
             type="button"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[--radius-ui] text-on-surface/60 hover:bg-surface-container-low"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[--radius-ui] text-on-surface/60 hover:bg-surface-container-low md:hidden"
             aria-label={intl.formatMessage({ id: 'layout.toggleMenu' })}
             onClick={() => onCollapse?.(!collapsed)}
           >

@@ -10,9 +10,11 @@ import type {
 import type { SkillWorkflowState } from '../skillWorkflow';
 import type { SkillExecutionMode, SkillFormValues } from '../useSkillDetail';
 import SkillPromptMentionEditor from './SkillPromptMentionEditor';
-import SkillWorkflowPanel from './SkillWorkflowPanel';
+import type { WorkflowBindingValue } from '@/types/workflow';
+import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
 
 type SkillExecutionConfigPanelProps = {
+  projectId?: number;
   mode: SkillExecutionMode;
   onModeChange: (mode: SkillExecutionMode) => void;
   promptValue: string;
@@ -22,16 +24,26 @@ type SkillExecutionConfigPanelProps = {
   boundToolIds: number[];
   boundHostToolIds: number[];
   workflow: SkillWorkflowState;
+  workflowBinding: WorkflowBindingValue;
+  hasLegacyWorkflow: boolean;
   hostToolNameOptions: string[];
   useRawConfigOnly: boolean;
   saving?: boolean;
   promptDisabled?: boolean;
   onWorkflowChange: (workflow: SkillWorkflowState) => void;
+  onWorkflowBindingChange: (value: WorkflowBindingValue) => void;
+  skillSync?: {
+    skillId: number;
+    currentToolIds: number[];
+    currentHostToolIds: number[];
+    onSynced: (toolIds: number[], hostToolIds: number[]) => void;
+  };
 };
 
 const PROMPT_PRIORITY_CHAR_LIMIT = 1200;
 
 const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
+  projectId,
   mode,
   onModeChange,
   promptValue,
@@ -41,11 +53,15 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
   boundToolIds,
   boundHostToolIds,
   workflow,
+  workflowBinding,
+  hasLegacyWorkflow,
   hostToolNameOptions,
   useRawConfigOnly,
   saving = false,
   promptDisabled = false,
-  onWorkflowChange,
+  onWorkflowChange: _onWorkflowChange,
+  onWorkflowBindingChange,
+  skillSync,
 }) => {
   const intl = useIntl();
 
@@ -214,11 +230,25 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
               compact
             />
           </Form.Item>
-          <SkillWorkflowPanel
-            workflow={workflow}
-            hostToolNameOptions={hostToolNameOptions}
-            saving={saving}
-            onChange={onWorkflowChange}
+          {hasLegacyWorkflow && !workflowBinding.workflowId ? (
+            <Alert
+              type="warning"
+              showIcon
+              className={styles.skillDetailAlert}
+              message={intl.formatMessage({
+                id: 'skill.workflow.legacyMigration',
+              })}
+            />
+          ) : null}
+          <WorkflowBindingPanel
+            projectId={projectId}
+            entry="skill"
+            value={workflowBinding}
+            disabled={saving || promptDisabled}
+            boundToolIds={boundToolIds}
+            boundHostToolIds={boundHostToolIds}
+            onChange={onWorkflowBindingChange}
+            skillSync={skillSync}
           />
         </div>
       )}

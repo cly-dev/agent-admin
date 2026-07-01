@@ -16,6 +16,7 @@ const HeaderActions: React.FC = () => {
   const intl = useIntl();
   const { user, clearLoginSession } = useModel('global');
   const { toPagePath } = useProjectRoute();
+  const { resetProjects } = useModel('project');
   const [logoutLoading, setLogoutLoading] = useState(false);
   const displayUser = user ?? getAuthSnapshot().user;
 
@@ -62,6 +63,7 @@ const HeaderActions: React.FC = () => {
     try {
       await signOut();
       clearLoginSession();
+      resetProjects();
       history.push('/login');
     } finally {
       setLogoutLoading(false);

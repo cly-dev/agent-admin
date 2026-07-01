@@ -29,6 +29,9 @@ export type AgentFormValues = {
   systemPrompt: string;
   maxSteps: number;
   enableToolCall: boolean;
+  restrictTools: boolean;
+  restrictHostTools: boolean;
+  restrictSkills: boolean;
 };
 
 function agentToFormValues(agent: Agent): AgentFormValues {
@@ -38,6 +41,9 @@ function agentToFormValues(agent: Agent): AgentFormValues {
     systemPrompt: agent.systemPrompt ?? '',
     maxSteps: agent.maxSteps ?? 8,
     enableToolCall: agent.enableToolCall !== false,
+    restrictTools: agent.restrictTools === true,
+    restrictHostTools: agent.restrictHostTools === true,
+    restrictSkills: agent.restrictSkills === true,
   };
 }
 
@@ -48,6 +54,9 @@ function formValuesToPayload(values: AgentFormValues): UpdateAgentDto {
     systemPrompt: values.systemPrompt,
     maxSteps: Number(values.maxSteps) || 8,
     enableToolCall: values.enableToolCall,
+    restrictTools: values.restrictTools,
+    restrictHostTools: values.restrictHostTools,
+    restrictSkills: values.restrictSkills,
   };
 }
 
@@ -175,6 +184,9 @@ export function useAgentDetail() {
         systemPrompt: DEFAULT_SYSTEM_PROMPT,
         maxSteps: 8,
         enableToolCall: true,
+        restrictTools: false,
+        restrictHostTools: false,
+        restrictSkills: false,
       });
       setLoading(false);
       return;

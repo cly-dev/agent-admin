@@ -5,6 +5,19 @@ import {
 import type { Agent, AgentAllowedToolRef } from '@/types/agent';
 import type { AgentHostToolRef, HostToolSummary } from '@/types/host-tool';
 
+function normalizeRestrictFlag(value: unknown): boolean | undefined {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (value === 1 || value === '1' || value === 'true') {
+    return true;
+  }
+  if (value === 0 || value === '0' || value === 'false') {
+    return false;
+  }
+  return undefined;
+}
+
 export function normalizeAgent(raw: unknown): Agent {
   const item = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<
     string,
@@ -56,6 +69,15 @@ export function normalizeAgent(raw: unknown): Agent {
         : (agentHostTools?.length ?? hostTools?.length),
     hostTools,
     agentHostTools,
+    restrictTools: normalizeRestrictFlag(
+      item.restrictTools ?? item.restrict_tools,
+    ),
+    restrictHostTools: normalizeRestrictFlag(
+      item.restrictHostTools ?? item.restrict_host_tools,
+    ),
+    restrictSkills: normalizeRestrictFlag(
+      item.restrictSkills ?? item.restrict_skills,
+    ),
     createdAt:
       typeof item.createdAt === 'string'
         ? item.createdAt

@@ -19,7 +19,6 @@ export type SkillPromptHostToolOption = {
   name: string;
   description?: string;
   pageScope?: string | null;
-  exposure?: string;
 };
 
 export type SkillPromptMentionKind = 'tool' | 'hostTool';

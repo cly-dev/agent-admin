@@ -6,7 +6,7 @@ import {
 } from '@/components/AppTable';
 import type { HostToolSkillTrigger } from '@/types/host-tool';
 import { useIntl } from '@umijs/max';
-import { Alert, Input, InputNumber, Select, Switch, Tabs, Tag } from 'antd';
+import { Alert, Input, InputNumber, Select, Switch, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   PLAN_TRIGGER_OPTIONS,
@@ -74,23 +74,6 @@ const SkillHostToolsPanel: React.FC<SkillHostToolsPanelProps> = ({
           <AppTableCodeCell value={value} />
         ) : (
           intl.formatMessage({ id: 'hostTool.pageScope.generic' })
-        ),
-    },
-    {
-      title: intl.formatMessage({ id: 'skill.hostTools.column.exposure' }),
-      dataIndex: 'exposure',
-      key: 'exposure',
-      width: 100,
-      render: (value?: string) =>
-        value ? (
-          <Tag>
-            {intl.formatMessage({
-              id: `hostTool.exposure.${value}`,
-              defaultMessage: value,
-            })}
-          </Tag>
-        ) : (
-          '—'
         ),
     },
     ...(showTriggerSelect

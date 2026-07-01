@@ -94,8 +94,13 @@ export default defineConfig({
           hideInMenu: true,
         },
         {
-          path: '/agent/skill/detail/:agentId/:skillId',
+          path: '/agent/skill/detail/:skillId',
           component: './Skill/Detail',
+          hideInMenu: true,
+        },
+        {
+          path: '/agent/skill/detail/:agentId/:skillId',
+          redirect: '/agent/skill/detail/:skillId',
           hideInMenu: true,
         },
         {
@@ -166,6 +171,63 @@ export default defineConfig({
           hideInMenu: true,
         },
       ],
+    },
+    {
+      name: 'workflow',
+      path: '/workflow',
+      icon: 'PartitionOutlined',
+      routes: [
+        {
+          path: '/workflow',
+          redirect: '/workflow/frontend-tool-flow',
+          hideInMenu: true,
+        },
+        {
+          name: 'frontendToolFlow',
+          path: '/workflow/frontend-tool-flow',
+          component: './PageAction',
+        },
+        {
+          name: 'workflowAssets',
+          path: '/workflow/assets',
+          component: './Workflow',
+        },
+        {
+          path: '/workflow/assets/detail/create',
+          component: './Workflow/Detail',
+          hideInMenu: true,
+        },
+        {
+          path: '/workflow/assets/detail/:id',
+          component: './Workflow/Detail',
+          hideInMenu: true,
+        },
+        {
+          name: 'pageActionRun',
+          path: '/workflow/page-action-run',
+          component: './PageAction/Run',
+        },
+        {
+          path: '/workflow/frontend-tool-flow/create',
+          component: './PageAction/Create',
+          hideInMenu: true,
+        },
+        {
+          path: '/workflow/frontend-tool-flow/detail/:id',
+          component: './PageAction/Edit',
+          hideInMenu: true,
+        },
+        {
+          path: '/workflow/page-action-run/detail/:id',
+          component: './PageAction/Run/Detail',
+          hideInMenu: true,
+        },
+      ],
+    },
+    {
+      path: '/tool/workflow',
+      redirect: '/workflow/frontend-tool-flow',
+      hideInMenu: true,
     },
     {
       path: '/integration',

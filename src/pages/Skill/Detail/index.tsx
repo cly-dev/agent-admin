@@ -25,7 +25,7 @@ const SkillDetailPage: React.FC = () => {
     isCreateMode,
     agentsLoading,
     agentOptions,
-    agentToolsLoading,
+    appToolsLoading,
     hostToolsLoading,
     toolRows,
     mutationHostToolRows,
@@ -34,8 +34,10 @@ const SkillDetailPage: React.FC = () => {
     selectedHostToolIds,
     promptToolOptions,
     promptHostToolOptions,
-    resolvedAgentId,
+    resolvedAppClientId,
     workflow,
+    workflowBinding,
+    hasLegacyWorkflow,
     executionMode,
     useRawConfigOnly,
     useCustomHostToolBinding,
@@ -48,6 +50,8 @@ const SkillDetailPage: React.FC = () => {
     handleToolSelectionChange,
     handleUseCustomHostToolBindingChange,
     handleWorkflowChange,
+    handleWorkflowBindingChange,
+    handleWorkflowBindingsSynced,
     handleConfigJsonChange,
     toggleToolRequired,
     handleHostToolTabRowChange,
@@ -82,7 +86,10 @@ const SkillDetailPage: React.FC = () => {
           { id: 'skill.detail.subtitle' },
           {
             id: skill.id,
-            agent: skill.agentName ?? skill.agent?.name ?? `#${skill.agentId}`,
+            app:
+              skill.appClientName?.trim() ||
+              skill.appClient?.name?.trim() ||
+              `#${skill.appClientId}`,
           },
         )
       : undefined;
@@ -91,8 +98,7 @@ const SkillDetailPage: React.FC = () => {
     id: isCreateMode ? 'skill.detail.create' : 'skill.detail.save',
   });
 
-  const editorDisabled =
-    !resolvedAgentId || agentToolsLoading || hostToolsLoading;
+  const editorDisabled = !resolvedAppClientId || appToolsLoading || hostToolsLoading;
 
   const tabItems = [
     {
@@ -126,30 +132,26 @@ const SkillDetailPage: React.FC = () => {
                 }
               />
             </Form.Item>
-            <Form.Item
-              name="agentId"
-              label={intl.formatMessage({ id: 'skill.form.agent' })}
-              rules={[
-                {
-                  required: true,
-                  message: intl.formatMessage({
-                    id: 'skill.form.agentRequired',
-                  }),
-                },
-              ]}
-            >
-              <Select
-                className="app-input"
-                showSearch
-                loading={agentsLoading}
-                disabled={agentsLoading || agentOptions.length === 0}
-                placeholder={intl.formatMessage({
-                  id: 'skill.form.agentPlaceholder',
-                })}
-                options={agentOptions}
-                optionFilterProp="label"
-              />
-            </Form.Item>
+            {isCreateMode ? (
+              <Form.Item
+                name="agentId"
+                label={intl.formatMessage({ id: 'skill.form.agentOptional' })}
+                extra={intl.formatMessage({ id: 'skill.form.agentOptionalHint' })}
+              >
+                <Select
+                  allowClear
+                  className="app-input"
+                  showSearch
+                  loading={agentsLoading}
+                  disabled={agentsLoading || agentOptions.length === 0}
+                  placeholder={intl.formatMessage({
+                    id: 'skill.form.agentOptionalPlaceholder',
+                  })}
+                  options={agentOptions}
+                  optionFilterProp="label"
+                />
+              </Form.Item>
+            ) : null}
           </div>
           <div className={styles.skillDetailFormGrid}>
             <Form.Item
@@ -232,6 +234,7 @@ const SkillDetailPage: React.FC = () => {
       children: (
         <div className={styles.skillDetailTabPanel}>
           <SkillExecutionConfigPanel
+            projectId={projectId}
             mode={executionMode}
             onModeChange={handleExecutionModeChange}
             promptValue={promptValue}
@@ -241,11 +244,24 @@ const SkillDetailPage: React.FC = () => {
             boundToolIds={selectedToolIds}
             boundHostToolIds={selectedHostToolIds}
             workflow={workflow}
+            workflowBinding={workflowBinding}
+            hasLegacyWorkflow={hasLegacyWorkflow}
             hostToolNameOptions={hostToolNameOptions}
             useRawConfigOnly={useRawConfigOnly}
             saving={saving}
             promptDisabled={editorDisabled}
             onWorkflowChange={handleWorkflowChange}
+            onWorkflowBindingChange={handleWorkflowBindingChange}
+            skillSync={
+              skill?.id
+                ? {
+                    skillId: skill.id,
+                    currentToolIds: selectedToolIds,
+                    currentHostToolIds: selectedHostToolIds,
+                    onSynced: handleWorkflowBindingsSynced,
+                  }
+                : undefined
+            }
           />
         </div>
       ),
@@ -256,13 +272,13 @@ const SkillDetailPage: React.FC = () => {
       children: (
         <div className={styles.skillDetailTabPanel}>
           <SkillToolsBindingPanel
-            resolvedAgentId={resolvedAgentId}
+            appReady={resolvedAppClientId > 0}
             toolRows={toolRows}
             selectedToolIds={selectedToolIds}
             mutationHostToolRows={mutationHostToolRows}
             planHostToolRows={planHostToolRows}
             useCustomHostToolBinding={useCustomHostToolBinding}
-            agentToolsLoading={agentToolsLoading}
+            appToolsLoading={appToolsLoading}
             hostToolsLoading={hostToolsLoading}
             saving={saving}
             onToolSelectionChange={handleToolSelectionChange}

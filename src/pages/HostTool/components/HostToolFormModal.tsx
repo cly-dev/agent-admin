@@ -1,6 +1,5 @@
-import type { HostToolExposure } from '@/types/host-tool';
 import { useIntl } from '@umijs/max';
-import { Form, Input, Modal, Select, Switch } from 'antd';
+import { Form, Input, Modal, Switch } from 'antd';
 import type { HostToolFormValues } from '../useHostToolList';
 
 type HostToolFormModalProps = {
@@ -11,13 +10,6 @@ type HostToolFormModalProps = {
   onCancel: () => void;
   onSubmit: () => void;
 };
-
-const EXPOSURE_OPTIONS: HostToolExposure[] = [
-  'CATALOG',
-  'ON_COMPLETE',
-  'LLM',
-  'BOTH',
-];
 
 const HostToolFormModal: React.FC<HostToolFormModalProps> = ({
   open,
@@ -95,19 +87,6 @@ const HostToolFormModal: React.FC<HostToolFormModalProps> = ({
           <Input.TextArea
             className="app-input"
             autoSize={{ minRows: 2, maxRows: 4 }}
-          />
-        </Form.Item>
-        <Form.Item
-          name="exposure"
-          label={intl.formatMessage({ id: 'hostTool.column.exposure' })}
-          rules={[{ required: true }]}
-        >
-          <Select
-            className="app-input"
-            options={EXPOSURE_OPTIONS.map((value) => ({
-              value,
-              label: intl.formatMessage({ id: `hostTool.exposure.${value}` }),
-            }))}
           />
         </Form.Item>
         <Form.Item

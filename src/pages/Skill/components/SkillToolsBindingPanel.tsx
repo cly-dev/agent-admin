@@ -9,13 +9,13 @@ import SkillHostToolsPanel from './SkillHostToolsPanel';
 import SkillToolsTable from './SkillToolsTable';
 
 type SkillToolsBindingPanelProps = {
-  resolvedAgentId: number;
+  appReady: boolean;
   toolRows: SkillToolRow[];
   selectedToolIds: number[];
   mutationHostToolRows: SkillHostToolTabRow[];
   planHostToolRows: SkillHostToolTabRow[];
   useCustomHostToolBinding: boolean;
-  agentToolsLoading: boolean;
+  appToolsLoading: boolean;
   hostToolsLoading: boolean;
   saving?: boolean;
   onToolSelectionChange: (toolIds: number[]) => void;
@@ -34,13 +34,13 @@ type SkillToolsBindingPanelProps = {
 };
 
 const SkillToolsBindingPanel: React.FC<SkillToolsBindingPanelProps> = ({
-  resolvedAgentId,
+  appReady,
   toolRows,
   selectedToolIds,
   mutationHostToolRows,
   planHostToolRows,
   useCustomHostToolBinding,
-  agentToolsLoading,
+  appToolsLoading,
   hostToolsLoading,
   saving = false,
   onToolSelectionChange,
@@ -49,7 +49,6 @@ const SkillToolsBindingPanel: React.FC<SkillToolsBindingPanelProps> = ({
   onHostToolRowChange,
 }) => {
   const intl = useIntl();
-  const agentReady = resolvedAgentId > 0;
 
   return (
     <div className={styles.skillToolsBindingPanel}>
@@ -66,15 +65,15 @@ const SkillToolsBindingPanel: React.FC<SkillToolsBindingPanelProps> = ({
             {intl.formatMessage({ id: 'skill.detail.toolsHint' })}
           </p>
         </div>
-        {!agentReady ? (
+        {!appReady ? (
           <p className={styles.skillToolsSectionEmpty}>
-            {intl.formatMessage({ id: 'skill.detail.toolsSelectAgentFirst' })}
+            {intl.formatMessage({ id: 'skill.detail.toolsSelectAppFirst' })}
           </p>
         ) : (
           <SkillToolsTable
             rows={toolRows}
             selectedToolIds={selectedToolIds}
-            loading={agentToolsLoading}
+            loading={appToolsLoading}
             saving={saving}
             onSelectionChange={onToolSelectionChange}
             onRequiredChange={onToolRequiredChange}
@@ -88,9 +87,9 @@ const SkillToolsBindingPanel: React.FC<SkillToolsBindingPanelProps> = ({
             {intl.formatMessage({ id: 'skill.detail.tab.hostTools' })}
           </h3>
         </div>
-        {!agentReady ? (
+        {!appReady ? (
           <p className={styles.skillToolsSectionEmpty}>
-            {intl.formatMessage({ id: 'skill.detail.toolsSelectAgentFirst' })}
+            {intl.formatMessage({ id: 'skill.detail.toolsSelectAppFirst' })}
           </p>
         ) : (
           <SkillHostToolsPanel

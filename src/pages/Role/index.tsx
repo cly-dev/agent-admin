@@ -349,6 +349,10 @@ const RolePermissionPage: React.FC = () => {
               },
             }}
           />
+
+          <p className={styles.roleWorkflowWriteHint}>
+            {intl.formatMessage({ id: 'role.workflowWritePermissionFooter' })}
+          </p>
         </div>
       </div>
 

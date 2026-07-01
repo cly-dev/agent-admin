@@ -99,14 +99,6 @@ const SkillMentionedHostToolsConfig: React.FC<
                 : 'skill.hostTools.tab.plan',
           })}
         </Tag>
-        {row.exposure ? (
-          <Tag>
-            {intl.formatMessage({
-              id: `hostTool.exposure.${row.exposure}`,
-              defaultMessage: row.exposure,
-            })}
-          </Tag>
-        ) : null}
       </div>
       <div className={styles.hostToolScenarioGrid}>
         {showTrigger ? (

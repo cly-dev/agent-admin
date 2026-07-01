@@ -5,6 +5,7 @@ export const APP_PAGE_KEYS = [
   'project',
   'agent',
   'tool',
+  'workflow',
   'chat',
   'user',
   'setting',
@@ -18,7 +19,7 @@ const ENTRY_PATH_ALIASES: Record<string, string> = {
 export type AppPageKey = (typeof APP_PAGE_KEYS)[number];
 
 const ENTRY_PATH_REGEX =
-  /^\/(dashboard|project|agent|tool|integration|chat|user|setting)\/(\d+)$/;
+  /^\/(dashboard|project|agent|tool|integration|workflow|chat|user|setting)\/(\d+)$/;
 
 export function isAppPageKey(value: string): value is AppPageKey {
   return (APP_PAGE_KEYS as readonly string[]).includes(value);
@@ -45,6 +46,9 @@ export function getCleanPathFromEntry(pathname: string): string | null {
   const pageKey = match[1];
   if (pageKey === 'chat') {
     return '/chat/list';
+  }
+  if (pageKey === 'workflow') {
+    return '/workflow/frontend-tool-flow';
   }
   return ENTRY_PATH_ALIASES[pageKey] ?? `/${pageKey}`;
 }

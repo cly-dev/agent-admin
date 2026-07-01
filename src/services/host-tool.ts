@@ -70,7 +70,6 @@ export function normalizeHostToolSummary(raw: unknown): HostToolSummary | null {
   return {
     id,
     name: String(item.name ?? ''),
-    exposure: String(item.exposure ?? 'CATALOG'),
     pageScope:
       typeof pageScopeRaw === 'string'
         ? pageScopeRaw
@@ -203,7 +202,6 @@ export function normalizeHostTool(raw: unknown): HostTool {
     name: String(item.name ?? ''),
     description: String(item.description ?? ''),
     argsSchema: item.argsSchema ?? item.args_schema ?? {},
-    exposure: String(item.exposure ?? 'CATALOG'),
     argsTemplate: item.argsTemplate ?? item.args_template ?? null,
     sortOrder:
       typeof item.sortOrder === 'number'

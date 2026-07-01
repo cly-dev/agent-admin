@@ -13,6 +13,12 @@ export interface Agent {
   hostToolCount?: number;
   hostTools?: HostToolSummary[];
   agentHostTools?: AgentHostToolRef[];
+  /** true：仅 AgentTool 白名单；false 且无白名单：App 全部 active Tool */
+  restrictTools?: boolean;
+  /** true：仅 AgentHostTool 白名单；false 且无白名单：App 全部 active HostTool */
+  restrictHostTools?: boolean;
+  /** true：仅 AgentSkill 白名单；false 且无白名单：App 全部 Skill */
+  restrictSkills?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -65,6 +71,9 @@ export interface CreateAgentDto {
    * @example {"temperature":0.2}
    */
   config?: object;
+  restrictTools?: boolean;
+  restrictHostTools?: boolean;
+  restrictSkills?: boolean;
 }
 
 export interface UpdateAgentDto {
@@ -76,6 +85,9 @@ export interface UpdateAgentDto {
   maxSteps?: number;
   enableToolCall?: boolean;
   config?: object;
+  restrictTools?: boolean;
+  restrictHostTools?: boolean;
+  restrictSkills?: boolean;
 }
 
 export interface BindAgentToolsDto {

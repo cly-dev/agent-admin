@@ -2,7 +2,7 @@ import { AppDetailPage } from '@/components/AppDetailHeader';
 import ContentEmpty from '@/components/ContentEmpty';
 import { PlusOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Form, Input, Switch } from 'antd';
+import { Alert, Collapse, Form, Input, Switch } from 'antd';
 import { getAgentListStatus } from '../agentShared';
 import AgentAllowedHostToolsTable from '../components/AgentAllowedHostToolsTable';
 import AgentAllowedToolsTable from '../components/AgentAllowedToolsTable';
@@ -64,6 +64,9 @@ const AgentDetailPage: React.FC = () => {
   });
 
   const watchedName = Form.useWatch('name', form);
+  const restrictTools = Form.useWatch('restrictTools', form);
+  const restrictHostTools = Form.useWatch('restrictHostTools', form);
+  const restrictSkills = Form.useWatch('restrictSkills', form);
 
   const pageTitle = isCreateMode
     ? intl.formatMessage({ id: 'agent.detail.createTitle' })
@@ -216,81 +219,170 @@ const AgentDetailPage: React.FC = () => {
                   </Form.Item>
                 </div>
               </section>
+
+              <section className={styles.agentDetailCapabilitySection}>
+                <h2 className={styles.agentDetailSectionTitle}>
+                  {intl.formatMessage({ id: 'agent.capability.title' })}
+                </h2>
+                <p className={styles.agentDetailCapabilityHint}>
+                  {intl.formatMessage({ id: 'agent.capability.hint' })}
+                </p>
+                <div className={styles.agentDetailFormGrid}>
+                  <Form.Item
+                    name="restrictTools"
+                    label={intl.formatMessage({
+                      id: 'agent.capability.restrictTools',
+                    })}
+                    valuePropName="checked"
+                    extra={intl.formatMessage({
+                      id: restrictTools
+                        ? 'agent.capability.restrictToolsOn'
+                        : 'agent.capability.restrictToolsOff',
+                    })}
+                  >
+                    <Switch />
+                  </Form.Item>
+                  <Form.Item
+                    name="restrictHostTools"
+                    label={intl.formatMessage({
+                      id: 'agent.capability.restrictHostTools',
+                    })}
+                    valuePropName="checked"
+                    extra={intl.formatMessage({
+                      id: restrictHostTools
+                        ? 'agent.capability.restrictHostToolsOn'
+                        : 'agent.capability.restrictHostToolsOff',
+                    })}
+                  >
+                    <Switch />
+                  </Form.Item>
+                  <Form.Item
+                    name="restrictSkills"
+                    className={styles.agentDetailFieldFull}
+                    label={intl.formatMessage({
+                      id: 'agent.capability.restrictSkills',
+                    })}
+                    valuePropName="checked"
+                    extra={intl.formatMessage({
+                      id: restrictSkills
+                        ? 'agent.capability.restrictSkillsOn'
+                        : 'agent.capability.restrictSkillsOff',
+                    })}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </div>
+                {restrictSkills ? (
+                  <Alert
+                    type="info"
+                    showIcon
+                    className={styles.agentDetailCapabilityAlert}
+                    message={intl.formatMessage({
+                      id: 'agent.capability.skillWhitelistNote',
+                    })}
+                  />
+                ) : null}
+              </section>
             </Form>
 
-            <section className={styles.agentDetailToolsSection}>
-              <div className={styles.agentDetailToolsHeader}>
-                <h2 className={styles.agentDetailSectionTitle}>
-                  {intl.formatMessage({ id: 'agent.tools.title' })}
-                  <span className={styles.agentDetailToolsCount}>
-                    {toolsTotal}
-                  </span>
-                </h2>
-                <button
-                  type="button"
-                  className="app-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={submitting || !projectId}
-                  onClick={openBindModal}
-                >
-                  <PlusOutlined />
-                  {intl.formatMessage({ id: 'agent.tools.bind' })}
-                </button>
-              </div>
-              <AgentAllowedToolsTable
-                tools={boundTools}
-                loading={toolsLoading}
-                page={toolsPage}
-                pageSize={toolsPageSize}
-                total={toolsTotal}
-                unbindSubmittingId={unbindSubmittingId}
-                onPageChange={isCreateMode ? undefined : onBoundToolsPageChange}
-                onUnbind={handleUnbindTool}
-                filter={
-                  isCreateMode
-                    ? undefined
-                    : {
-                        form: toolsFilterForm,
-                        appliedFilters: appliedToolsFilters,
-                        loading: toolsLoading,
-                        onSearch: handleToolsFilterSearch,
-                        onReset: handleToolsFilterReset,
-                      }
-                }
-              />
-            </section>
-
-            {!isCreateMode ? (
-              <section className={styles.agentDetailToolsSection}>
-                <div className={styles.agentDetailToolsHeader}>
-                  <h2 className={styles.agentDetailSectionTitle}>
-                    {intl.formatMessage({ id: 'agent.hostTools.title' })}
-                    <span className={styles.agentDetailToolsCount}>
-                      {hostTools.total}
+            <Collapse
+              className={styles.agentDetailWhitelistCollapse}
+              defaultActiveKey={[]}
+              items={[
+                {
+                  key: 'http-tools',
+                  label: (
+                    <span className={styles.agentDetailCollapseLabel}>
+                      {intl.formatMessage({ id: 'agent.tools.title' })}
+                      <span className={styles.agentDetailToolsCount}>
+                        {toolsTotal}
+                      </span>
                     </span>
-                  </h2>
-                  <button
-                    type="button"
-                    className="app-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={submitting || !hostToolsEnabled}
-                    onClick={hostTools.openBindModal}
-                  >
-                    <PlusOutlined />
-                    {intl.formatMessage({ id: 'agent.hostTools.bind' })}
-                  </button>
-                </div>
-                <AgentAllowedHostToolsTable
-                  tools={hostTools.boundTools}
-                  loading={hostTools.loading}
-                  page={hostTools.page}
-                  pageSize={hostTools.pageSize}
-                  total={hostTools.total}
-                  unbindSubmittingId={hostTools.unbindSubmittingId}
-                  onUnbind={(hostToolId) =>
-                    void hostTools.handleUnbindTool(hostToolId)
-                  }
-                />
-              </section>
-            ) : null}
+                  ),
+                  extra: (
+                    <button
+                      type="button"
+                      className="app-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={submitting || !projectId}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openBindModal();
+                      }}
+                    >
+                      <PlusOutlined />
+                      {intl.formatMessage({ id: 'agent.tools.bind' })}
+                    </button>
+                  ),
+                  children: (
+                    <AgentAllowedToolsTable
+                      tools={boundTools}
+                      loading={toolsLoading}
+                      page={toolsPage}
+                      pageSize={toolsPageSize}
+                      total={toolsTotal}
+                      unbindSubmittingId={unbindSubmittingId}
+                      onPageChange={
+                        isCreateMode ? undefined : onBoundToolsPageChange
+                      }
+                      onUnbind={handleUnbindTool}
+                      filter={
+                        isCreateMode
+                          ? undefined
+                          : {
+                              form: toolsFilterForm,
+                              appliedFilters: appliedToolsFilters,
+                              loading: toolsLoading,
+                              onSearch: handleToolsFilterSearch,
+                              onReset: handleToolsFilterReset,
+                            }
+                      }
+                    />
+                  ),
+                },
+                ...(!isCreateMode
+                  ? [
+                      {
+                        key: 'host-tools',
+                        label: (
+                          <span className={styles.agentDetailCollapseLabel}>
+                            {intl.formatMessage({ id: 'agent.hostTools.title' })}
+                            <span className={styles.agentDetailToolsCount}>
+                              {hostTools.total}
+                            </span>
+                          </span>
+                        ),
+                        extra: (
+                          <button
+                            type="button"
+                            className="app-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                            disabled={submitting || !hostToolsEnabled}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              hostTools.openBindModal();
+                            }}
+                          >
+                            <PlusOutlined />
+                            {intl.formatMessage({ id: 'agent.hostTools.bind' })}
+                          </button>
+                        ),
+                        children: (
+                          <AgentAllowedHostToolsTable
+                            tools={hostTools.boundTools}
+                            loading={hostTools.loading}
+                            page={hostTools.page}
+                            pageSize={hostTools.pageSize}
+                            total={hostTools.total}
+                            unbindSubmittingId={hostTools.unbindSubmittingId}
+                            onUnbind={(hostToolId) =>
+                              void hostTools.handleUnbindTool(hostToolId)
+                            }
+                          />
+                        ),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
           </div>
         )}
       </AppDetailPage>

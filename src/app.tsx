@@ -10,6 +10,7 @@ import {
   type RequestConfig,
   type RunTimeLayoutConfig,
 } from '@umijs/max';
+import React from 'react';
 import './global.css';
 
 export async function getInitialState(): Promise<{
@@ -46,6 +47,19 @@ export const layout: RunTimeLayoutConfig = ({
     menu: {
       locale: true,
       defaultOpenAll: false,
+    },
+    menuContentRender: (layoutProps, defaultDom) => {
+      if (!React.isValidElement(defaultDom)) {
+        return defaultDom;
+      }
+
+      return React.cloneElement(defaultDom, {
+        mode: 'inline',
+        menuProps: {
+          mode: 'inline',
+          inlineCollapsed: layoutProps.collapsed,
+        },
+      } as Record<string, unknown>);
     },
     siderWidth: 256,
     token: {

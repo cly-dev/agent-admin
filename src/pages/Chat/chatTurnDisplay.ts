@@ -129,6 +129,36 @@ export function stepTypeLabelKey(type?: string): string {
 
 export function summarizeStepPreview(step: MessageTurnAgentRunStep): string {
   const type = step.type ?? 'unknown';
+  if (type === 'write_confirmation_gate' && step.output && typeof step.output === 'object') {
+    const output = step.output as Record<string, unknown>;
+    const auditPhase =
+      typeof output.auditPhase === 'string' ? output.auditPhase : '';
+    const requestId =
+      output.approvalRequestId != null ? `#${output.approvalRequestId}` : '';
+    const channel =
+      typeof output.rejectChannel === 'string' ? output.rejectChannel : '';
+    if (auditPhase === 'awaiting_approval') {
+      return requestId ? `awaiting ${requestId}` : 'awaiting approval';
+    }
+    if (auditPhase === 'approval_rejected') {
+      return channel ? `rejected · ${channel}` : 'rejected';
+    }
+    if (auditPhase === 'approval_confirmed') {
+      const confirmChannel =
+        typeof output.confirmChannel === 'string' ? output.confirmChannel : '';
+      return confirmChannel
+        ? `confirmed · ${confirmChannel}`
+        : requestId
+          ? `confirmed ${requestId}`
+          : 'confirmed';
+    }
+  }
+  if (type === 'workflow_init_skipped' && step.output && typeof step.output === 'object') {
+    const output = step.output as Record<string, unknown>;
+    if (output.reason === 'trigger_permission_denied') {
+      return 'trigger_permission_denied';
+    }
+  }
   if (type === 'tool' && step.name) {
     const latency =
       typeof step.meta?.latency === 'number' ? ` · ${step.meta.latency}ms` : '';

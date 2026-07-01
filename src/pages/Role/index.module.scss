@@ -29,8 +29,9 @@
   box-shadow: 0 8px 32px rgb(25 28 30 / 0.04);
 }
 
-@media (min-width: 768px) {
-  .rolePageCard {
-    padding: 24px 28px;
-  }
+.roleWorkflowWriteHint {
+  margin: 16px 0 0;
+  color: rgb(25 28 30 / 0.55);
+  font-size: 13px;
+  line-height: 1.55;
 }

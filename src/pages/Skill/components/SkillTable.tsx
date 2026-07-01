@@ -49,16 +49,24 @@ const SkillTable: React.FC<SkillTableProps> = ({
       render: (value?: string) => value || '—',
     },
     {
-      title: intl.formatMessage({ id: 'skill.column.agent' }),
-      key: 'agent',
+      title: intl.formatMessage({ id: 'skill.column.appClient' }),
+      key: 'appClient',
       width: 140,
       render: (_value, record) => {
-        const name = record.agentName?.trim() || record.agent?.name?.trim();
+        const name =
+          record.appClientName?.trim() || record.appClient?.name?.trim();
         if (name) {
-          return `${name} (#${record.agentId})`;
+          return name;
         }
-        return record.agentId ? `#${record.agentId}` : '—';
+        return record.appClientId ? `#${record.appClientId}` : '—';
       },
+    },
+    {
+      title: intl.formatMessage({ id: 'skill.column.agentSkillCount' }),
+      dataIndex: 'agentSkillCount',
+      key: 'agentSkillCount',
+      width: 110,
+      render: (value?: number) => (value !== undefined ? value : '—'),
     },
     {
       title: intl.formatMessage({ id: 'skill.column.toolCount' }),

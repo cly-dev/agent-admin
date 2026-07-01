@@ -1,5 +1,3 @@
-export type HostToolExposure = 'CATALOG' | 'ON_COMPLETE' | 'LLM' | 'BOTH';
-
 export type HostToolSkillTrigger =
   | 'ON_MUTATION_SUCCESS'
   | 'ON_PLAN_STEP'
@@ -9,7 +7,6 @@ export type HostToolSkillTrigger =
 export type HostToolSummary = {
   id: number;
   name: string;
-  exposure: string;
   pageScope: string | null;
   definitionKey?: string;
   description?: string;
@@ -28,7 +25,6 @@ export type HostTool = {
   name: string;
   description: string;
   argsSchema: unknown;
-  exposure: HostToolExposure | string;
   argsTemplate?: unknown | null;
   sortOrder?: number;
   isActive?: boolean;
@@ -65,7 +61,6 @@ export type CreateHostToolDto = {
   name: string;
   description: string;
   argsSchema: Record<string, unknown>;
-  exposure?: HostToolExposure;
   argsTemplate?: Record<string, unknown> | null;
   sortOrder?: number;
   isActive?: boolean;
@@ -78,7 +73,6 @@ export type UpdateHostToolDto = {
   name?: string;
   description?: string;
   argsSchema?: Record<string, unknown>;
-  exposure?: HostToolExposure;
   argsTemplate?: Record<string, unknown> | null;
   sortOrder?: number;
   isActive?: boolean;
@@ -91,7 +85,6 @@ export type HostToolControllerFindByAppClientParams = {
   keyword?: string;
   scope?: string;
   genericOnly?: boolean;
-  exposure?: HostToolExposure;
   isActive?: boolean;
 };
 

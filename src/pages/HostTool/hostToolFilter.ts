@@ -1,14 +1,10 @@
-import type { HostToolExposure } from '@/types/host-tool';
-
 export type HostToolFilterFormValues = {
   keyword?: string;
-  exposure?: HostToolExposure;
   isActive?: boolean | string;
 };
 
 export type HostToolFilterValues = {
   keyword?: string;
-  exposure?: HostToolExposure;
   isActive?: boolean;
 };
 
@@ -25,7 +21,6 @@ export function normalizeHostToolFilter(
   }
   return {
     keyword: keyword || undefined,
-    exposure: values.exposure || undefined,
     isActive,
   };
 }
@@ -34,9 +29,6 @@ export function countActiveHostToolFilters(
   filters: HostToolFilterValues,
 ): number {
   let count = 0;
-  if (filters.exposure) {
-    count += 1;
-  }
   if (filters.isActive !== undefined) {
     count += 1;
   }

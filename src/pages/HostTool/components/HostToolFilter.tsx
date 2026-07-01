@@ -1,5 +1,4 @@
 import { AppQueryPanel, AppQuerySelect } from '@/components/AppQueryPanel';
-import type { HostToolExposure } from '@/types/host-tool';
 import { useIntl } from '@umijs/max';
 import { Form } from 'antd';
 import { useMemo } from 'react';
@@ -16,13 +15,6 @@ type HostToolFilterProps = {
   onSearch: (values: HostToolFilterFormValues) => void;
   onReset: () => void;
 };
-
-const EXPOSURE_OPTIONS: HostToolExposure[] = [
-  'CATALOG',
-  'ON_COMPLETE',
-  'LLM',
-  'BOTH',
-];
 
 const HostToolFilter: React.FC<HostToolFilterProps> = ({
   form,
@@ -72,21 +64,6 @@ const HostToolFilter: React.FC<HostToolFilterProps> = ({
       countActive={countActiveHostToolFilters}
       advancedContent={
         <AppQueryPanel.Grid>
-          <Form.Item
-            name="exposure"
-            label={intl.formatMessage({ id: 'hostTool.column.exposure' })}
-          >
-            <AppQuerySelect
-              allowClear
-              placeholder={intl.formatMessage({
-                id: 'hostTool.filter.exposurePlaceholder',
-              })}
-              options={EXPOSURE_OPTIONS.map((value) => ({
-                value,
-                label: intl.formatMessage({ id: `hostTool.exposure.${value}` }),
-              }))}
-            />
-          </Form.Item>
           <Form.Item
             name="isActive"
             label={intl.formatMessage({ id: 'hostTool.column.isActive' })}

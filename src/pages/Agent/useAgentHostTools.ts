@@ -27,7 +27,6 @@ function summaryToHostTool(summary: HostToolSummary): HostTool {
     name: summary.name,
     description: summary.description ?? '',
     argsSchema: summary.argsSchema ?? {},
-    exposure: summary.exposure,
     pageScope: summary.pageScope,
     isActive: summary.isActive,
   };

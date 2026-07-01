@@ -16,9 +16,12 @@
   "dependencies": {
     "@ant-design/icons": "^6.1.1",
     "@ant-design/pro-components": "^2.8.10",
+    "@antv/x6": "^3.1.7",
+    "@antv/x6-react-shape": "^3.0.1",
     "@uiw/react-json-view": "2.0.0-alpha.43",
     "@umijs/max": "^4.6.46",
     "antd": "^6.3.6",
+    "elkjs": "^0.11.1",
     "omnix-chat": "1.5.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

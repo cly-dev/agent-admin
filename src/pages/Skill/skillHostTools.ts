@@ -17,7 +17,6 @@ export type SkillHostToolTabRow = {
   name: string;
   description?: string;
   pageScope?: string | null;
-  exposure?: string;
   enabled: boolean;
   trigger: HostToolSkillTrigger;
   priority: number;
@@ -34,14 +33,6 @@ function stringifyJson(value: unknown): string {
   } catch {
     return '';
   }
-}
-
-export function matchesMutationExposure(exposure?: string): boolean {
-  return exposure === 'ON_COMPLETE' || exposure === 'BOTH';
-}
-
-export function matchesPlanExposure(exposure?: string): boolean {
-  return exposure === 'LLM' || exposure === 'BOTH';
 }
 
 export function isMutationTrigger(trigger?: string): boolean {
@@ -63,7 +54,7 @@ export function buildMutationTabRows(
   );
 
   return agentHostTools
-    .filter((tool) => tool.id > 0 && matchesMutationExposure(tool.exposure))
+    .filter((tool) => tool.id > 0)
     .map((tool) => {
       const binding = bindingMap.get(tool.id);
       return {
@@ -71,7 +62,6 @@ export function buildMutationTabRows(
         name: tool.name,
         description: tool.description,
         pageScope: tool.pageScope,
-        exposure: tool.exposure,
         enabled: Boolean(binding),
         trigger: 'ON_MUTATION_SUCCESS',
         priority: binding?.priority ?? 0,
@@ -92,7 +82,7 @@ export function buildPlanTabRows(
   );
 
   return agentHostTools
-    .filter((tool) => tool.id > 0 && matchesPlanExposure(tool.exposure))
+    .filter((tool) => tool.id > 0)
     .map((tool) => {
       const binding = bindingMap.get(tool.id);
       const trigger =
@@ -104,7 +94,6 @@ export function buildPlanTabRows(
         name: tool.name,
         description: tool.description,
         pageScope: tool.pageScope,
-        exposure: tool.exposure,
         enabled: Boolean(binding),
         trigger,
         priority: binding?.priority ?? 0,

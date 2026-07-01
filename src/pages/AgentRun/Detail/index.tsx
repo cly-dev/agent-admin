@@ -1,5 +1,7 @@
 import { AppDetailPage } from '@/components/AppDetailHeader';
 import ContentEmpty from '@/components/ContentEmpty';
+import { ChatAgentRunSteps } from '@/pages/Chat/components/ChatAgentRunSteps';
+import type { MessageTurnAgentRunStep } from '@/types/message-turn';
 import type { AgentRunStatus } from '@/types/agent-run';
 import { history, useIntl, useParams } from '@umijs/max';
 import { Descriptions, Tag } from 'antd';
@@ -177,7 +179,17 @@ const AgentRunDetailPage: React.FC = () => {
           <h3 className={styles.agentRunDetailSectionTitle}>
             {intl.formatMessage({ id: 'agentRun.detail.steps' })}
           </h3>
-          {renderCodeBlock(run.steps)}
+          {Array.isArray(run.steps) && run.steps.length > 0 ? (
+            <ChatAgentRunSteps
+              run={{
+                id: run.id,
+                agentId: run.agentId,
+                steps: run.steps as MessageTurnAgentRunStep[],
+              }}
+            />
+          ) : (
+            renderCodeBlock(run.steps)
+          )}
         </section>
 
         {run.error ? (

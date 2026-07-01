@@ -106,7 +106,7 @@ const SkillFilter: React.FC<SkillFilterProps> = ({
           </Form.Item>
           <Form.Item
             name="agentId"
-            label={intl.formatMessage({ id: 'skill.column.agent' })}
+            label={intl.formatMessage({ id: 'skill.filter.agent' })}
           >
             <AppQuerySelect
               allowClear

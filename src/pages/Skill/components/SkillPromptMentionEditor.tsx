@@ -32,7 +32,6 @@ type MentionSuggestion = SuggestionDataItem & {
   method?: string;
   path?: string;
   pageScope?: string | null;
-  exposure?: string;
 };
 
 const SkillPromptMentionEditor: React.FC<SkillPromptMentionEditorProps> = ({
@@ -87,7 +86,6 @@ const SkillPromptMentionEditor: React.FC<SkillPromptMentionEditorProps> = ({
           kind: 'hostTool' as const,
           description: hostTool?.description,
           pageScope: hostTool?.pageScope,
-          exposure: hostTool?.exposure,
         };
       }),
     [boundHostTools, boundTools, mentionData],
@@ -216,9 +214,6 @@ const SkillPromptMentionEditor: React.FC<SkillPromptMentionEditorProps> = ({
                                 : intl.formatMessage({
                                     id: 'hostTool.pageScope.generic',
                                   })}
-                              {row.exposure
-                                ? ` · ${intl.formatMessage({ id: `hostTool.exposure.${row.exposure}`, defaultMessage: row.exposure })}`
-                                : ''}
                             </span>
                           ) : row.description ? (
                             <span className={styles.suggestionMeta}>

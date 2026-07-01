@@ -8,7 +8,6 @@ import {
 } from '@/components/AppTable';
 import type { HostTool } from '@/types/host-tool';
 import { useIntl } from '@umijs/max';
-import { Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 type AgentAllowedHostToolsTableProps = {
@@ -55,20 +54,6 @@ const AgentAllowedHostToolsTable: React.FC<AgentAllowedHostToolsTableProps> = ({
         ) : (
           intl.formatMessage({ id: 'hostTool.pageScope.generic' })
         ),
-    },
-    {
-      title: intl.formatMessage({ id: 'agent.hostTools.column.exposure' }),
-      dataIndex: 'exposure',
-      key: 'exposure',
-      width: 120,
-      render: (value: string) => (
-        <Tag>
-          {intl.formatMessage({
-            id: `hostTool.exposure.${value}`,
-            defaultMessage: value,
-          })}
-        </Tag>
-      ),
     },
     {
       title: intl.formatMessage({ id: 'agent.hostTools.column.description' }),

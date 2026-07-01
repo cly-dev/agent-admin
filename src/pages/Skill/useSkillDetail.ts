@@ -1,19 +1,20 @@
 import { useProjectRoute } from '@/hooks/useProjectRoute';
+import { AgentController_findByAppClient } from '@/services/agent';
 import {
-  AgentController_findByAppClient,
-  AgentController_getAgentTools,
-} from '@/services/agent';
-import {
-  HostToolController_getAllAgentHostTools,
+  HOST_TOOL_MAX_PAGE_SIZE,
+  HostToolController_findByAppClient,
   HostToolController_replaceSkillHostTools,
 } from '@/services/host-tool';
 import {
   SkillController_create,
+  SkillController_createByAppClient,
   SkillController_findOne,
   SkillController_replaceTools,
   SkillController_update,
 } from '@/services/skill';
+import { ToolController_findByAppClient } from '@/services/tool';
 import type { Agent, AgentAllowedToolRef } from '@/types/agent';
+import type { HostTool } from '@/types/host-tool';
 import type { SkillHostToolBindingRecord } from '@/types/host-tool';
 import type {
   CreateSkillDto,
@@ -22,6 +23,8 @@ import type {
   SkillToolBindingItemDto,
   UpdateSkillDto,
 } from '@/types/skill';
+import type { Tool } from '@/types/tool';
+import { formatApiErrorMessage } from '@/utils/api-error';
 import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -37,17 +40,25 @@ import {
   type SkillPromptHostToolOption,
   type SkillPromptToolOption,
 } from './skillPromptMention';
+import type { WorkflowBindingValue } from '@/types/workflow';
 import {
   hasWorkflowConfig,
-  mergeWorkflowIntoConfig,
   parseWorkflowFromConfig,
   type SkillWorkflowState,
-  validateWorkflowSteps,
 } from './skillWorkflow';
+
+function emptyWorkflowBinding(): WorkflowBindingValue {
+  return {
+    workflowId: null,
+    workflowVersion: null,
+    workflowOverrides: null,
+  };
+}
 
 export type SkillExecutionMode = 'prompt' | 'workflow';
 
 export type SkillFormValues = {
+  /** 高级：仅本 Bot 可见时可选 */
   agentId?: number;
   name: string;
   prompt: string;
@@ -67,6 +78,8 @@ export type SkillToolRow = {
   method?: string;
   bound: boolean;
 };
+
+const APP_TOOLS_PAGE_SIZE = 100;
 
 function parseConfigJson(
   value?: string,
@@ -100,7 +113,6 @@ function stringifyConfig(config?: Record<string, unknown>): string {
 function buildConfigForSave(
   configJson: string | undefined,
   useRawConfigOnly: boolean,
-  workflow: SkillWorkflowState,
 ): Record<string, unknown> | undefined | null {
   const parsed = parseConfigJson(configJson);
   if (configJson?.trim() && parsed === null) {
@@ -113,10 +125,9 @@ function buildConfigForSave(
   const rest = { ...base };
   delete rest.workflow;
   delete rest.deliverable;
-  return mergeWorkflowIntoConfig(rest, workflow);
+  return Object.keys(rest).length > 0 ? rest : undefined;
 }
 
-/** DTO config 字段为 object | undefined，排除 parse 失败时的 null */
 function toSkillDtoConfig(
   value: Record<string, unknown> | undefined | null,
 ): object | undefined {
@@ -124,23 +135,93 @@ function toSkillDtoConfig(
 }
 
 function resolveExecutionMode(
-  config?: Record<string, unknown> | null,
+  skill?: Pick<SkillDetail, 'workflowId' | 'config'> | null,
   workflow?: SkillWorkflowState,
 ): SkillExecutionMode {
+  if (skill?.workflowId) {
+    return 'workflow';
+  }
   if (workflow && workflow.steps.length > 0) {
     return 'workflow';
   }
-  if (hasWorkflowConfig(config)) {
+  if (hasWorkflowConfig(skill?.config)) {
     return 'workflow';
   }
   return 'prompt';
+}
+
+function toWorkflowBinding(
+  skill?: Pick<
+    SkillDetail,
+    'workflowId' | 'workflowVersion' | 'workflowOverrides'
+  > | null,
+): WorkflowBindingValue {
+  return {
+    workflowId: skill?.workflowId ?? null,
+    workflowVersion: skill?.workflowVersion ?? null,
+    workflowOverrides: skill?.workflowOverrides ?? null,
+  };
+}
+
+function toolToAllowedRef(tool: Tool): AgentAllowedToolRef {
+  return {
+    bindingId: tool.id,
+    toolId: tool.id,
+    name: tool.name,
+    description: tool.description,
+    path: tool.path,
+    method: tool.method,
+    isActive: tool.isActive,
+  };
+}
+
+async function fetchAllActiveAppTools(appClientId: number): Promise<Tool[]> {
+  const list: Tool[] = [];
+  let page = 1;
+  let total = 0;
+
+  do {
+    const result = await ToolController_findByAppClient(appClientId, {
+      page,
+      pageSize: APP_TOOLS_PAGE_SIZE,
+      isActive: true,
+      orderBy: 'updatedAt',
+      order: 'desc',
+    });
+    list.push(...result.list);
+    total = result.total;
+    page += 1;
+  } while (list.length < total);
+
+  return list;
+}
+
+async function fetchAllActiveAppHostTools(
+  appClientId: number,
+): Promise<HostTool[]> {
+  const list: HostTool[] = [];
+  let page = 1;
+  let total = 0;
+
+  do {
+    const result = await HostToolController_findByAppClient(appClientId, {
+      page,
+      pageSize: HOST_TOOL_MAX_PAGE_SIZE,
+      isActive: true,
+    });
+    list.push(...result.list);
+    total = result.total;
+    page += 1;
+  } while (list.length < total);
+
+  return list;
 }
 
 export function useSkillDetail() {
   const intl = useIntl();
   const location = useLocation();
   const { projectId, currentProject } = useProjectRoute();
-  const params = useParams<{ agentId?: string; skillId?: string }>();
+  const params = useParams<{ skillId?: string }>();
 
   const isCreateMode = location.pathname.endsWith('/agent/skill/detail/create');
   const skillId = Number(params.skillId);
@@ -155,8 +236,7 @@ export function useSkillDetail() {
   const [saving, setSaving] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [agentsLoading, setAgentsLoading] = useState(false);
-  const [, setAgentTools] = useState<AgentAllowedToolRef[]>([]);
-  const [agentToolsLoading, setAgentToolsLoading] = useState(false);
+  const [appToolsLoading, setAppToolsLoading] = useState(false);
   const [toolRows, setToolRows] = useState<SkillToolRow[]>([]);
   const [selectedToolIds, setSelectedToolIds] = useState<number[]>([]);
   const [mutationHostToolRows, setMutationHostToolRows] = useState<
@@ -168,6 +248,9 @@ export function useSkillDetail() {
   const [hostToolsDirty, setHostToolsDirty] = useState(false);
   const [hostToolsLoading, setHostToolsLoading] = useState(false);
   const [workflow, setWorkflow] = useState<SkillWorkflowState>({ steps: [] });
+  const [workflowBinding, setWorkflowBinding] =
+    useState<WorkflowBindingValue>(emptyWorkflowBinding);
+  const [hasLegacyWorkflow, setHasLegacyWorkflow] = useState(false);
   const [useRawConfigOnly, setUseRawConfigOnly] = useState(false);
   const [executionMode, setExecutionMode] =
     useState<SkillExecutionMode>('prompt');
@@ -186,7 +269,8 @@ export function useSkillDetail() {
   );
 
   const resolvedAppClientId = skill?.appClientId ?? projectId ?? 0;
-  const resolvedAgentId = Number(formAgentId) > 0 ? Number(formAgentId) : 0;
+  const optionalCreateAgentId =
+    Number(formAgentId) > 0 ? Number(formAgentId) : 0;
 
   const appClientDisplayName = useMemo(() => {
     const fromSkill =
@@ -221,40 +305,12 @@ export function useSkillDetail() {
     }
   }, []);
 
-  const loadAgentTools = useCallback(
-    async (targetAgentId: number, appClientId: number) => {
-      if (!appClientId || !targetAgentId) {
-        setAgentTools([]);
-        return [];
-      }
-      setAgentToolsLoading(true);
-      try {
-        const result = await AgentController_getAgentTools(
-          targetAgentId,
-          appClientId,
-          {
-            page: 1,
-            pageSize: 100,
-          },
-        );
-        setAgentTools(result.list);
-        return result.list;
-      } catch {
-        setAgentTools([]);
-        return [];
-      } finally {
-        setAgentToolsLoading(false);
-      }
-    },
-    [],
-  );
-
   const mergeToolRows = useCallback(
-    (detail: SkillDetail | null, boundTools: AgentAllowedToolRef[]) => {
+    (detail: SkillDetail | null, appTools: AgentAllowedToolRef[]) => {
       const boundMap = new Map(
         (detail?.tools ?? []).map((item) => [item.toolId, item] as const),
       );
-      const rows: SkillToolRow[] = boundTools
+      const rows: SkillToolRow[] = appTools
         .filter((tool) => tool.toolId > 0)
         .map((tool) => {
           const binding = boundMap.get(tool.toolId);
@@ -278,27 +334,21 @@ export function useSkillDetail() {
 
   const loadHostToolRows = useCallback(
     async (
-      targetAgentId: number,
       appClientId: number,
       skillBindings: SkillHostToolBindingRecord[] = [],
     ) => {
-      if (!appClientId || !targetAgentId) {
+      if (!appClientId) {
         setMutationHostToolRows([]);
         setPlanHostToolRows([]);
         return;
       }
       setHostToolsLoading(true);
       try {
-        const agentHostTools = (
-          await HostToolController_getAllAgentHostTools(
-            targetAgentId,
-            appClientId,
-          )
-        ).filter((item) => item.bound);
+        const appHostTools = await fetchAllActiveAppHostTools(appClientId);
         setMutationHostToolRows(
-          buildMutationTabRows(agentHostTools, skillBindings),
+          buildMutationTabRows(appHostTools, skillBindings),
         );
-        setPlanHostToolRows(buildPlanTabRows(agentHostTools, skillBindings));
+        setPlanHostToolRows(buildPlanTabRows(appHostTools, skillBindings));
       } catch {
         setMutationHostToolRows([]);
         setPlanHostToolRows([]);
@@ -310,16 +360,33 @@ export function useSkillDetail() {
   );
 
   const syncHostToolState = useCallback(
-    (
-      detail: SkillDetail | null,
-      targetAgentId: number,
-      appClientId: number,
-    ) => {
+    (detail: SkillDetail | null, appClientId: number) => {
       const bindings = detail?.skillHostTools ?? [];
       setHostToolsDirty(false);
-      void loadHostToolRows(targetAgentId, appClientId, bindings);
+      void loadHostToolRows(appClientId, bindings);
     },
     [loadHostToolRows],
+  );
+
+  const loadAppTools = useCallback(
+    async (appClientId: number, detail: SkillDetail | null) => {
+      if (!appClientId) {
+        setToolRows([]);
+        setSelectedToolIds([]);
+        return;
+      }
+      setAppToolsLoading(true);
+      try {
+        const tools = await fetchAllActiveAppTools(appClientId);
+        mergeToolRows(detail, tools.map(toolToAllowedRef));
+      } catch {
+        setToolRows([]);
+        setSelectedToolIds([]);
+      } finally {
+        setAppToolsLoading(false);
+      }
+    },
+    [mergeToolRows],
   );
 
   const loadSkill = useCallback(async () => {
@@ -338,15 +405,19 @@ export function useSkillDetail() {
       setSkill(detail);
       const workflowState = parseWorkflowFromConfig(detail.config);
       setWorkflow(workflowState);
-      setExecutionMode(resolveExecutionMode(detail.config, workflowState));
+      setWorkflowBinding(toWorkflowBinding(detail));
+      setHasLegacyWorkflow(
+        !detail.workflowId && hasWorkflowConfig(detail.config),
+      );
+      setExecutionMode(resolveExecutionMode(detail, workflowState));
       setUseCustomHostToolBinding((detail.skillHostTools ?? []).length > 0);
       setUseRawConfigOnly(
         Boolean(detail.config) && !hasWorkflowConfig(detail.config),
       );
       await loadAgents(appClientId);
-      syncHostToolState(detail, detail.agentId, appClientId);
+      syncHostToolState(detail, appClientId);
+      await loadAppTools(appClientId, detail);
       form.setFieldsValue({
-        agentId: detail.agentId,
         name: detail.name,
         prompt: detail.prompt,
         capabilityKey: detail.capabilityKey ?? '',
@@ -370,6 +441,7 @@ export function useSkillDetail() {
     intl,
     isEditMode,
     loadAgents,
+    loadAppTools,
     syncHostToolState,
     projectId,
     skillId,
@@ -390,15 +462,18 @@ export function useSkillDetail() {
       setPlanHostToolRows([]);
       setHostToolsDirty(false);
       setWorkflow({ steps: [] });
+      setWorkflowBinding(emptyWorkflowBinding());
+      setHasLegacyWorkflow(false);
       setExecutionMode('prompt');
       setUseCustomHostToolBinding(false);
       setUseRawConfigOnly(false);
-      setAgentTools([]);
       await loadAgents(projectId);
+      await loadAppTools(projectId, null);
+      syncHostToolState(null, projectId);
     } finally {
       setLoading(false);
     }
-  }, [form, isCreateMode, loadAgents, projectId]);
+  }, [form, isCreateMode, loadAgents, loadAppTools, projectId, syncHostToolState]);
 
   useEffect(() => {
     if (isCreateMode) {
@@ -409,42 +484,6 @@ export function useSkillDetail() {
       void loadSkill();
     }
   }, [initCreate, isCreateMode, isEditMode, loadSkill]);
-
-  useEffect(() => {
-    if (!resolvedAppClientId || !resolvedAgentId) {
-      setToolRows([]);
-      setSelectedToolIds([]);
-      setMutationHostToolRows([]);
-      setPlanHostToolRows([]);
-      setAgentTools([]);
-      return;
-    }
-
-    void (async () => {
-      const boundTools = await loadAgentTools(
-        resolvedAgentId,
-        resolvedAppClientId,
-      );
-      const bindingSource =
-        !isCreateMode && skill && resolvedAgentId === skill.agentId
-          ? skill
-          : null;
-      mergeToolRows(bindingSource, boundTools);
-      const bindings =
-        !isCreateMode && skill && resolvedAgentId === skill.agentId
-          ? (skill.skillHostTools ?? [])
-          : [];
-      await loadHostToolRows(resolvedAgentId, resolvedAppClientId, bindings);
-    })();
-  }, [
-    isCreateMode,
-    loadAgentTools,
-    loadHostToolRows,
-    mergeToolRows,
-    resolvedAgentId,
-    resolvedAppClientId,
-    skill,
-  ]);
 
   const promptToolOptions = useMemo<SkillPromptToolOption[]>(
     () =>
@@ -467,7 +506,6 @@ export function useSkillDetail() {
           name: row.name,
           description: row.description,
           pageScope: row.pageScope,
-          exposure: row.exposure,
         });
       }
     }
@@ -603,6 +641,34 @@ export function useSkillDetail() {
     history.push('/agent/skill');
   };
 
+  const handleWorkflowBindingChange = useCallback((next: WorkflowBindingValue) => {
+    setWorkflowBinding(next);
+  }, []);
+
+  const handleWorkflowBindingsSynced = useCallback(
+    (toolIds: number[], hostToolIds: number[]) => {
+      handleToolSelectionChange(toolIds);
+      const hostIdSet = new Set(hostToolIds);
+      setUseCustomHostToolBinding(true);
+      setHostToolsDirty(true);
+      setMutationHostToolRows((rows) =>
+        rows.map((row) =>
+          hostIdSet.has(row.hostToolId)
+            ? { ...row, enabled: true, isRequired: true }
+            : row,
+        ),
+      );
+      setPlanHostToolRows((rows) =>
+        rows.map((row) =>
+          hostIdSet.has(row.hostToolId)
+            ? { ...row, enabled: true, isRequired: true }
+            : row,
+        ),
+      );
+    },
+    [handleToolSelectionChange],
+  );
+
   const handleSave = async () => {
     if (!projectId) {
       message.warning(intl.formatMessage({ id: 'skill.selectProject' }));
@@ -610,31 +676,15 @@ export function useSkillDetail() {
     }
 
     const values = await form.validateFields();
-    const configParsed = buildConfigForSave(
-      values.configJson,
-      useRawConfigOnly,
-      executionMode === 'workflow' ? workflow : { steps: [] },
-    );
+    const configParsed = buildConfigForSave(values.configJson, useRawConfigOnly);
     if (values.configJson?.trim() && configParsed === null) {
       message.error(intl.formatMessage({ id: 'skill.form.configInvalid' }));
       return;
     }
 
-    if (
-      executionMode === 'workflow' &&
-      !useRawConfigOnly &&
-      workflow.steps.length > 0
-    ) {
-      const workflowIssues = validateWorkflowSteps(workflow.steps, {
-        hostToolNameOptions,
-      });
-      if (workflowIssues.length > 0) {
-        const first = workflowIssues[0];
-        message.error(
-          intl.formatMessage({ id: first.messageKey }, first.messageValues),
-        );
-        return;
-      }
+    if (executionMode === 'workflow' && !workflowBinding.workflowId) {
+      message.error(intl.formatMessage({ id: 'skill.workflow.bindingRequired' }));
+      return;
     }
 
     let hostToolsPayload: ReturnType<typeof buildSkillHostToolsPayload> | null =
@@ -655,14 +705,6 @@ export function useSkillDetail() {
     setSaving(true);
     try {
       if (isCreateMode) {
-        const createAgentId = values.agentId;
-        if (!createAgentId) {
-          message.warning(
-            intl.formatMessage({ id: 'skill.form.agentRequired' }),
-          );
-          return;
-        }
-
         const toolsPayload = buildToolsPayload();
         const tools: SkillToolBindingItemDto[] | undefined = toolsPayload.length
           ? toolsPayload
@@ -677,23 +719,36 @@ export function useSkillDetail() {
           riskLevel: values.riskLevel,
           isActive: values.isActive ?? true,
           tools,
+          ...(executionMode === 'workflow'
+            ? {
+                workflowId: workflowBinding.workflowId,
+                workflowVersion: workflowBinding.workflowVersion,
+                workflowOverrides: workflowBinding.workflowOverrides,
+              }
+            : {
+                workflowId: null,
+                workflowVersion: null,
+                workflowOverrides: null,
+              }),
         };
 
-        const created = await SkillController_create(
-          createAgentId,
-          projectId,
-          payload,
-        );
+        const created =
+          optionalCreateAgentId > 0
+            ? await SkillController_create(
+                optionalCreateAgentId,
+                projectId,
+                payload,
+              )
+            : await SkillController_createByAppClient(projectId, payload);
+
         if (created.id && hostToolsPayload !== null) {
           await HostToolController_replaceSkillHostTools(created.id, {
             tools: hostToolsPayload,
           });
         }
         message.success(intl.formatMessage({ id: 'skill.created' }));
-        if (created.id && created.agentId) {
-          history.replace(
-            `/agent/skill/detail/${created.agentId}/${created.id}`,
-          );
+        if (created.id) {
+          history.replace(`/agent/skill/detail/${created.id}`);
         } else {
           history.replace('/agent/skill');
         }
@@ -712,12 +767,18 @@ export function useSkillDetail() {
         config: toSkillDtoConfig(configParsed),
         riskLevel: values.riskLevel,
         isActive: values.isActive,
+        ...(executionMode === 'workflow'
+          ? {
+              workflowId: workflowBinding.workflowId,
+              workflowVersion: workflowBinding.workflowVersion,
+              workflowOverrides: workflowBinding.workflowOverrides,
+            }
+          : {
+              workflowId: null,
+              workflowVersion: null,
+              workflowOverrides: null,
+            }),
       };
-
-      const nextAgentId = values.agentId;
-      if (nextAgentId && nextAgentId !== skill.agentId) {
-        payload.agentId = nextAgentId;
-      }
 
       const updated = await SkillController_update(skill.id, payload);
       const toolsPayload = buildToolsPayload();
@@ -742,27 +803,25 @@ export function useSkillDetail() {
           hostToolCount: hostResult.skillHostTools.length,
         };
       }
-      syncHostToolState(nextSkill, nextSkill.agentId, resolvedAppClientId);
+      syncHostToolState(nextSkill, resolvedAppClientId);
       setSkill(nextSkill);
       const nextWorkflow = parseWorkflowFromConfig(nextSkill.config);
       setWorkflow(nextWorkflow);
-      setExecutionMode(resolveExecutionMode(nextSkill.config, nextWorkflow));
+      setWorkflowBinding(toWorkflowBinding(nextSkill));
+      setHasLegacyWorkflow(
+        !nextSkill.workflowId && hasWorkflowConfig(nextSkill.config),
+      );
+      setExecutionMode(resolveExecutionMode(nextSkill, nextWorkflow));
       setUseCustomHostToolBinding((nextSkill.skillHostTools ?? []).length > 0);
       setUseRawConfigOnly(
         Boolean(nextSkill.config) && !hasWorkflowConfig(nextSkill.config),
       );
       form.setFieldsValue({
-        agentId: nextSkill.agentId,
         capabilityKey: nextSkill.capabilityKey ?? '',
         description: nextSkill.description ?? '',
         riskLevel: nextSkill.riskLevel,
         configJson: stringifyConfig(nextSkill.config),
       });
-      if (nextSkill.agentId !== skill.agentId) {
-        history.replace(
-          `/agent/skill/detail/${nextSkill.agentId}/${nextSkill.id}`,
-        );
-      }
       message.success(intl.formatMessage({ id: 'skill.updated' }));
     } catch (error: unknown) {
       if (
@@ -773,9 +832,10 @@ export function useSkillDetail() {
         return;
       }
       message.error(
-        error instanceof Error
-          ? error.message
-          : intl.formatMessage({ id: 'skill.actionFailed' }),
+        formatApiErrorMessage(
+          error,
+          intl.formatMessage({ id: 'skill.actionFailed' }),
+        ),
       );
     } finally {
       setSaving(false);
@@ -807,10 +867,10 @@ export function useSkillDetail() {
     saving,
     appClientDisplayName,
     resolvedAppClientId,
-    resolvedAgentId,
+    optionalCreateAgentId,
     agentsLoading,
     agentOptions,
-    agentToolsLoading,
+    appToolsLoading,
     hostToolsLoading,
     toolRows,
     mutationHostToolRows,
@@ -820,6 +880,8 @@ export function useSkillDetail() {
     promptToolOptions,
     promptHostToolOptions,
     workflow,
+    workflowBinding,
+    hasLegacyWorkflow,
     useRawConfigOnly,
     hostToolNameOptions,
     executionMode,
@@ -832,6 +894,8 @@ export function useSkillDetail() {
     handleToolSelectionChange,
     handleUseCustomHostToolBindingChange,
     handleWorkflowChange,
+    handleWorkflowBindingChange,
+    handleWorkflowBindingsSynced,
     handleConfigJsonChange,
     toggleToolRequired,
     handleHostToolTabRowChange,

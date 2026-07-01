@@ -2,17 +2,18 @@ import type {
   HostToolSummary,
   SkillHostToolBindingRecord,
 } from '@/types/host-tool';
+import type { WorkflowOverrides } from '@/types/workflow';
 
 export interface CreateSkillDto {
   /**
-   * Skill 名称（同一 Agent 内唯一）
+   * Skill 名称（同一 App 内唯一）
    * @example "订单查询"
    */
   name: string;
   /** 命中后注入 LLM 的业务指引文案 */
   prompt: string;
   /**
-   * 能力键（同一 Agent 内唯一，可选）
+   * 能力键（同一 App 内唯一，可选）
    * @example "order.inquiry"
    */
   capabilityKey?: string;
@@ -27,14 +28,15 @@ export interface CreateSkillDto {
    * @default true
    */
   isActive?: boolean;
-  /** 初始关联工具（须为 Agent 已绑定的 Tool） */
+  /** 初始关联工具（须为本 App 下已启用的 Tool） */
   tools?: SkillToolBindingItemDto[];
+  workflowId?: number | null;
+  workflowVersion?: number | null;
+  workflowOverrides?: WorkflowOverrides | null;
 }
 
 export interface UpdateSkillDto {
-  /** 更换所属 Agent（须为同一 AppClient 下） */
-  agentId?: number;
-  /** Skill 名称（同一 Agent 内唯一） */
+  /** Skill 名称（同一 App 内唯一） */
   name?: string;
   /** 业务指引文案 */
   prompt?: string;
@@ -51,18 +53,21 @@ export interface UpdateSkillDto {
   riskLevel?: SkillRiskLevel;
   /** 是否启用 */
   isActive?: boolean;
+  workflowId?: number | null;
+  workflowVersion?: number | null;
+  workflowOverrides?: WorkflowOverrides | null;
 }
 
 export type SkillRiskLevel = 'L1' | 'L2' | 'L3';
 
 export interface ReplaceSkillToolsDto {
-  /** Skill 关联工具列表（全量替换；须为 Agent 已绑定的 Tool） */
+  /** Skill 关联工具列表（全量替换；须为本 App 下已启用的 Tool） */
   tools: SkillToolBindingItemDto[];
 }
 
 export interface SkillToolBindingItemDto {
   /**
-   * Tool ID（须已绑定到该 Agent）
+   * Tool ID（须为本 App 下已启用的 Tool）
    * @example 1
    */
   toolId: number;
@@ -119,13 +124,13 @@ export interface SkillRef {
   name?: string;
 }
 
-/** Skill 列表项 / 详情（含嵌套 agent、appClient） */
+/** Skill 列表项 / 详情（含嵌套 appClient） */
 export interface Skill {
   id: number;
-  agentId: number;
-  appClientId?: number;
+  appClientId: number;
   appClientName?: string;
-  agentName?: string;
+  /** 被多少 Agent 白名单引用（收紧模式） */
+  agentSkillCount?: number;
   name: string;
   prompt: string;
   capabilityKey?: string;
@@ -135,11 +140,14 @@ export interface Skill {
   /** 由 riskLevel 推导，只读展示 */
   requiresWriteConfirmation?: boolean;
   isActive?: boolean;
+  workflowId?: number | null;
+  workflowVersion?: number | null;
+  workflowOverrides?: WorkflowOverrides | null;
+  workflowName?: string;
   toolCount?: number;
   hostToolCount?: number;
   createdAt?: string;
   updatedAt?: string;
-  agent?: SkillRef;
   appClient?: SkillRef;
 }
 

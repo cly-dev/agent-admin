@@ -7,7 +7,7 @@ import {
 } from '@/components/AppTable';
 import type { HostTool } from '@/types/host-tool';
 import { useIntl } from '@umijs/max';
-import { Modal, Tag } from 'antd';
+import { Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useState } from 'react';
 import styles from '../index.module.scss';
@@ -83,20 +83,6 @@ const AgentBindHostToolsModal: React.FC<AgentBindHostToolsModalProps> = ({
         ) : (
           intl.formatMessage({ id: 'hostTool.pageScope.generic' })
         ),
-    },
-    {
-      title: intl.formatMessage({ id: 'agent.hostTools.column.exposure' }),
-      dataIndex: 'exposure',
-      key: 'exposure',
-      width: 110,
-      render: (value: string) => (
-        <Tag>
-          {intl.formatMessage({
-            id: `hostTool.exposure.${value}`,
-            defaultMessage: value,
-          })}
-        </Tag>
-      ),
     },
     {
       title: intl.formatMessage({ id: 'agent.hostTools.column.description' }),

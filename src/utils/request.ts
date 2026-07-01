@@ -1,4 +1,5 @@
 import { getAccessToken, signOut } from '@/services/auth/user';
+import { ApiRequestError, parseApiBusinessError } from '@/utils/api-error';
 import { formatAppMessage } from '@/utils/intl-message';
 import { history, request, type RequestConfig } from '@umijs/max';
 import { message } from 'antd';
@@ -173,20 +174,40 @@ const isApiResponse = <T>(value: unknown): value is ApiResponse<T> => {
   );
 };
 
+const throwApiFailure = <T>(response: ApiResponse<T>): never => {
+  const businessError = parseApiBusinessError(response.data);
+  const messageText =
+    businessError?.message ||
+    response.message ||
+    `Request failed (${response.status})`;
+  throw new ApiRequestError(messageText, {
+    businessError: businessError ?? undefined,
+    httpStatus: response.status,
+  });
+};
+
 const unwrapResponse = <T>(response: ApiResponse<T> | T): T => {
   if (isApiResponse<T>(response)) {
     const statusCode = response.status;
     if (statusCode === 401) {
       triggerUnauthorizedFlow();
-      throw new Error(
+      throw new ApiRequestError(
         response.message || formatAppMessage('auth.sessionExpired'),
+        { httpStatus: statusCode },
       );
     }
     if (
       API_ERROR_STATUSES.has(statusCode) ||
       !API_SUCCESS_STATUSES.has(statusCode)
     ) {
-      throw new Error(response.message || `Request failed (${statusCode})`);
+      throwApiFailure(response);
+    }
+    const businessErrorOnSuccess = parseApiBusinessError(response.data);
+    if (businessErrorOnSuccess) {
+      throw new ApiRequestError(
+        businessErrorOnSuccess.message || response.message,
+        { businessError: businessErrorOnSuccess, httpStatus: statusCode },
+      );
     }
     return response.data;
   }

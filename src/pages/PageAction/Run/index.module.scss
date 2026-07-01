@@ -1,0 +1,372 @@
+.pageActionRunPage :global(.ant-pro-page-container-children-content) {
+  height: 100%;
+}
+
+.pageActionRunPageShell {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 12px 12px 16px;
+  background: transparent;
+}
+
+@media (min-width: 768px) {
+  .pageActionRunPageShell {
+    padding: 16px 16px 20px;
+  }
+}
+
+.pageActionRunPageCard {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: auto;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: calc(var(--radius-ui) + 2px);
+  background: var(--color-surface-container-lowest);
+  padding: 20px;
+  box-shadow: var(--shadow-floating);
+}
+
+@media (min-width: 768px) {
+  .pageActionRunPageCard {
+    padding: 24px 28px;
+  }
+}
+
+.pageActionRunPageBody {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pageActionRunListContent {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.runDetailLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .runDetailLayout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 400px);
+    gap: 24px;
+  }
+}
+
+.runDetailHero {
+  margin-bottom: 4px;
+  border: 1px solid rgb(0 87 194 / 0.12);
+  border-radius: calc(var(--radius-ui) + 2px);
+  padding: 16px 18px;
+  background:
+    linear-gradient(135deg, rgb(0 87 194 / 0.06) 0%, transparent 55%),
+    var(--color-surface-container-lowest);
+}
+
+.runDetailHeroKey {
+  margin: 0 0 6px;
+  color: var(--color-on-surface);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.runDetailHeroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  color: rgb(25 28 30 / 0.55);
+  font-size: 13px;
+}
+
+.runDetailPanel {
+  border: 1px solid rgb(193 198 215 / 0.22);
+  border-radius: calc(var(--radius-ui) + 2px);
+  padding: 18px 20px;
+  background: var(--color-surface-container-lowest);
+  box-shadow: 0 4px 16px rgb(25 28 30 / 0.03);
+}
+
+.runDetailPanelTitle {
+  margin: 0 0 14px;
+  color: var(--color-on-surface);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.runDetailMeta {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.runDetailMeta dt {
+  margin-bottom: 4px;
+  color: rgb(25 28 30 / 0.5);
+  font-weight: 600;
+}
+
+.runDetailMeta dd {
+  margin: 0;
+  color: var(--color-on-surface);
+  word-break: break-word;
+}
+
+.runWorkflowNodes {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.runWorkflowNode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.runWorkflowNodeId {
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+}
+
+.runDetailTextBlock {
+  margin: 0;
+  max-height: 280px;
+  overflow: auto;
+  border-radius: calc(var(--radius-ui) - 2px);
+  padding: 12px 14px;
+  color: rgb(25 28 30 / 0.82);
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--color-surface-container-low);
+}
+
+.runDetailError {
+  margin: 0;
+  border-radius: var(--radius-ui);
+  padding: 10px 12px;
+  color: rgb(185 28 28);
+  font-size: 13px;
+  line-height: 1.5;
+  background: rgb(254 242 242);
+}
+
+.runTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 4px;
+}
+
+.runTimelineEmpty {
+  margin: 0;
+  color: rgb(25 28 30 / 0.45);
+  font-size: 13px;
+}
+
+.runTimelineRow {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgb(193 198 215 / 0.16);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.runTimelineMarker {
+  width: 10px;
+  flex-shrink: 0;
+  margin-top: 6px;
+  border-radius: 999px;
+  height: 10px;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 3px rgb(0 87 194 / 0.12);
+}
+
+.runTimelineMarkerApproval {
+  background: rgb(217 119 6);
+  box-shadow: 0 0 0 3px rgb(217 119 6 / 0.16);
+}
+
+.runTimelineRowApproval {
+  background: rgb(217 119 6 / 0.04);
+  border-radius: var(--radius-ui);
+  margin: 0 -8px;
+  padding: 10px 8px;
+}
+
+.runStepApprovalBadge {
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: rgb(180 83 9);
+  background: rgb(251 191 36 / 0.2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.runDetailStatusAlert {
+  margin-bottom: 16px;
+}
+
+.runTimelineContent {
+  min-width: 0;
+  flex: 1;
+}
+
+.runTimelineHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.runStepName {
+  color: var(--color-on-surface);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.runStepType {
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.runStepTypelifecycle {
+  color: rgb(0 87 194);
+  background: rgb(0 87 194 / 0.1);
+}
+
+.runStepTypellm {
+  color: rgb(109 40 217);
+  background: rgb(109 40 217 / 0.1);
+}
+
+.runStepTypedsl {
+  color: rgb(0 110 120);
+  background: rgb(0 110 120 / 0.1);
+}
+
+.runStepTypeworkflow {
+  color: rgb(4 120 87);
+  background: rgb(4 120 87 / 0.1);
+}
+
+.runStepTypeharness {
+  color: rgb(71 85 105);
+  background: rgb(71 85 105 / 0.1);
+}
+
+.runStepTime {
+  margin-left: auto;
+  color: rgb(25 28 30 / 0.45);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.runStepStatus {
+  color: rgb(25 28 30 / 0.55);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.runStepDetail {
+  margin: 6px 0 0;
+  color: rgb(25 28 30 / 0.55);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.runStepMeta {
+  color: rgb(25 28 30 / 0.55);
+  font-size: 12px;
+}
+
+.runAppendToggle {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.runAppendList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  border-radius: var(--radius-ui);
+  padding: 10px 12px;
+  background: var(--color-surface-container-low);
+}
+
+.runAppendItem {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 48px 88px 1fr;
+  color: rgb(25 28 30 / 0.62);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.runAppendStep {
+  color: rgb(25 28 30 / 0.45);
+  font-weight: 600;
+}
+
+.runJsonPanel {
+  margin-top: 12px;
+}
+
+.runJsonLabel {
+  margin: 0 0 8px;
+  color: rgb(25 28 30 / 0.5);
+  font-size: 12px;
+  font-weight: 700;
+}

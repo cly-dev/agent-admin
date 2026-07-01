@@ -19,6 +19,7 @@ import type {
   SkillToolBinding,
   UpdateSkillDto,
 } from '@/types/skill';
+import type { WorkflowOverrides } from '@/types/workflow';
 import { normalizePageResult } from '@/utils/api-page';
 import { http } from '@/utils/request';
 
@@ -90,6 +91,24 @@ function normalizeEntityRef(raw: unknown): SkillRef | undefined {
   return { id, name };
 }
 
+function normalizeNullableNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (value === null) {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function normalizeWorkflowOverrides(value: unknown): WorkflowOverrides | null {
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    return value as WorkflowOverrides;
+  }
+  return value === null ? null : null;
+}
+
 export function normalizeSkillToolBinding(
   raw: unknown,
 ): SkillToolBinding | null {
@@ -146,32 +165,21 @@ export function normalizeSkill(raw: unknown): Skill {
     unknown
   >;
   const id = Number(item.id);
-  const agentFromNested = normalizeEntityRef(item.agent);
   const appClientFromNested = normalizeEntityRef(
     item.appClient ?? item.app_client,
   );
-  const agentIdRaw = Number(item.agentId ?? item.agent_id);
   const appClientIdRaw = Number(item.appClientId ?? item.app_client_id);
-  const agentId =
-    Number.isFinite(agentIdRaw) && agentIdRaw > 0
-      ? agentIdRaw
-      : (agentFromNested?.id ?? 0);
   const appClientId =
     Number.isFinite(appClientIdRaw) && appClientIdRaw > 0
       ? appClientIdRaw
-      : appClientFromNested?.id;
-  const agentName =
-    typeof item.agentName === 'string'
-      ? item.agentName
-      : typeof item.agent_name === 'string'
-        ? item.agent_name
-        : agentFromNested?.name;
+      : (appClientFromNested?.id ?? 0);
   const appClientName =
     typeof item.appClientName === 'string'
       ? item.appClientName
       : typeof item.app_client_name === 'string'
         ? item.app_client_name
         : appClientFromNested?.name;
+  const agentSkillCountRaw = item.agentSkillCount ?? item.agent_skill_count;
   const toolsRaw = item.tools ?? item.skillTools ?? item.skill_tools;
   const toolCountRaw = item.toolCount ?? item.tool_count;
   const hostToolCountRaw = item.hostToolCount ?? item.host_tool_count;
@@ -181,10 +189,13 @@ export function normalizeSkill(raw: unknown): Skill {
 
   return {
     id: Number.isFinite(id) ? id : 0,
-    agentId,
     appClientId,
     appClientName,
-    agentName,
+    agentSkillCount:
+      typeof agentSkillCountRaw === 'number' &&
+      Number.isFinite(agentSkillCountRaw)
+        ? agentSkillCountRaw
+        : undefined,
     name: String(item.name ?? ''),
     prompt: typeof item.prompt === 'string' ? item.prompt : '',
     capabilityKey:
@@ -205,6 +216,19 @@ export function normalizeSkill(raw: unknown): Skill {
         ? requiresWriteConfirmationRaw
         : undefined,
     isActive: normalizeBoolean(item.isActive ?? item.is_active),
+    workflowId: normalizeNullableNumber(item.workflowId ?? item.workflow_id),
+    workflowVersion: normalizeNullableNumber(
+      item.workflowVersion ?? item.workflow_version,
+    ),
+    workflowOverrides: normalizeWorkflowOverrides(
+      item.workflowOverrides ?? item.workflow_overrides,
+    ),
+    workflowName:
+      typeof item.workflowName === 'string'
+        ? item.workflowName
+        : typeof item.workflow_name === 'string'
+          ? item.workflow_name
+          : undefined,
     toolCount:
       typeof toolCountRaw === 'number' && Number.isFinite(toolCountRaw)
         ? toolCountRaw
@@ -227,7 +251,6 @@ export function normalizeSkill(raw: unknown): Skill {
         : typeof item.updated_at === 'string'
           ? item.updated_at
           : undefined,
-    agent: agentId > 0 ? { id: agentId, name: agentName } : agentFromNested,
     appClient: appClientId
       ? { id: appClientId, name: appClientName }
       : appClientFromNested,
@@ -237,9 +260,9 @@ export function normalizeSkill(raw: unknown): Skill {
 export function normalizeSkillDetail(raw: unknown): SkillDetail | null {
   const payload = unwrapPayload(raw);
   const skill = normalizeSkill(payload);
-  if (!skill.id || !skill.agentId) {
+  if (!skill.id || !skill.appClientId) {
     const fallback = normalizeSkill(raw);
-    if (!fallback.id || !fallback.agentId) {
+    if (!fallback.id || !fallback.appClientId) {
       return null;
     }
     return { ...fallback, tools: [] };
@@ -295,7 +318,24 @@ export async function SkillController_findByAgent(
   return normalizePageResult(response, normalizeSkill);
 }
 
-/** 为 Agent 创建 Skill（响应含嵌套 agent、appClient） */
+/** 为 AppClient 创建 Skill（推荐路径） */
+export async function SkillController_createByAppClient(
+  appClientId: number,
+  data: CreateSkillDto,
+): Promise<SkillDetail> {
+  const response = await http.post<unknown>(
+    `admin/app-client/${appClientId}/skills`,
+    data,
+  );
+  const detail = normalizeSkillDetail(response);
+  if (detail) {
+    return detail;
+  }
+  const skill = normalizeSkill(unwrapPayload(response));
+  return { ...skill, tools: [] };
+}
+
+/** 为 Agent 创建 Skill（兼容：额外写入 AgentSkill） */
 export async function SkillController_create(
   agentId: number,
   appClientId: number,

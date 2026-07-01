@@ -11,6 +11,7 @@ const PAGE_MENU_IDS: Record<AppPageKey, string> = {
   project: 'menu.project',
   agent: 'menu.agent',
   tool: 'menu.tool',
+  workflow: 'menu.workflow',
   chat: 'menu.chat',
   user: 'menu.user',
   setting: 'menu.setting',
@@ -34,7 +35,23 @@ const ProjectSwitcher: React.FC<ProjectSwitcherProps> = ({
     : '';
 
   const menuItems = useMemo<MenuProps['items']>(() => {
-    const projectItems: MenuProps['items'] = projects.map((project) => ({
+    if (projects.length === 0) {
+      return [
+        {
+          key: 'empty',
+          disabled: true,
+          label: (
+            <span className="text-sm text-on-surface/50">
+              {loading
+                ? intl.formatMessage({ id: 'project.loading' })
+                : intl.formatMessage({ id: 'project.empty' })}
+            </span>
+          ),
+        },
+      ];
+    }
+
+    return projects.map((project) => ({
       key: String(project.id),
       label: (
         <div className="flex min-w-[220px] items-center justify-between gap-3 py-0.5">
@@ -53,9 +70,7 @@ const ProjectSwitcher: React.FC<ProjectSwitcherProps> = ({
         </div>
       ),
     }));
-
-    return projectItems ?? [];
-  }, [intl, projects]);
+  }, [intl, loading, projects]);
 
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     switchProject(Number(key));

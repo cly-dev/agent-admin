@@ -85,7 +85,7 @@ const PageActionTable: React.FC<PageActionTableProps> = ({
       dataIndex: 'hostToolName',
       key: 'hostToolName',
       width: 160,
-      render: (value: string) => <AppTableCodeCell value={value} />,
+      render: (value: string) => <AppTableCodeCell value={value} empty="—" />,
     },
     {
       title: intl.formatMessage({ id: 'pageAction.column.pageScope' }),

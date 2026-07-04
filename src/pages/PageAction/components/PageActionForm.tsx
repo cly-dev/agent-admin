@@ -1,6 +1,5 @@
 import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
 import type { HostTool } from '@/types/host-tool';
-import type { PageActionFillField } from '@/types/page-action';
 import type { WorkflowBindingValue } from '@/types/workflow';
 import {
   ApartmentOutlined,
@@ -47,12 +46,11 @@ type PageActionFormProps = {
     pushHostToolId: number | null;
   };
   onApplyPushHostTool?: () => void;
+  hostToolClearDisabled?: boolean;
   onFinish?: (values: PageActionFormValues) => void;
   onHostToolChange: (hostToolId?: number) => void;
   onActionKeyBlur?: () => void;
 };
-
-const FILL_FIELD_OPTIONS: PageActionFillField[] = ['text', 'content', 'value'];
 
 function FormPanel({
   icon,
@@ -142,16 +140,16 @@ function HostToolBindingFields({
   hostTools,
   hostToolsLoading,
   onHostToolChange,
-  showInlineOverrides,
   hostToolIdLocked = false,
+  allowClear = true,
   required = false,
 }: {
   form: FormInstance<PageActionFormValues>;
   hostTools: HostTool[];
   hostToolsLoading: boolean;
   onHostToolChange: (hostToolId?: number) => void;
-  showInlineOverrides: boolean;
   hostToolIdLocked?: boolean;
+  allowClear?: boolean;
   required?: boolean;
 }) {
   const intl = useIntl();
@@ -168,7 +166,11 @@ function HostToolBindingFields({
             ? intl.formatMessage({
                 id: 'pageAction.form.workflowHostToolLockedHint',
               })
-            : intl.formatMessage({ id: 'pageAction.form.hostToolBindHint' })
+            : required
+              ? intl.formatMessage({
+                  id: 'pageAction.form.hostToolRequiredHint',
+                })
+              : intl.formatMessage({ id: 'pageAction.form.hostToolBindHint' })
         }
         rules={
           required
@@ -184,7 +186,7 @@ function HostToolBindingFields({
         }
       >
         <Select
-          allowClear={!hostToolIdLocked && !required}
+          allowClear={!hostToolIdLocked && !required && allowClear}
           showSearch={!hostToolIdLocked}
           disabled={hostToolIdLocked}
           loading={hostToolsLoading}
@@ -221,49 +223,6 @@ function HostToolBindingFields({
             />
           ) : null}
         </>
-      ) : null}
-
-      {showInlineOverrides && !hostToolId ? (
-        <div className={`${styles.formFieldGrid} ${styles.formFieldGrid2}`}>
-          <Form.Item
-            name="hostToolName"
-            label={intl.formatMessage({
-              id: 'pageAction.form.hostToolNameLabel',
-            })}
-          >
-            <Input className="app-input" placeholder="fill_draft" />
-          </Form.Item>
-          <Form.Item
-            name="hostToolFillField"
-            label={intl.formatMessage({
-              id: 'pageAction.form.hostToolFillFieldLabel',
-            })}
-          >
-            <Select
-              allowClear
-              className="app-input"
-              placeholder={intl.formatMessage({
-                id: 'pageAction.form.hostToolFillFieldPlaceholder',
-              })}
-              options={FILL_FIELD_OPTIONS.map((value) => ({
-                value,
-                label: value,
-              }))}
-            />
-          </Form.Item>
-          <Form.Item
-            name="hostToolDescription"
-            label={intl.formatMessage({
-              id: 'pageAction.form.hostToolDescriptionLabel',
-            })}
-            className={styles.formFieldSpan2}
-          >
-            <Input.TextArea
-              className="app-input"
-              autoSize={{ minRows: 2, maxRows: 4 }}
-            />
-          </Form.Item>
-        </div>
       ) : null}
     </>
   );
@@ -466,6 +425,7 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
   onPushHostToolResolved,
   workflowPushState,
   onApplyPushHostTool,
+  hostToolClearDisabled = false,
   onFinish,
   onHostToolChange,
   onActionKeyBlur,
@@ -523,8 +483,7 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
               hostTools={hostTools}
               hostToolsLoading={hostToolsLoading}
               onHostToolChange={onHostToolChange}
-              showInlineOverrides={isCreate}
-              required={isCreate}
+              required
             />
           </FormPanel>
         ) : (
@@ -561,12 +520,16 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
               currentHostToolId={hostToolId}
               onApplyPushHostTool={onApplyPushHostTool}
             />
+            <HostToolBindingFields
+              form={form}
+              hostTools={hostTools}
+              hostToolsLoading={hostToolsLoading}
+              onHostToolChange={onHostToolChange}
+              allowClear={!hostToolClearDisabled}
+            />
             <div className={styles.workflowModePromptSection}>
               <PromptField form={form} />
             </div>
-            <Form.Item name="hostToolId" hidden>
-              <Input />
-            </Form.Item>
           </FormPanel>
         )}
 

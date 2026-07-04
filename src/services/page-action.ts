@@ -1,3 +1,4 @@
+import type { PageResult } from '@/types/integration';
 import type {
   CreatePageActionDto,
   PageAction,
@@ -5,7 +6,6 @@ import type {
   UpdatePageActionDto,
 } from '@/types/page-action';
 import type { WorkflowOverrides } from '@/types/workflow';
-import type { PageResult } from '@/types/integration';
 import { normalizePageResult } from '@/utils/api-page';
 import { http } from '@/utils/request';
 
@@ -87,7 +87,7 @@ export function normalizePageAction(raw: unknown): PageAction {
         : item.description === null
           ? null
           : null,
-    hostToolId: Number(item.hostToolId ?? item.host_tool_id ?? 0),
+    hostToolId: normalizeNullableNumber(item.hostToolId ?? item.host_tool_id),
     hostToolName: String(item.hostToolName ?? item.host_tool_name ?? ''),
     pageScope:
       typeof pageScopeRaw === 'string'
@@ -105,7 +105,9 @@ export function normalizePageAction(raw: unknown): PageAction {
     isActive: normalizeBoolean(item.isActive ?? item.is_active ?? true),
     sortOrder: Number(item.sortOrder ?? item.sort_order ?? 0),
     config:
-      typeof configRaw === 'object' && configRaw !== null && !Array.isArray(configRaw)
+      typeof configRaw === 'object' &&
+      configRaw !== null &&
+      !Array.isArray(configRaw)
         ? (configRaw as Record<string, unknown>)
         : configRaw === null
           ? null
@@ -147,7 +149,9 @@ export async function PageActionController_update(
   return normalizePageAction(raw);
 }
 
-export async function PageActionController_findOne(id: number): Promise<PageAction> {
+export async function PageActionController_findOne(
+  id: number,
+): Promise<PageAction> {
   const raw = await http.get<unknown>(`${PAGE_ACTION_BASE}/${id}`);
   return normalizePageAction(raw);
 }

@@ -9,7 +9,7 @@ export type PageAction = {
   actionKey: string;
   name: string;
   description: string | null;
-  hostToolId: number;
+  hostToolId: number | null;
   hostToolName: string;
   pageScope: string | null;
   systemPrompt: string;
@@ -30,19 +30,12 @@ export type PageAction = {
 
 export type PageActionFillField = 'text' | 'content' | 'value';
 
-export type PageActionInlineHostToolDto = {
-  name?: string;
-  description?: string;
-  fillField?: PageActionFillField;
-};
-
 export type CreatePageActionDto = {
   appClientId: number;
   actionKey: string;
   name: string;
   description?: string;
   hostToolId?: number;
-  hostTool?: PageActionInlineHostToolDto;
   pageScope?: string | null;
   systemPrompt: string;
   allowCustomInstruction?: boolean;

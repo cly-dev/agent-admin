@@ -1,8 +1,4 @@
 import type { HostTool } from '@/types/host-tool';
-import type {
-  PageActionFillField,
-  PageActionInlineHostToolDto,
-} from '@/types/page-action';
 import { DEFAULT_PAGE_ACTION_SYSTEM_PROMPT } from './pageActionShared';
 
 export type PageActionConfigMode = 'prompt' | 'workflow';
@@ -24,9 +20,6 @@ export type PageActionFormValues = {
   isActive: boolean;
   sortOrder: number;
   hostToolId?: number;
-  hostToolName?: string;
-  hostToolDescription?: string;
-  hostToolFillField?: PageActionFillField;
 };
 
 export type PageActionWorkflowPushState = {
@@ -57,22 +50,6 @@ export function getDefaultPageActionFormValues(): Partial<PageActionFormValues> 
     isActive: true,
     sortOrder: 0,
     systemPrompt: DEFAULT_PAGE_ACTION_SYSTEM_PROMPT,
-  };
-}
-
-export function buildInlineHostTool(
-  values: PageActionFormValues,
-): PageActionInlineHostToolDto | undefined {
-  const name = values.hostToolName?.trim();
-  const description = values.hostToolDescription?.trim();
-  const fillField = values.hostToolFillField;
-  if (!name && !description && !fillField) {
-    return undefined;
-  }
-  return {
-    ...(name ? { name } : {}),
-    ...(description ? { description } : {}),
-    ...(fillField && fillField !== 'text' ? { fillField } : {}),
   };
 }
 
@@ -112,11 +89,7 @@ export function buildPageActionFormPatchFromHostTool(
   options: ApplyHostToolBindingOptions = {},
 ): Partial<PageActionFormValues> {
   const { preserveUserInput = false } = options;
-  const patch: Partial<PageActionFormValues> = {
-    hostToolName: undefined,
-    hostToolDescription: undefined,
-    hostToolFillField: undefined,
-  };
+  const patch: Partial<PageActionFormValues> = {};
 
   const assign = <K extends keyof PageActionFormValues>(
     key: K,

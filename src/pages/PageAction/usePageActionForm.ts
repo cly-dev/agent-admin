@@ -15,13 +15,12 @@ import type {
   UpdatePageActionDto,
 } from '@/types/page-action';
 import type { WorkflowBindingValue } from '@/types/workflow';
-import { formatApiErrorMessage } from '@/utils/api-error';
+import { formatApiErrorMessage, isApiRequestError } from '@/utils/api-error';
 import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import {
   PAGE_ACTION_LIST_PATH,
-  buildInlineHostTool,
   buildPageActionFormPatchFromHostTool,
   getDefaultPageActionFormValues,
   validatePageActionWorkflowBinding,
@@ -33,6 +32,20 @@ import {
   PAGE_ACTION_SYSTEM_PROMPT_MAX,
   inferPageScopeFromActionKey,
 } from './pageActionShared';
+
+function formatPageActionSaveError(
+  error: unknown,
+  fallback: string,
+  messages: Record<string, string>,
+): string {
+  if (isApiRequestError(error)) {
+    const code = error.businessError?.code;
+    if (code && messages[code]) {
+      return messages[code];
+    }
+  }
+  return formatApiErrorMessage(error, fallback);
+}
 
 export function usePageActionForm() {
   const intl = useIntl();
@@ -112,7 +125,7 @@ export function usePageActionForm() {
         actionKey: detail.actionKey,
         name: detail.name,
         description: detail.description ?? undefined,
-        hostToolId: detail.hostToolId,
+        hostToolId: detail.hostToolId ?? undefined,
         pageScope: detail.pageScope ?? undefined,
         systemPrompt: detail.systemPrompt,
         allowCustomInstruction: detail.allowCustomInstruction,
@@ -177,15 +190,7 @@ export function usePageActionForm() {
         workflowOverrides: null,
       });
       setWorkflowPushState({ hasPushNode: false, pushHostToolId: null });
-      return;
     }
-
-    form.setFieldsValue({
-      hostToolName: undefined,
-      hostToolDescription: undefined,
-      hostToolFillField: undefined,
-      hostToolId: undefined,
-    });
   };
 
   const handleHostToolChange = (hostToolId?: number) => {
@@ -245,7 +250,7 @@ export function usePageActionForm() {
         );
         return;
       }
-      if (isCreateMode && !values.hostToolId && !buildInlineHostTool(values)) {
+      if (!values.hostToolId) {
         message.error(
           intl.formatMessage({
             id: 'pageAction.form.promptModeHostToolRequired',
@@ -324,23 +329,16 @@ export function usePageActionForm() {
         };
 
         if (configMode === 'prompt') {
-          if (values.hostToolId) {
-            const boundTool = hostTools.find(
-              (tool) => tool.id === values.hostToolId,
+          const boundTool = hostTools.find(
+            (tool) => tool.id === values.hostToolId,
+          );
+          if (!boundTool) {
+            message.error(
+              intl.formatMessage({ id: 'pageAction.form.hostToolRequired' }),
             );
-            if (!boundTool) {
-              message.error(
-                intl.formatMessage({ id: 'pageAction.form.hostToolRequired' }),
-              );
-              return;
-            }
-            payload.hostToolId = values.hostToolId;
-          } else {
-            const hostTool = buildInlineHostTool(values);
-            if (hostTool) {
-              payload.hostTool = hostTool;
-            }
+            return;
           }
+          payload.hostToolId = values.hostToolId;
         } else if (values.hostToolId) {
           payload.hostToolId = values.hostToolId;
         }
@@ -389,9 +387,17 @@ export function usePageActionForm() {
       history.push(PAGE_ACTION_LIST_PATH);
     } catch (error: unknown) {
       message.error(
-        formatApiErrorMessage(
+        formatPageActionSaveError(
           error,
           intl.formatMessage({ id: 'pageAction.actionFailed' }),
+          {
+            PAGE_ACTION_HOST_TOOL_REQUIRED: intl.formatMessage({
+              id: 'pageAction.error.hostToolRequired',
+            }),
+            HOST_TOOL_NOT_FOUND: intl.formatMessage({
+              id: 'pageAction.error.hostToolNotFound',
+            }),
+          },
         ),
       );
     } finally {

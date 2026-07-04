@@ -118,6 +118,7 @@ const PageActionFormPage: React.FC = () => {
         onPushHostToolResolved={handlePushHostToolResolved}
         workflowPushState={workflowPushState}
         onApplyPushHostTool={handleApplyPushHostTool}
+        hostToolClearDisabled={Boolean(record?.hostToolId)}
         hostTools={hostTools}
         hostToolsLoading={hostToolsLoading}
         onHostToolChange={handleHostToolChange}

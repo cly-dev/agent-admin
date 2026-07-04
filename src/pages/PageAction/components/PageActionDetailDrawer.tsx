@@ -1,9 +1,9 @@
+import { useProjectRoute } from '@/hooks/useProjectRoute';
 import type { PageAction } from '@/types/page-action';
 import { Link, history, useIntl } from '@umijs/max';
-import { useProjectRoute } from '@/hooks/useProjectRoute';
 import { Drawer, Spin, Tag } from 'antd';
-import { buildPageActionEditPath } from '../pageActionFormShared';
 import styles from '../index.module.scss';
+import { buildPageActionEditPath } from '../pageActionFormShared';
 
 type PageActionDetailDrawerProps = {
   open: boolean;
@@ -25,7 +25,9 @@ const PageActionDetailDrawer: React.FC<PageActionDetailDrawerProps> = ({
     <Drawer
       open={open}
       width={680}
-      title={record?.name ?? intl.formatMessage({ id: 'pageAction.detail.title' })}
+      title={
+        record?.name ?? intl.formatMessage({ id: 'pageAction.detail.title' })
+      }
       onClose={onClose}
       destroyOnClose
       extra={
@@ -65,18 +67,24 @@ const PageActionDetailDrawer: React.FC<PageActionDetailDrawerProps> = ({
 
           <dl className={styles.detailMeta}>
             <div>
-              <dt>{intl.formatMessage({ id: 'pageAction.column.hostToolName' })}</dt>
-              <dd>{record.hostToolName}</dd>
+              <dt>
+                {intl.formatMessage({ id: 'pageAction.column.hostToolName' })}
+              </dt>
+              <dd>{record.hostToolName || '—'}</dd>
             </div>
             <div>
-              <dt>{intl.formatMessage({ id: 'pageAction.column.pageScope' })}</dt>
+              <dt>
+                {intl.formatMessage({ id: 'pageAction.column.pageScope' })}
+              </dt>
               <dd>
                 {record.pageScope ??
                   intl.formatMessage({ id: 'pageAction.pageScope.generic' })}
               </dd>
             </div>
             <div>
-              <dt>{intl.formatMessage({ id: 'pageAction.column.isActive' })}</dt>
+              <dt>
+                {intl.formatMessage({ id: 'pageAction.column.isActive' })}
+              </dt>
               <dd>
                 <Tag color={record.isActive ? 'success' : 'default'}>
                   {intl.formatMessage({
@@ -88,12 +96,16 @@ const PageActionDetailDrawer: React.FC<PageActionDetailDrawerProps> = ({
               </dd>
             </div>
             <div>
-              <dt>{intl.formatMessage({ id: 'pageAction.column.sortOrder' })}</dt>
+              <dt>
+                {intl.formatMessage({ id: 'pageAction.column.sortOrder' })}
+              </dt>
               <dd>{record.sortOrder}</dd>
             </div>
             <div>
               <dt>
-                {intl.formatMessage({ id: 'pageAction.column.allowCustomInstruction' })}
+                {intl.formatMessage({
+                  id: 'pageAction.column.allowCustomInstruction',
+                })}
               </dt>
               <dd>
                 {intl.formatMessage({

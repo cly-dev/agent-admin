@@ -276,9 +276,11 @@ export default {
     'By default this agent shares all active app capabilities. When restriction is on, only allowlisted resources below are visible at runtime.',
   'agent.capability.restrictTools': 'Restrict HTTP tools',
   'agent.capability.restrictToolsOff': 'Off: all active tools in the app',
-  'agent.capability.restrictToolsOn': 'On: only allowlisted tools for this agent',
+  'agent.capability.restrictToolsOn':
+    'On: only allowlisted tools for this agent',
   'agent.capability.restrictHostTools': 'Restrict host tools',
-  'agent.capability.restrictHostToolsOff': 'Off: all active host tools in the app',
+  'agent.capability.restrictHostToolsOff':
+    'Off: all active host tools in the app',
   'agent.capability.restrictHostToolsOn':
     'On: only allowlisted host tools for this agent',
   'agent.capability.restrictSkills': 'Restrict skills',
@@ -478,7 +480,8 @@ export default {
   'skill.form.appClient': 'Project (AppClient)',
   'skill.detail.toolsHintCreate':
     'Select tools to bind; bindings are saved when you create the skill.',
-  'skill.detail.toolsSelectAppFirst': 'Select a project before configuring tool bindings.',
+  'skill.detail.toolsSelectAppFirst':
+    'Select a project before configuring tool bindings.',
   'skill.detail.title': 'Skill settings',
   'skill.detail.titleWithName': '{name} · Skill',
   'skill.detail.subtitle': 'Skill #{id} · {app}',
@@ -1195,7 +1198,8 @@ export default {
   'pageAction.actionKeyCopied': 'actionKey copied',
   'pageAction.copyFailed': 'Copy failed',
   'pageAction.deactivate.title': 'Deactivate this action?',
-  'pageAction.deactivate.desc': '"{name}" will disappear from the client catalog.',
+  'pageAction.deactivate.desc':
+    '"{name}" will disappear from the client catalog.',
   'pageAction.deactivate.confirm': 'Deactivate',
   'pageAction.detail.title': 'PageAction detail',
   'pageAction.detail.createSubtitle': 'Create a frontend tool flow for {name}',
@@ -1220,22 +1224,26 @@ export default {
   'pageAction.form.pageScopeHint':
     'Align with client pageContext.page; leave empty for app-wide actions.',
   'pageAction.form.systemPromptRequired': 'systemPrompt is required',
-  'pageAction.form.systemPromptTooLong': 'systemPrompt must be at most {max} characters',
+  'pageAction.form.systemPromptTooLong':
+    'systemPrompt must be at most {max} characters',
   'pageAction.form.insertTemplate': 'Insert recommended template',
   'pageAction.form.simpleCreateHint':
-    'No HostTool required upfront. Save with actionKey, name, pageScope, and systemPrompt; the server auto-creates page and tool.',
+    'Select an existing HostTool first. If it does not exist, create it in HostTool management and bind it here.',
   'pageAction.form.advancedTitle': 'Advanced: HostTool binding',
   'pageAction.form.advancedHint':
-    'By default the server creates a HostTool. Optionally bind an existing tool or inline overrides for name, description, and fill field.',
+    'PageAction only binds existing HostTools; inline HostTool creation is no longer supported.',
   'pageAction.form.hostToolIdLabel': 'Bind existing HostTool',
   'pageAction.form.hostToolBindSectionTitle': 'HostTool binding (optional)',
   'pageAction.form.hostToolBindSectionHint':
-    'Selecting a tool auto-fills page and identity fields; leave empty to provision server-side. Fill tools need a string field in argsSchema (e.g. text) for incremental host_action append.',
+    'Selecting a tool auto-fills page and identity fields. Fill tools need a string field in argsSchema (e.g. text) for incremental host_action append.',
   'pageAction.form.hostToolBindHint':
     'Bound fields are applied to PageAction below and remain editable',
+  'pageAction.form.hostToolRequiredHint':
+    'PageActions without a Workflow must bind an existing HostTool.',
   'pageAction.form.hostToolCreateHint':
     'HostTool bound — PageAction fields were auto-filled. Review actionKey and systemPrompt before saving.',
-  'pageAction.form.hostToolApplied': 'PageAction fields filled from the selected HostTool',
+  'pageAction.form.hostToolApplied':
+    'PageAction fields filled from the selected HostTool',
   'pageAction.form.hostToolSummaryTitle': 'HostTool summary',
   'pageAction.form.section.hostTool': 'HostTool binding',
   'pageAction.form.section.hostToolHint':
@@ -1247,7 +1255,8 @@ export default {
   'pageAction.form.section.promptHint':
     'Defines how the bot writes into page inputs — the core of this flow',
   'pageAction.form.section.publish': 'Publish settings',
-  'pageAction.form.section.publishHint': 'Sort order and availability; runtime delivery is always SSE stream',
+  'pageAction.form.section.publishHint':
+    'Sort order and availability; runtime delivery is always SSE stream',
   'pageAction.form.hostToolNameLabel': 'Tool name override',
   'pageAction.form.hostToolDescriptionLabel': 'Tool description override',
   'pageAction.form.hostToolFillFieldLabel': 'Fill field (fillField)',
@@ -1291,7 +1300,8 @@ export default {
   'pageActionRun.detail.subtitle': '{name} · {actionKey}',
   'pageActionRun.detail.invalidId': 'Invalid run ID',
   'pageActionRun.detail.notFound': 'Run not found',
-  'pageActionRun.detail.notFoundDesc': 'The record does not exist or was removed.',
+  'pageActionRun.detail.notFoundDesc':
+    'The record does not exist or was removed.',
   'pageActionRun.detail.stepsTitle': 'Run steps',
   'pageActionRun.detail.summaryTitle': 'Summary',
   'pageActionRun.detail.noSteps': 'No step data',
@@ -1360,6 +1370,9 @@ export default {
   'pageAction.form.workflowPushPreview.apply': 'Fill hostToolId (optional)',
   'pageAction.form.promptModeHostToolRequired':
     'Prompt mode requires a bound HostTool',
+  'pageAction.error.hostToolRequired': 'Select or create a HostTool first',
+  'pageAction.error.hostToolNotFound':
+    'HostTool does not exist or was removed. Select another one.',
   'pageAction.form.workflowModeRequired': 'Select a workflow to bind',
   'workflow.title': 'Workflow assets',
   'workflow.subtitle':
@@ -1493,7 +1506,8 @@ export default {
   'workflow.binding.skillPageContextMutationHint':
     'In-page write-confirm workflow: client must send skillId and pageContext.page (matching the host page pageScope).',
   'workflow.binding.writeToolsUnknown': 'see write_data nodes',
-  'workflow.node.awaitUserConfirmHint': 'Pauses until client confirms before write_data',
+  'workflow.node.awaitUserConfirmHint':
+    'Pauses until client confirms before write_data',
   'workflow.nodeInput.awaitUserConfirmGateHint':
     'Execution pauses here until the user confirms on the client; write_data runs only after confirmation.',
   'workflow.error.breaksSkillRef':
@@ -1525,7 +1539,8 @@ export default {
   'workflow.nodeInput.confirmKind': 'Confirm kind',
   'workflow.nodeInput.confirmKind.mutation': 'Mutation',
   'workflow.nodeInput.confirmKind.generic': 'Generic',
-  'workflow.validation.tool_id_required': 'Node {nodeId} requires an HTTP tool (toolId)',
+  'workflow.validation.tool_id_required':
+    'Node {nodeId} requires an HTTP tool (toolId)',
   'workflow.validation.host_tool_id_required':
     'Node {nodeId} requires a host tool (hostToolId)',
   'workflow.configMode.preset': 'Scenario preset',
@@ -1535,13 +1550,16 @@ export default {
   'workflow.preset.rebuildHint':
     'For existing workflows, saving in preset mode rebuilds nodes from the selected preset.',
   'workflow.preset.required': 'Select a scenario preset',
-  'workflow.preset.invalid': 'The selected preset is not available for this profile',
-  'workflow.preset.emptyForProfile': 'No presets available for profile {profile}',
+  'workflow.preset.invalid':
+    'The selected preset is not available for this profile',
+  'workflow.preset.emptyForProfile':
+    'No presets available for profile {profile}',
   'workflow.preset.advanced': 'Advanced options',
   'workflow.preset.hostToolId': 'Host tool',
   'workflow.preset.readToolId': 'Read HTTP tool',
   'workflow.preset.writeToolId': 'Write HTTP tool',
-  'workflow.preset.objectivesHint': 'Per-stage objective text (optional overrides)',
+  'workflow.preset.objectivesHint':
+    'Per-stage objective text (optional overrides)',
   'workflow.preset.objective.loadPage': 'Load page context',
   'workflow.preset.objective.fetch': 'Fetch data',
   'workflow.preset.objective.push': 'Push to page',

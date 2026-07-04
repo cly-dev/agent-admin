@@ -275,12 +275,14 @@ export default {
   'agent.capability.restrictToolsOff': '关闭：使用 App 下全部已启用 Tool',
   'agent.capability.restrictToolsOn': '开启：仅白名单内的 Tool 对该 Agent 可见',
   'agent.capability.restrictHostTools': '收紧 Host Tool',
-  'agent.capability.restrictHostToolsOff': '关闭：使用 App 下全部已启用 Host Tool',
+  'agent.capability.restrictHostToolsOff':
+    '关闭：使用 App 下全部已启用 Host Tool',
   'agent.capability.restrictHostToolsOn':
     '开启：仅白名单内的 Host Tool 对该 Agent 可见',
   'agent.capability.restrictSkills': '收紧 Skill',
   'agent.capability.restrictSkillsOff': '关闭：使用 App 下全部 Skill',
-  'agent.capability.restrictSkillsOn': '开启：仅 AgentSkill 白名单内的 Skill 可见',
+  'agent.capability.restrictSkillsOn':
+    '开启：仅 AgentSkill 白名单内的 Skill 可见',
   'agent.capability.skillWhitelistNote':
     'Skill 白名单独立绑定 API 尚未提供；新建 Skill 时可选「限定 Agent」写入 AgentSkill，存量 Skill 需后端协助维护白名单。',
   'agent.card.hostToolCount': '{count} 个 UI 工具',
@@ -945,7 +947,8 @@ export default {
   'auth.sessionExpired': '登录已失效，请重新登录',
 
   'changePassword.title': '修改密码',
-  'changePassword.subtitle': '为保障账号安全，请先设置新密码后再继续使用管理台。',
+  'changePassword.subtitle':
+    '为保障账号安全，请先设置新密码后再继续使用管理台。',
   'changePassword.currentPassword': '当前密码',
   'changePassword.currentPasswordRequired': '请输入当前密码',
   'changePassword.newPassword': '新密码',
@@ -980,7 +983,8 @@ export default {
   'adminUser.passwordReset': '密码已重置',
   'adminUser.resetFailed': '重置密码失败',
   'adminUser.resetPasswordTitle': '重置密码',
-  'adminUser.resetPasswordConfirm': '将为 {email} 生成新密码，旧密码立即失效。是否继续？',
+  'adminUser.resetPasswordConfirm':
+    '将为 {email} 生成新密码，旧密码立即失效。是否继续？',
   'adminUser.resetPasswordAction': '重置密码',
   'adminUser.generatedPasswordTitle': '初始密码（仅显示一次）',
   'adminUser.generatedPasswordWarning':
@@ -1135,7 +1139,8 @@ export default {
   'pageAction.actionFailed': '操作失败',
   'pageAction.empty': '暂无 PageAction',
   'pageAction.empty.noProject.title': '请先选择项目',
-  'pageAction.empty.noProject.desc': 'PageAction 按 AppClient 管理，需先选择当前项目。',
+  'pageAction.empty.noProject.desc':
+    'PageAction 按 AppClient 管理，需先选择当前项目。',
   'pageAction.column.actionKey': 'actionKey',
   'pageAction.column.name': '展示名',
   'pageAction.column.hostToolName': 'HostTool',
@@ -1172,52 +1177,65 @@ export default {
   'pageAction.form.createTitle': '新建 PageAction',
   'pageAction.form.editTitle': '编辑 PageAction',
   'pageAction.form.createSubmit': '创建',
-  'pageAction.form.actionKeyHint': '建议格式：{pageScope}.{purpose}，创建后不可修改',
+  'pageAction.form.actionKeyHint':
+    '建议格式：{pageScope}.{purpose}，创建后不可修改',
   'pageAction.form.actionKeyRequired': '请输入 actionKey',
-  'pageAction.form.actionKeyInvalid': 'actionKey 格式不正确，示例：demo-playground.fill_draft',
+  'pageAction.form.actionKeyInvalid':
+    'actionKey 格式不正确，示例：demo-playground.fill_draft',
   'pageAction.form.nameRequired': '请输入展示名',
   'pageAction.form.hostToolRequired': '请选择 HostTool',
   'pageAction.form.hostToolPlaceholder': '选择已启用的 HostTool',
   'pageAction.form.hostToolStreamWarning':
     '该 HostTool 的 argsSchema 未包含 string 字段，C 端将无法收到 host_action 增量填入；正文仅在 page_action completed 的 text 中返回。',
-  'pageAction.form.pageScopeHint': '与 C 端 pageContext.page 对齐；留空表示不限页',
+  'pageAction.form.pageScopeHint':
+    '与 C 端 pageContext.page 对齐；留空表示不限页',
   'pageAction.form.systemPromptRequired': '请输入 systemPrompt',
   'pageAction.form.systemPromptTooLong': 'systemPrompt 不能超过 {max} 字符',
   'pageAction.form.insertTemplate': '插入推荐模板',
   'pageAction.form.simpleCreateHint':
-    '无需预先创建 HostTool。填写 actionKey、name、pageScope 与 systemPrompt 后保存，服务端将自动创建页面与工具。',
+    '请先选择已存在的 HostTool；如不存在，请前往 HostTool 管理页创建后再绑定。',
   'pageAction.form.advancedTitle': '高级：HostTool 绑定',
   'pageAction.form.advancedHint':
-    '默认由服务端自动创建 HostTool。也可绑定已有工具，或内联覆盖工具 name / 描述 / 填表字段。',
+    'PageAction 只绑定已有 HostTool，不再支持内联创建工具。',
   'pageAction.form.hostToolIdLabel': '绑定已有 HostTool',
   'pageAction.form.hostToolBindSectionTitle': 'HostTool 绑定（可选）',
   'pageAction.form.hostToolBindSectionHint':
-    '选择已有 HostTool 后自动带入页面与标识；留空则由服务端创建。填表类工具需在 argsSchema 中包含 string 字段（如 text）以支持增量填入。',
-  'pageAction.form.hostToolBindHint': '绑定后下方 PageAction 字段会自动填充，仍可手动调整',
+    '选择已有 HostTool 后自动带入页面与标识。填表类工具需在 argsSchema 中包含 string 字段（如 text）以支持增量填入。',
+  'pageAction.form.hostToolBindHint':
+    '绑定后下方 PageAction 字段会自动填充，仍可手动调整',
+  'pageAction.form.hostToolRequiredHint':
+    '无 Workflow 的 PageAction 必须绑定已有 HostTool。',
   'pageAction.form.hostToolCreateHint':
     '已绑定 HostTool，相关 PageAction 字段已自动填充，请确认 actionKey 与 systemPrompt 后继续保存。',
   'pageAction.form.hostToolApplied': '已根据所选 HostTool 填充 PageAction 配置',
   'pageAction.form.hostToolSummaryTitle': 'HostTool 配置摘要',
   'pageAction.form.section.hostTool': 'HostTool 绑定',
-  'pageAction.form.section.hostToolHint': '选择已有工具时自动带入页面与标识；留空则由服务端创建',
+  'pageAction.form.section.hostToolHint':
+    '选择已有工具时自动带入页面与标识；留空则由服务端创建',
   'pageAction.form.section.identity': '能力标识',
-  'pageAction.form.section.identityHint': 'actionKey 创建后不可修改，建议与 pageScope 对齐',
+  'pageAction.form.section.identityHint':
+    'actionKey 创建后不可修改，建议与 pageScope 对齐',
   'pageAction.form.section.prompt': '生成提示词',
-  'pageAction.form.section.promptHint': '控制 Bot 如何为页面输入框生成正文，是工具流的核心配置',
+  'pageAction.form.section.promptHint':
+    '控制 Bot 如何为页面输入框生成正文，是工具流的核心配置',
   'pageAction.form.section.publish': '发布设置',
-  'pageAction.form.section.publishHint': '排序与上线状态；运行时固定为 SSE 流式交付',
+  'pageAction.form.section.publishHint':
+    '排序与上线状态；运行时固定为 SSE 流式交付',
   'pageAction.form.hostToolNameLabel': '工具 name 覆盖',
   'pageAction.form.hostToolDescriptionLabel': '工具描述覆盖',
   'pageAction.form.hostToolFillFieldLabel': '填表字段（fillField）',
   'pageAction.form.hostToolFillFieldPlaceholder': '默认 text',
   'pageActionRun.title': 'PageAction 执行记录',
-  'pageActionRun.subtitle': '查看 C 端 invoke 的运行审计：状态、耗时、DSL 步骤与产出正文。',
-  'pageActionRun.subtitleFiltered': '仅显示 PageAction #{pageActionId} 的运行记录',
+  'pageActionRun.subtitle':
+    '查看 C 端 invoke 的运行审计：状态、耗时、DSL 步骤与产出正文。',
+  'pageActionRun.subtitleFiltered':
+    '仅显示 PageAction #{pageActionId} 的运行记录',
   'pageActionRun.backToConfig': '返回配置列表',
   'pageActionRun.loadFailed': '加载执行记录失败',
   'pageActionRun.empty': '暂无执行记录',
   'pageActionRun.empty.noProject.title': '请先选择项目',
-  'pageActionRun.empty.noProject.desc': '执行记录按 AppClient 隔离，需先选择当前项目。',
+  'pageActionRun.empty.noProject.desc':
+    '执行记录按 AppClient 隔离，需先选择当前项目。',
   'pageActionRun.column.createdAt': '开始时间',
   'pageActionRun.column.finishedAt': '结束时间',
   'pageActionRun.column.action': '动作',
@@ -1271,7 +1289,8 @@ export default {
   'pageActionRun.detail.alert.approvalRejected': '用户已拒绝审批，未执行写入。',
   'pageActionRun.detail.alert.permissionDenied':
     '触发时缺少写工具权限，请检查发起人角色的 RoleTool。',
-  'pageActionRun.permissionDenied.tooltip': '缺少写工具 RoleTool，请前往角色权限配置',
+  'pageActionRun.permissionDenied.tooltip':
+    '缺少写工具 RoleTool，请前往角色权限配置',
   'pageActionRun.permissionDenied.link': '角色权限',
   'pageActionRun.approval.pendingWriteTool': '待确认写工具：{toolName}',
   'pageActionRun.approval.pendingWriteToolWithRisk':
@@ -1307,21 +1326,26 @@ export default {
   'pageAction.form.workflowPushPreview.label': 'Push 节点 HostTool',
   'pageAction.form.workflowPushPreview.badge': '运行时推导',
   'pageAction.form.workflowPushPreview.fallback': 'HostTool #{hostToolId}',
-  'pageAction.form.workflowPushPreview.missingHostToolId': 'push 节点未配置 hostToolId',
+  'pageAction.form.workflowPushPreview.missingHostToolId':
+    'push 节点未配置 hostToolId',
   'pageAction.form.workflowPushPreview.hint':
     '保存时可不传 hostToolId；若填写，须与 push 节点一致。',
   'pageAction.form.workflowPushPreview.apply': '填入 hostToolId（可选）',
   'pageAction.form.promptModeHostToolRequired': '提示词模式须绑定 HostTool',
+  'pageAction.error.hostToolRequired': '请先选择或创建 HostTool',
+  'pageAction.error.hostToolNotFound': 'HostTool 不存在或已被删除，请重新选择',
   'pageAction.form.workflowModeRequired': '请选择要绑定的 Workflow',
   'workflow.title': 'Workflow 资产',
   'workflow.subtitle': '可复用的线性工作流定义，供 Skill 与 PageAction 引用。',
   'workflow.link.pageActions': '前端工具流',
   'workflow.list.headerMeta': '共 {total} 条资产',
   'workflow.list.conceptAria': 'Workflow 线性编排说明',
-  'workflow.list.pipelineHint': '每条 Workflow 是有序节点链；Chat 可跑 8 种动作，页内仅前 4 步。',
+  'workflow.list.pipelineHint':
+    '每条 Workflow 是有序节点链；Chat 可跑 8 种动作，页内仅前 4 步。',
   'workflow.list.meta': '共 {total} 条 · 当前页 {active} 条已启用',
   'workflow.list.emptyTitle': '还没有 Workflow 资产',
-  'workflow.list.emptyDesc': '创建第一条可复用工作流，供 Skill 或前端工具流引用。',
+  'workflow.list.emptyDesc':
+    '创建第一条可复用工作流，供 Skill 或前端工具流引用。',
   'workflow.list.refSkill': 'Skill {count}',
   'workflow.list.refPage': 'Page {count}',
   'workflow.list.noKey': '未设置 key',
@@ -1378,7 +1402,8 @@ export default {
   'workflow.nodes.objective': '目标（objective）',
   'workflow.nodes.input': 'input（JSON）',
   'workflow.flowCanvas.autoLayout': '自动排布',
-  'workflow.flowCanvas.hint': '双击节点编辑属性；点击节点右侧 + 插入下一步；Ctrl + 滚轮缩放画布。',
+  'workflow.flowCanvas.hint':
+    '双击节点编辑属性；点击节点右侧 + 插入下一步；Ctrl + 滚轮缩放画布。',
   'workflow.flowCanvas.nodeDrawerTitle': '节点属性',
   'workflow.flowCanvas.inputInvalid': 'input 必须是合法 JSON 对象',
   'workflow.flowCanvas.phaseLegend': '节点阶段',
@@ -1398,20 +1423,23 @@ export default {
   'workflow.action.present_mutation': '展示变更草稿',
   'workflow.action.write_data': '提交变更',
   'workflow.action.await_user_confirm': '等待用户确认',
-  'workflow.binding.hint': '绑定 Workflow 资产后，运行时将按节点线性执行；留空则回退单步 HostFill。',
+  'workflow.binding.hint':
+    '绑定 Workflow 资产后，运行时将按节点线性执行；留空则回退单步 HostFill。',
   'workflow.binding.workflow': 'Workflow',
   'workflow.binding.workflowPlaceholder': '选择 Workflow 资产',
   'workflow.binding.selectedMeta': '{profile} · v{version} · {nodes} 个节点',
   'workflow.binding.version': 'pin 版本（可选）',
   'workflow.binding.versionPlaceholder': '留空使用最新版',
-  'workflow.binding.versionHint': '固定 workflowVersion 可避免资产发版后自动升级。',
+  'workflow.binding.versionHint':
+    '固定 workflowVersion 可避免资产发版后自动升级。',
   'workflow.binding.overrides': '节点覆盖（workflowOverrides）',
   'workflow.binding.overridesPlaceholder': '{"answer":{"objective":"..."}}',
   'workflow.binding.manageAssets': '管理 Workflow 资产',
   'workflow.binding.tools': 'HTTP 工具白名单',
   'workflow.binding.hostTools': 'Host 工具白名单',
   'workflow.binding.isRequired': '必填',
-  'workflow.binding.missingPushNode': '该 Workflow 缺少 generate_and_push 节点，无法绑定 PageAction。',
+  'workflow.binding.missingPushNode':
+    '该 Workflow 缺少 generate_and_push 节点，无法绑定 PageAction。',
   'workflow.binding.pushHostToolRuntimeHint':
     'invoke 将从 push 节点推导 HostTool（#{hostToolId}）；PageAction.hostToolId 可省略。',
   'workflow.binding.skillWorkflowOnlyHint':
@@ -1420,11 +1448,15 @@ export default {
     '叠加层：Workflow 引用的 HTTP 工具未加入 SkillTool：{ids}',
   'workflow.binding.missingSkillHostToolsOverlay':
     '叠加层：Workflow 引用的 HostTool 未加入 SkillHostTool：{ids}',
-  'workflow.binding.missingSkillTools': 'Workflow 节点引用的 HTTP 工具未加入 SkillTool：{ids}',
-  'workflow.binding.missingSkillHostTools': 'Workflow 节点引用的 HostTool 未加入 SkillHostTool：{ids}',
-  'workflow.binding.skillAligned': 'Workflow 节点所需的 Tool / HostTool 已与 Skill 绑定对齐',
+  'workflow.binding.missingSkillTools':
+    'Workflow 节点引用的 HTTP 工具未加入 SkillTool：{ids}',
+  'workflow.binding.missingSkillHostTools':
+    'Workflow 节点引用的 HostTool 未加入 SkillHostTool：{ids}',
+  'workflow.binding.skillAligned':
+    'Workflow 节点所需的 Tool / HostTool 已与 Skill 绑定对齐',
   'workflow.binding.syncSkillBindings': '一键补齐 Tool / HostTool',
-  'workflow.binding.syncSkillBindingsHint': '将 Workflow 节点引用的 Tool / HostTool 写入 Skill 白名单',
+  'workflow.binding.syncSkillBindingsHint':
+    '将 Workflow 节点引用的 Tool / HostTool 写入 Skill 白名单',
   'workflow.binding.syncSuccess': 'Skill Tool / HostTool 已补齐',
   'workflow.binding.syncFailed': '补齐 Skill 绑定失败',
   'workflow.binding.pageActionApprovalGateHint':
@@ -1437,10 +1469,13 @@ export default {
   'workflow.node.awaitUserConfirmHint': '挂起等 C 端确认后才执行 write_data',
   'workflow.nodeInput.awaitUserConfirmGateHint':
     '执行到此步将挂起，用户在 C 端确认后才执行后续 write_data。',
-  'workflow.error.breaksSkillRef': 'Workflow 变更会影响 Skill #{skillId} 的 Tool 白名单，请先调整 Skill 绑定',
-  'workflow.error.breaksPageActionRef': 'Workflow 变更会影响 PageAction #{pageActionId} 的 hostToolId，请先调整 PageAction',
+  'workflow.error.breaksSkillRef':
+    'Workflow 变更会影响 Skill #{skillId} 的 Tool 白名单，请先调整 Skill 绑定',
+  'workflow.error.breaksPageActionRef':
+    'Workflow 变更会影响 PageAction #{pageActionId} 的 hostToolId，请先调整 PageAction',
   'workflow.detail.advancedBindings': '高级：标记必填 Tool',
-  'workflow.detail.advancedBindingsHint': 'Tool / HostTool 绑定由节点 input 自动推导；此处仅可调整 isRequired 标记。',
+  'workflow.detail.advancedBindingsHint':
+    'Tool / HostTool 绑定由节点 input 自动推导；此处仅可调整 isRequired 标记。',
   'workflow.nodeInput.materialize': '物化页上下文（materialize）',
   'workflow.nodeInput.toolId': 'HTTP 工具（toolId）',
   'workflow.nodeInput.toolIdRequired': '请选择 HTTP 工具',
@@ -1450,7 +1485,8 @@ export default {
   'workflow.nodeInput.hostToolPlaceholder': '选择 HostTool',
   'workflow.nodeInput.completeWhen': '完成条件（completeWhen）',
   'workflow.nodeInput.completeWhen.first_success': '首次成功（first_success）',
-  'workflow.nodeInput.completeWhen.fetch_all_pages': '拉取全部页（fetch_all_pages）',
+  'workflow.nodeInput.completeWhen.fetch_all_pages':
+    '拉取全部页（fetch_all_pages）',
   'workflow.nodeInput.stream': '流式推送（stream）',
   'workflow.nodeInput.summarizeMode': '总结模式（mode）',
   'workflow.nodeInput.summarizeMode.brief': '简要（brief）',
@@ -1463,12 +1499,16 @@ export default {
   'workflow.nodeInput.confirmKind': '确认类型（confirmKind）',
   'workflow.nodeInput.confirmKind.mutation': '变更确认（mutation）',
   'workflow.nodeInput.confirmKind.generic': '通用确认（generic）',
-  'workflow.validation.tool_id_required': '节点 {nodeId} 须选择 HTTP 工具（toolId）',
-  'workflow.validation.host_tool_id_required': '节点 {nodeId} 须选择 Host 工具（hostToolId）',
+  'workflow.validation.tool_id_required':
+    '节点 {nodeId} 须选择 HTTP 工具（toolId）',
+  'workflow.validation.host_tool_id_required':
+    '节点 {nodeId} 须选择 Host 工具（hostToolId）',
   'workflow.configMode.preset': '场景配置',
   'workflow.configMode.nodes': '节点编排（高级）',
-  'workflow.preset.hint': '选择业务场景 Preset，绑定 Tool / HostTool 即可；保存后服务端自动展开为节点链。',
-  'workflow.preset.rebuildHint': '编辑已有 Workflow 时，选择场景并保存将按 Preset 重建节点（覆盖当前编排）。',
+  'workflow.preset.hint':
+    '选择业务场景 Preset，绑定 Tool / HostTool 即可；保存后服务端自动展开为节点链。',
+  'workflow.preset.rebuildHint':
+    '编辑已有 Workflow 时，选择场景并保存将按 Preset 重建节点（覆盖当前编排）。',
   'workflow.preset.required': '请选择一个场景 Preset',
   'workflow.preset.invalid': '当前 profile 不支持所选 Preset',
   'workflow.preset.emptyForProfile': '当前 profile（{profile}）暂无可用 Preset',
@@ -1476,7 +1516,8 @@ export default {
   'workflow.preset.hostToolId': 'Host 工具',
   'workflow.preset.readToolId': '读接口（HTTP Tool）',
   'workflow.preset.writeToolId': '写接口（HTTP Tool）',
-  'workflow.preset.objectivesHint': '各阶段 objective 文案（可选，覆盖默认提示）',
+  'workflow.preset.objectivesHint':
+    '各阶段 objective 文案（可选，覆盖默认提示）',
   'workflow.preset.objective.loadPage': '加载页上下文',
   'workflow.preset.objective.fetch': '拉取数据',
   'workflow.preset.objective.push': '推送到页面',
@@ -1494,8 +1535,10 @@ export default {
     '适用于用户在业务页面内通过 Chat 发起写操作。执行到「确认读写」将挂起，用户在 C 端确认后才会调用写接口。请确保 C 端请求携带 pageContext。',
   'workflow.preset.mutationNoDuplicateConfirm':
     'Preset 已内置 await_user_confirm，请勿在节点编排中重复添加，否则会导致双确认。',
-  'pageAction.form.workflowHostToolMismatch': '若填写 hostToolId，须与 Workflow push 节点一致',
-  'pageAction.form.workflowHostToolLockedHint': '可选：与 push 节点 hostToolId 对齐',
+  'pageAction.form.workflowHostToolMismatch':
+    '若填写 hostToolId，须与 Workflow push 节点一致',
+  'pageAction.form.workflowHostToolLockedHint':
+    '可选：与 push 节点 hostToolId 对齐',
   'common.sortOrder': '排序',
   'common.description': '描述',
   'tool.add': '添加工具',

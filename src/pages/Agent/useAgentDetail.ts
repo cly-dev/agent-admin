@@ -1,12 +1,5 @@
 import { useProjectRoute } from '@/hooks/useProjectRoute';
-import {
-  buildAgentGetToolsQuery,
-  normalizeAgentBoundToolsFilter,
-  type AgentBoundToolsFilterFormValues,
-  type AgentBoundToolsFilterValues,
-} from './agentBoundToolsFilter';
-import { isAgentCreateRoute } from './agentShared';
-import { DEFAULT_SYSTEM_PROMPT } from './constants';
+import { SEARCH_DEBOUNCE_MS } from '@/pages/Tool/toolConstants';
 import {
   AgentController_addAgentTools,
   AgentController_create,
@@ -15,13 +8,25 @@ import {
   AgentController_removeAgentTools,
   AgentController_update,
 } from '@/services/agent';
-import { SEARCH_DEBOUNCE_MS } from '@/pages/Tool/toolConstants';
 import { ToolController_findPage } from '@/services/tool';
-import type { Agent, AgentAllowedToolRef, CreateAgentDto, UpdateAgentDto } from '@/types/agent';
+import type {
+  Agent,
+  AgentAllowedToolRef,
+  CreateAgentDto,
+  UpdateAgentDto,
+} from '@/types/agent';
 import type { Tool } from '@/types/tool';
 import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
+import {
+  buildAgentGetToolsQuery,
+  normalizeAgentBoundToolsFilter,
+  type AgentBoundToolsFilterFormValues,
+  type AgentBoundToolsFilterValues,
+} from './agentBoundToolsFilter';
+import { isAgentCreateRoute } from './agentShared';
+import { DEFAULT_SYSTEM_PROMPT } from './constants';
 
 export type AgentFormValues = {
   name: string;
@@ -60,7 +65,10 @@ function formValuesToPayload(values: AgentFormValues): UpdateAgentDto {
   };
 }
 
-function formValuesToCreatePayload(projectId: number, values: AgentFormValues): CreateAgentDto {
+function formValuesToCreatePayload(
+  projectId: number,
+  values: AgentFormValues,
+): CreateAgentDto {
   const payload = formValuesToPayload(values);
   return {
     appClientId: projectId,
@@ -94,7 +102,8 @@ export function useAgentDetail() {
   const { projectId } = useProjectRoute();
   const [form] = Form.useForm<AgentFormValues>();
   const [toolsFilterForm] = Form.useForm<AgentBoundToolsFilterFormValues>();
-  const [appliedToolsFilters, setAppliedToolsFilters] = useState<AgentBoundToolsFilterValues>({});
+  const [appliedToolsFilters, setAppliedToolsFilters] =
+    useState<AgentBoundToolsFilterValues>({});
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -102,18 +111,24 @@ export function useAgentDetail() {
   const [boundTools, setBoundTools] = useState<AgentAllowedToolRef[]>([]);
   const [createToolIds, setCreateToolIds] = useState<number[]>([]);
   const [toolsPage, setToolsPage] = useState(1);
-  const [toolsPageSize, setToolsPageSize] = useState(DEFAULT_BOUND_TOOLS_PAGE_SIZE);
+  const [toolsPageSize, setToolsPageSize] = useState(
+    DEFAULT_BOUND_TOOLS_PAGE_SIZE,
+  );
   const [toolsTotal, setToolsTotal] = useState(0);
   const [bindModalOpen, setBindModalOpen] = useState(false);
   const [bindModalLoading, setBindModalLoading] = useState(false);
   const [bindSubmitting, setBindSubmitting] = useState(false);
-  const [unbindSubmittingId, setUnbindSubmittingId] = useState<number | null>(null);
+  const [unbindSubmittingId, setUnbindSubmittingId] = useState<number | null>(
+    null,
+  );
   const [availableTools, setAvailableTools] = useState<Tool[]>([]);
   const [bindModalPage, setBindModalPage] = useState(1);
-  const [bindModalPageSize, setBindModalPageSize] = useState(BIND_MODAL_PAGE_SIZE);
+  const [bindModalPageSize, setBindModalPageSize] =
+    useState(BIND_MODAL_PAGE_SIZE);
   const [bindModalTotal, setBindModalTotal] = useState(0);
   const [bindModalKeyword, setBindModalKeyword] = useState('');
-  const [bindModalDebouncedKeyword, setBindModalDebouncedKeyword] = useState('');
+  const [bindModalDebouncedKeyword, setBindModalDebouncedKeyword] =
+    useState('');
 
   const isCreateMode = isAgentCreateRoute(pathname, id);
   const agentId = isCreateMode ? 0 : Number(id);
@@ -202,7 +217,9 @@ export function useAgentDetail() {
     try {
       const data = await AgentController_findOne(agentId);
       if (projectId && data.appClientId !== projectId) {
-        message.warning(intl.formatMessage({ id: 'agent.detail.wrongProject' }));
+        message.warning(
+          intl.formatMessage({ id: 'agent.detail.wrongProject' }),
+        );
         history.replace('/agent');
         return;
       }
@@ -211,16 +228,32 @@ export function useAgentDetail() {
       toolsFilterForm.resetFields();
       setAppliedToolsFilters({});
       setToolsPage(1);
-      await reloadBoundToolsView(data.id, projectId, 1, DEFAULT_BOUND_TOOLS_PAGE_SIZE, {});
+      await reloadBoundToolsView(
+        data.id,
+        projectId,
+        1,
+        DEFAULT_BOUND_TOOLS_PAGE_SIZE,
+        {},
+      );
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'agent.loadFailed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'agent.loadFailed' }),
       );
       setAgent(null);
     } finally {
       setLoading(false);
     }
-  }, [agentId, form, intl, isCreateMode, reloadBoundToolsView, projectId, toolsFilterForm]);
+  }, [
+    agentId,
+    form,
+    intl,
+    isCreateMode,
+    reloadBoundToolsView,
+    projectId,
+    toolsFilterForm,
+  ]);
 
   useEffect(() => {
     void loadAgent();
@@ -299,7 +332,13 @@ export function useAgentDetail() {
     }
     setToolsPage(page);
     setToolsPageSize(pageSize);
-    void loadBoundTools(agent.id, projectId, page, pageSize, appliedToolsFilters);
+    void loadBoundTools(
+      agent.id,
+      projectId,
+      page,
+      pageSize,
+      appliedToolsFilters,
+    );
   };
 
   const handleToolsFilterSearch = (values: AgentBoundToolsFilterFormValues) => {
@@ -351,7 +390,13 @@ export function useAgentDetail() {
       await AgentController_addAgentTools(agent.id, projectId, { toolIds });
       message.success(intl.formatMessage({ id: 'agent.tools.bindSuccess' }));
       setBindModalOpen(false);
-      await reloadBoundToolsView(agent.id, projectId, toolsPage, toolsPageSize, appliedToolsFilters);
+      await reloadBoundToolsView(
+        agent.id,
+        projectId,
+        toolsPage,
+        toolsPageSize,
+        appliedToolsFilters,
+      );
     } catch (error: unknown) {
       message.error(
         error instanceof Error
@@ -384,7 +429,9 @@ export function useAgentDetail() {
 
     setUnbindSubmittingId(toolId);
     try {
-      await AgentController_removeAgentTools(agent.id, projectId, { toolIds: [toolId] });
+      await AgentController_removeAgentTools(agent.id, projectId, {
+        toolIds: [toolId],
+      });
       message.success(intl.formatMessage({ id: 'agent.tools.unbindSuccess' }));
       const nextPage =
         boundTools.length <= 1 && toolsPage > 1 ? toolsPage - 1 : toolsPage;
@@ -429,13 +476,15 @@ export function useAgentDetail() {
         });
         if (toolIds?.length) {
           try {
-            await AgentController_addAgentTools(created.id, projectId, { toolIds });
+            await AgentController_addAgentTools(created.id, projectId, {
+              toolIds,
+            });
           } catch {
             // create payload may already bind tools; detail page will show server state
           }
         }
         message.success(intl.formatMessage({ id: 'agent.created' }));
-        history.replace(`/agent/detail/${created.id}`);
+        history.replace('/agent');
         return;
       }
 
@@ -443,13 +492,19 @@ export function useAgentDetail() {
         return;
       }
 
-      const updated = await AgentController_update(agent.id, formValuesToPayload(values));
+      const updated = await AgentController_update(
+        agent.id,
+        formValuesToPayload(values),
+      );
       setAgent(updated);
       form.setFieldsValue(agentToFormValues(updated));
       message.success(intl.formatMessage({ id: 'agent.updated' }));
+      history.replace('/agent');
     } catch (error: unknown) {
       message.error(
-        error instanceof Error ? error.message : intl.formatMessage({ id: 'agent.actionFailed' }),
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'agent.actionFailed' }),
       );
     } finally {
       setSubmitting(false);
@@ -469,9 +524,10 @@ export function useAgentDetail() {
     toolsPageSize,
     toolsTotal,
     // 创建态使用本地已选 toolIds；编辑态使用当前页已绑定 toolIds
-    boundToolIds: (isCreateMode ? createToolIds : boundTools.map((t) => t.toolId)).filter(
-      (toolId) => toolId > 0,
-    ),
+    boundToolIds: (isCreateMode
+      ? createToolIds
+      : boundTools.map((t) => t.toolId)
+    ).filter((toolId) => toolId > 0),
     projectId,
     isCreateMode,
     bindModalOpen,

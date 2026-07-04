@@ -351,11 +351,9 @@ export function useToolDetail() {
     setSubmitting(true);
     try {
       if (isCreateMode) {
-        const created = await ToolController_create(
-          buildCreateToolPayload(projectId, values),
-        );
+        await ToolController_create(buildCreateToolPayload(projectId, values));
         message.success(intl.formatMessage({ id: 'tool.created' }));
-        history.replace(`/tool/detail/${created.id}`);
+        history.replace('/tool');
         return;
       }
 
@@ -368,8 +366,7 @@ export function useToolDetail() {
         buildUpdateToolPayload(values, { outputSchema, responseProfile }),
       );
       message.success(intl.formatMessage({ id: 'tool.updated' }));
-      const refreshed = await ToolController_findOne(tool.id);
-      applyToolToForm(refreshed);
+      history.replace('/tool');
     } catch (error: unknown) {
       message.error(
         error instanceof Error

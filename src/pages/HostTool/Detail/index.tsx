@@ -89,6 +89,7 @@ const HostPageDetailPage: React.FC = () => {
       const updated = await HostPageController_update(hostPage.id, payload);
       setHostPage(updated);
       message.success(intl.formatMessage({ id: 'hostPage.updated' }));
+      history.replace('/tool/host-tool');
     } catch (error: unknown) {
       message.error(
         error instanceof Error

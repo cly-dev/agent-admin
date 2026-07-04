@@ -103,11 +103,10 @@ export function useProjectList() {
       if (values.description?.trim()) {
         payload.description = values.description.trim();
       }
-      const created = await AppClientController_create(payload);
+      await AppClientController_create(payload);
       message.success(intl.formatMessage({ id: 'project.created' }));
       setEditorOpen(false);
       await loadAll();
-      history.push(`/project/detail/${created.id}`);
     } catch (error: unknown) {
       if (typeof error === 'object' && error !== null && 'errorFields' in error)
         return;

@@ -1,7 +1,7 @@
 import { useProjectRoute } from '@/hooks/useProjectRoute';
 import {
-  HostToolController_findByAppClient,
   HOST_TOOL_MAX_PAGE_SIZE,
+  HostToolController_findByAppClient,
 } from '@/services/host-tool';
 import { ToolController_findByAppClient } from '@/services/tool';
 import {
@@ -27,14 +27,6 @@ import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import { WORKFLOW_LIST_PATH } from './useWorkflowList';
-import {
-  buildOptionalBindingsPayload,
-  createEmptyWorkflowNode,
-  syncBindingRowsFromNodes,
-  validateWorkflowNodes,
-  type WorkflowHostToolRow,
-  type WorkflowToolRow,
-} from './workflowShared';
 import { formatWorkflowSaveError } from './workflowApiError';
 import {
   buildPresetConfigPayload,
@@ -45,8 +37,16 @@ import {
   type WorkflowConfigMode,
   type WorkflowPresetFormState,
 } from './workflowPreset';
+import {
+  buildOptionalBindingsPayload,
+  createEmptyWorkflowNode,
+  syncBindingRowsFromNodes,
+  validateWorkflowNodes,
+  type WorkflowHostToolRow,
+  type WorkflowToolRow,
+} from './workflowShared';
 
-export type { WorkflowToolRow, WorkflowHostToolRow };
+export type { WorkflowHostToolRow, WorkflowToolRow };
 
 export type WorkflowFormValues = {
   workflowKey: string;
@@ -60,15 +60,39 @@ export type WorkflowFormValues = {
   changeNote?: string;
 };
 
+function trimFormString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+async function hydrateWorkflowAfterSave(
+  updated: Workflow,
+  fallbackNodes: WorkflowNodeDef[],
+): Promise<Workflow> {
+  if (updated.nodes.length > 0) {
+    return updated;
+  }
+  try {
+    const detail = await WorkflowController_findOne(updated.id);
+    return detail.nodes.length > 0
+      ? detail
+      : { ...detail, nodes: fallbackNodes };
+  } catch {
+    return { ...updated, nodes: fallbackNodes };
+  }
+}
+
 export function useWorkflowDetail() {
   const intl = useIntl();
   const location = useLocation();
   const { projectId, currentProject } = useProjectRoute();
   const params = useParams<{ id?: string }>();
 
-  const isCreateMode = location.pathname.endsWith('/workflow/assets/detail/create');
+  const isCreateMode = location.pathname.endsWith(
+    '/workflow/assets/detail/create',
+  );
   const workflowId = Number(params.id);
-  const isEditMode = !isCreateMode && Number.isFinite(workflowId) && workflowId > 0;
+  const isEditMode =
+    !isCreateMode && Number.isFinite(workflowId) && workflowId > 0;
 
   const [form] = Form.useForm<WorkflowFormValues>();
   const profile = Form.useWatch('profile', form) as WorkflowProfile | undefined;
@@ -81,7 +105,9 @@ export function useWorkflowDetail() {
     preset: null,
     config: emptyPresetConfig(),
   });
-  const [presetCatalog, setPresetCatalog] = useState<WorkflowPresetCatalogEntry[]>([]);
+  const [presetCatalog, setPresetCatalog] = useState<
+    WorkflowPresetCatalogEntry[]
+  >([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [nodes, setNodes] = useState<WorkflowNodeDef[]>([]);
   const [toolRows, setToolRows] = useState<WorkflowToolRow[]>([]);
@@ -121,7 +147,8 @@ export function useWorkflowDetail() {
     async (nextProfile: WorkflowProfile) => {
       setCatalogLoading(true);
       try {
-        const catalog = await WorkflowController_listPresetsCatalog(nextProfile);
+        const catalog =
+          await WorkflowController_listPresetsCatalog(nextProfile);
         setPresetCatalog(catalog);
         return catalog;
       } catch {
@@ -218,7 +245,13 @@ export function useWorkflowDetail() {
     await loadToolOptions();
     const catalog = await loadPresetCatalog('page_action');
     applyDefaultPreset('page_action', catalog);
-  }, [applyDefaultPreset, form, isCreateMode, loadPresetCatalog, loadToolOptions]);
+  }, [
+    applyDefaultPreset,
+    form,
+    isCreateMode,
+    loadPresetCatalog,
+    loadToolOptions,
+  ]);
 
   useEffect(() => {
     if (isCreateMode) {
@@ -254,7 +287,11 @@ export function useWorkflowDetail() {
       if (isEditMode) {
         setConfigMode('nodes');
       }
-      const synced = syncBindingRowsFromNodes(nextNodes, toolRows, hostToolRows);
+      const synced = syncBindingRowsFromNodes(
+        nextNodes,
+        toolRows,
+        hostToolRows,
+      );
       setToolRows(
         synced.toolRows.map((row) => ({
           ...row,
@@ -265,7 +302,8 @@ export function useWorkflowDetail() {
         synced.hostToolRows.map((row) => ({
           ...row,
           name:
-            hostTools.find((tool) => tool.id === row.hostToolId)?.name ?? row.name,
+            hostTools.find((tool) => tool.id === row.hostToolId)?.name ??
+            row.name,
         })),
       );
     },
@@ -293,11 +331,16 @@ export function useWorkflowDetail() {
     [nodes.length],
   );
 
-  const handleToolRequiredChange = useCallback((toolId: number, isRequired: boolean) => {
-    setToolRows((rows) =>
-      rows.map((row) => (row.toolId === toolId ? { ...row, isRequired } : row)),
-    );
-  }, []);
+  const handleToolRequiredChange = useCallback(
+    (toolId: number, isRequired: boolean) => {
+      setToolRows((rows) =>
+        rows.map((row) =>
+          row.toolId === toolId ? { ...row, isRequired } : row,
+        ),
+      );
+    },
+    [],
+  );
 
   const handleHostToolRequiredChange = useCallback(
     (hostToolId: number, isRequired: boolean) => {
@@ -319,7 +362,8 @@ export function useWorkflowDetail() {
       message.warning(intl.formatMessage({ id: 'workflow.selectProject' }));
       return;
     }
-    const values = await form.validateFields();
+    await form.validateFields();
+    const values = form.getFieldsValue(true) as WorkflowFormValues;
 
     setSaving(true);
     try {
@@ -330,19 +374,20 @@ export function useWorkflowDetail() {
           presetCatalog,
         );
         if (issues.length > 0) {
-          message.error(
-            intl.formatMessage({ id: issues[0].messageId }),
-          );
+          message.error(intl.formatMessage({ id: issues[0].messageId }));
           return;
         }
         const preset = presetForm.preset!;
-        const presetConfig = buildPresetConfigPayload(presetForm.config, preset);
+        const presetConfig = buildPresetConfigPayload(
+          presetForm.config,
+          preset,
+        );
 
         if (isCreateMode) {
           const payload: CreateWorkflowDto = {
             appClientId: projectId,
-            workflowKey: values.workflowKey.trim(),
-            name: values.name.trim(),
+            workflowKey: trimFormString(values.workflowKey),
+            name: trimFormString(values.name),
             description: values.description?.trim() || null,
             goal: values.goal?.trim() || null,
             profile: values.profile,
@@ -353,9 +398,9 @@ export function useWorkflowDetail() {
             sortOrder: values.sortOrder,
             changeNote: values.changeNote?.trim() || undefined,
           };
-          const created = await WorkflowController_create(payload);
+          await WorkflowController_create(payload);
           message.success(intl.formatMessage({ id: 'workflow.created' }));
-          history.replace(`/workflow/assets/detail/${created.id}`);
+          history.replace(WORKFLOW_LIST_PATH);
           return;
         }
 
@@ -364,7 +409,7 @@ export function useWorkflowDetail() {
         }
 
         const payload: UpdateWorkflowDto = {
-          name: values.name.trim(),
+          name: trimFormString(values.name),
           description: values.description?.trim() || null,
           goal: values.goal?.trim() || null,
           deliverable: values.deliverable,
@@ -375,10 +420,33 @@ export function useWorkflowDetail() {
           changeNote: values.changeNote?.trim() || undefined,
         };
         const updated = await WorkflowController_update(workflow.id, payload);
-        setWorkflow(updated);
-        setNodes(updated.nodes);
+        const savedWorkflow = await hydrateWorkflowAfterSave(updated, nodes);
+        const savedNodes =
+          savedWorkflow.nodes.length > 0 ? savedWorkflow.nodes : nodes;
+        setWorkflow({ ...savedWorkflow, nodes: savedNodes });
+        setNodes(savedNodes);
         setConfigMode('nodes');
+        const synced = syncBindingRowsFromNodes(
+          savedNodes,
+          savedWorkflow.workflowTools.map((item) => ({
+            toolId: item.toolId,
+            isRequired: item.isRequired,
+            name: item.tool?.name,
+          })),
+          savedWorkflow.workflowHostTools.map((item) => ({
+            hostToolId: item.hostToolId,
+            isRequired: item.isRequired,
+            name: item.hostTool?.name,
+          })),
+        );
+        setToolRows(synced.toolRows);
+        setHostToolRows(synced.hostToolRows);
+        const revisionList = await WorkflowController_listRevisions(
+          savedWorkflow.id,
+        );
+        setRevisions(revisionList);
         message.success(intl.formatMessage({ id: 'workflow.updated' }));
+        history.replace(WORKFLOW_LIST_PATH);
         return;
       }
 
@@ -399,13 +467,17 @@ export function useWorkflowDetail() {
         return;
       }
 
-      const optionalBindings = buildOptionalBindingsPayload(toolRows, hostToolRows, nodes);
+      const optionalBindings = buildOptionalBindingsPayload(
+        toolRows,
+        hostToolRows,
+        nodes,
+      );
 
       if (isCreateMode) {
         const payload: CreateWorkflowDto = {
           appClientId: projectId,
-          workflowKey: values.workflowKey.trim(),
-          name: values.name.trim(),
+          workflowKey: trimFormString(values.workflowKey),
+          name: trimFormString(values.name),
           description: values.description?.trim() || null,
           goal: values.goal?.trim() || null,
           profile: values.profile,
@@ -416,9 +488,9 @@ export function useWorkflowDetail() {
           ...optionalBindings,
           changeNote: values.changeNote?.trim() || undefined,
         };
-        const created = await WorkflowController_create(payload);
+        await WorkflowController_create(payload);
         message.success(intl.formatMessage({ id: 'workflow.created' }));
-        history.replace(`/workflow/assets/detail/${created.id}`);
+        history.replace(WORKFLOW_LIST_PATH);
         return;
       }
 
@@ -427,7 +499,7 @@ export function useWorkflowDetail() {
       }
 
       const payload: UpdateWorkflowDto = {
-        name: values.name.trim(),
+        name: trimFormString(values.name),
         description: values.description?.trim() || null,
         goal: values.goal?.trim() || null,
         deliverable: values.deliverable,
@@ -438,16 +510,19 @@ export function useWorkflowDetail() {
         changeNote: values.changeNote?.trim() || undefined,
       };
       const updated = await WorkflowController_update(workflow.id, payload);
-      setWorkflow(updated);
-      setNodes(updated.nodes);
+      const savedWorkflow = await hydrateWorkflowAfterSave(updated, nodes);
+      const savedNodes =
+        savedWorkflow.nodes.length > 0 ? savedWorkflow.nodes : nodes;
+      setWorkflow({ ...savedWorkflow, nodes: savedNodes });
+      setNodes(savedNodes);
       const synced = syncBindingRowsFromNodes(
-        updated.nodes,
-        updated.workflowTools.map((item) => ({
+        savedNodes,
+        savedWorkflow.workflowTools.map((item) => ({
           toolId: item.toolId,
           isRequired: item.isRequired,
           name: item.tool?.name,
         })),
-        updated.workflowHostTools.map((item) => ({
+        savedWorkflow.workflowHostTools.map((item) => ({
           hostToolId: item.hostToolId,
           isRequired: item.isRequired,
           name: item.hostTool?.name,
@@ -455,11 +530,16 @@ export function useWorkflowDetail() {
       );
       setToolRows(synced.toolRows);
       setHostToolRows(synced.hostToolRows);
-      const revisionList = await WorkflowController_listRevisions(updated.id);
+      const revisionList = await WorkflowController_listRevisions(
+        savedWorkflow.id,
+      );
       setRevisions(revisionList);
       message.success(intl.formatMessage({ id: 'workflow.updated' }));
+      history.replace(WORKFLOW_LIST_PATH);
     } catch (error: unknown) {
-      message.error(formatWorkflowSaveError(intl, error, 'workflow.saveFailed'));
+      message.error(
+        formatWorkflowSaveError(intl, error, 'workflow.saveFailed'),
+      );
     } finally {
       setSaving(false);
     }

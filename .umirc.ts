@@ -332,6 +332,23 @@ export default defineConfig({
         },
       ],
     },
+    {
+      name: 'audit',
+      path: '/audit',
+      icon: 'AuditOutlined',
+      routes: [
+        {
+          path: '/audit',
+          redirect: '/audit/page-agent-run',
+          hideInMenu: true,
+        },
+        {
+          name: 'pageAgentRun',
+          path: '/audit/page-agent-run',
+          component: './Audit/PageAgentRun',
+        },
+      ],
+    },
   ],
   npmClient: 'pnpm',
   alias: {

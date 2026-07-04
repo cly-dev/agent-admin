@@ -14,8 +14,7 @@ import {
 } from '@/services/skill';
 import { ToolController_findByAppClient } from '@/services/tool';
 import type { Agent, AgentAllowedToolRef } from '@/types/agent';
-import type { HostTool } from '@/types/host-tool';
-import type { SkillHostToolBindingRecord } from '@/types/host-tool';
+import type { HostTool, SkillHostToolBindingRecord } from '@/types/host-tool';
 import type {
   CreateSkillDto,
   SkillDetail,
@@ -24,6 +23,7 @@ import type {
   UpdateSkillDto,
 } from '@/types/skill';
 import type { Tool } from '@/types/tool';
+import type { WorkflowBindingValue } from '@/types/workflow';
 import { formatApiErrorMessage } from '@/utils/api-error';
 import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
@@ -40,7 +40,6 @@ import {
   type SkillPromptHostToolOption,
   type SkillPromptToolOption,
 } from './skillPromptMention';
-import type { WorkflowBindingValue } from '@/types/workflow';
 import {
   hasWorkflowConfig,
   parseWorkflowFromConfig,
@@ -473,7 +472,14 @@ export function useSkillDetail() {
     } finally {
       setLoading(false);
     }
-  }, [form, isCreateMode, loadAgents, loadAppTools, projectId, syncHostToolState]);
+  }, [
+    form,
+    isCreateMode,
+    loadAgents,
+    loadAppTools,
+    projectId,
+    syncHostToolState,
+  ]);
 
   useEffect(() => {
     if (isCreateMode) {
@@ -641,9 +647,12 @@ export function useSkillDetail() {
     history.push('/agent/skill');
   };
 
-  const handleWorkflowBindingChange = useCallback((next: WorkflowBindingValue) => {
-    setWorkflowBinding(next);
-  }, []);
+  const handleWorkflowBindingChange = useCallback(
+    (next: WorkflowBindingValue) => {
+      setWorkflowBinding(next);
+    },
+    [],
+  );
 
   const handleWorkflowBindingsSynced = useCallback(
     (toolIds: number[], hostToolIds: number[]) => {
@@ -676,14 +685,19 @@ export function useSkillDetail() {
     }
 
     const values = await form.validateFields();
-    const configParsed = buildConfigForSave(values.configJson, useRawConfigOnly);
+    const configParsed = buildConfigForSave(
+      values.configJson,
+      useRawConfigOnly,
+    );
     if (values.configJson?.trim() && configParsed === null) {
       message.error(intl.formatMessage({ id: 'skill.form.configInvalid' }));
       return;
     }
 
     if (executionMode === 'workflow' && !workflowBinding.workflowId) {
-      message.error(intl.formatMessage({ id: 'skill.workflow.bindingRequired' }));
+      message.error(
+        intl.formatMessage({ id: 'skill.workflow.bindingRequired' }),
+      );
       return;
     }
 
@@ -747,11 +761,7 @@ export function useSkillDetail() {
           });
         }
         message.success(intl.formatMessage({ id: 'skill.created' }));
-        if (created.id) {
-          history.replace(`/agent/skill/detail/${created.id}`);
-        } else {
-          history.replace('/agent/skill');
-        }
+        history.replace('/agent/skill');
         return;
       }
 
@@ -823,6 +833,7 @@ export function useSkillDetail() {
         configJson: stringifyConfig(nextSkill.config),
       });
       message.success(intl.formatMessage({ id: 'skill.updated' }));
+      history.replace('/agent/skill');
     } catch (error: unknown) {
       if (
         typeof error === 'object' &&

@@ -12,6 +12,7 @@ const PAGE_MENU_IDS: Record<AppPageKey, string> = {
   agent: 'menu.agent',
   tool: 'menu.tool',
   workflow: 'menu.workflow',
+  audit: 'menu.audit',
   chat: 'menu.chat',
   user: 'menu.user',
   setting: 'menu.setting',
@@ -30,8 +31,9 @@ const ProjectSwitcher: React.FC<ProjectSwitcherProps> = ({
     useProjectRoute();
 
   const pageKey = getPageKeyFromPath(pathname);
-  const currentPageLabel = pageKey
-    ? intl.formatMessage({ id: PAGE_MENU_IDS[pageKey] })
+  const pageMenuId = PAGE_MENU_IDS[pageKey];
+  const currentPageLabel = pageMenuId
+    ? intl.formatMessage({ id: pageMenuId })
     : '';
 
   const menuItems = useMemo<MenuProps['items']>(() => {

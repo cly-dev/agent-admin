@@ -81,7 +81,7 @@ export function useProjectDetail(projectId: number) {
       await AppClientController_update(projectId, payload);
       message.success(intl.formatMessage({ id: 'project.detail.saved' }));
       await refreshProjects();
-      await loadDetail();
+      history.replace('/project');
     } catch (error: unknown) {
       if (
         typeof error === 'object' &&

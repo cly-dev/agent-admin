@@ -6,6 +6,7 @@ export const APP_PAGE_KEYS = [
   'agent',
   'tool',
   'workflow',
+  'audit',
   'chat',
   'user',
   'setting',
@@ -19,7 +20,7 @@ const ENTRY_PATH_ALIASES: Record<string, string> = {
 export type AppPageKey = (typeof APP_PAGE_KEYS)[number];
 
 const ENTRY_PATH_REGEX =
-  /^\/(dashboard|project|agent|tool|integration|workflow|chat|user|setting)\/(\d+)$/;
+  /^\/(dashboard|project|agent|tool|integration|workflow|audit|chat|user|setting)\/(\d+)$/;
 
 export function isAppPageKey(value: string): value is AppPageKey {
   return (APP_PAGE_KEYS as readonly string[]).includes(value);

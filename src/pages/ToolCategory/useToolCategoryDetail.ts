@@ -134,6 +134,7 @@ export function useToolCategoryDetail() {
       const updated = await ToolCategoryController_update(category.id, payload);
       setCategory(updated);
       message.success(intl.formatMessage({ id: 'toolCategory.updated' }));
+      history.replace(listPath);
     } catch (error: unknown) {
       if (
         typeof error === 'object' &&

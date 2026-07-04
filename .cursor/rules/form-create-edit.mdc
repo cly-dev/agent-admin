@@ -38,6 +38,13 @@ pages/Foo/
 - `handleSubmit` 内按 `isCreateMode` 调 create / update API
 - 路径常量写在 `*FormShared.ts` 或 `*Shared.ts`（如 `FOO_CREATE_PATH`、`buildFooDetailPath(id)`）
 
+## 保存后跳转
+
+- 独立详情页（`AppDetailPage`）保存成功后，必须返回对应列表页，不要停留详情页或跳转到新建记录详情。
+- 创建成功和编辑成功使用同一个列表路径，例如 `history.replace(FOO_LIST_PATH)`。
+- 列表页内的弹窗/抽屉保存不跳转，只关闭弹层并刷新当前列表。
+- 若保存接口返回的是裁剪后的详情（例如缺少 `nodes`），不要用空响应覆盖当前编辑态；先补拉详情，失败时保留当前本地状态，再返回列表。
+
 ## 页面组件
 
 - 顶栏：`AppDetailPage`；`title` / `saveLabel` 按 `isCreateMode` 切换文案

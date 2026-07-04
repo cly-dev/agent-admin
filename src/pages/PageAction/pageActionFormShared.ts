@@ -3,9 +3,9 @@ import type {
   PageActionFillField,
   PageActionInlineHostToolDto,
 } from '@/types/page-action';
-import {
-  DEFAULT_PAGE_ACTION_SYSTEM_PROMPT,
-} from './pageActionShared';
+import { DEFAULT_PAGE_ACTION_SYSTEM_PROMPT } from './pageActionShared';
+
+export type PageActionConfigMode = 'prompt' | 'workflow';
 
 export const PAGE_ACTION_LIST_PATH = '/workflow/frontend-tool-flow';
 export const PAGE_ACTION_CREATE_PATH = '/workflow/frontend-tool-flow/create';
@@ -36,24 +36,16 @@ export type PageActionWorkflowPushState = {
 
 export function validatePageActionWorkflowBinding(
   workflowId: number | null | undefined,
-  pushState: PageActionWorkflowPushState,
+  pushHostToolId: number | null,
   hostToolId: number | undefined,
   messages: {
-    missingPushNode: string;
-    hostToolRequired: string;
     hostToolMismatch: string;
   },
 ): string | null {
   if (!workflowId) {
     return null;
   }
-  if (!pushState.hasPushNode) {
-    return messages.missingPushNode;
-  }
-  if (!hostToolId) {
-    return messages.hostToolRequired;
-  }
-  if (pushState.pushHostToolId && hostToolId !== pushState.pushHostToolId) {
+  if (hostToolId && pushHostToolId && hostToolId !== pushHostToolId) {
     return messages.hostToolMismatch;
   }
   return null;
@@ -90,7 +82,9 @@ function normalizeActionKeySegment(value: string): string {
 
 export function buildActionKeyFromHostTool(tool: HostTool): string | undefined {
   const scope = tool.pageScope?.trim();
-  const purpose = normalizeActionKeySegment(tool.name || tool.definitionKey || '');
+  const purpose = normalizeActionKeySegment(
+    tool.name || tool.definitionKey || '',
+  );
   if (!scope || !purpose) {
     return undefined;
   }

@@ -1,0 +1,50 @@
+---
+description: 新增与编辑共用一个表单页，通过路由区分模式
+globs: src/pages/**/Form/index.tsx,src/pages/**/use*Form.ts,src/pages/**/use*Detail.ts
+alwaysApply: false
+---
+
+# 新增 / 编辑表单页规范
+
+同一资源的「新建」与「编辑」必须共用一个页面组件，禁止拆成 `Create/index.tsx` 与 `Edit/index.tsx` 两份几乎相同的代码。
+
+## 路由
+
+在 `.umirc.ts` 中两条路由指向同一组件：
+
+```ts
+{ path: '/foo/create', component: './Foo/Form', hideInMenu: true },
+{ path: '/foo/detail/:id', component: './Foo/Form', hideInMenu: true },
+```
+
+## 文件组织
+
+```
+pages/Foo/
+  Form/index.tsx       # 唯一表单页（AppDetailPage + 表单组件）
+  useFooForm.ts        # 或 useFooDetail.ts；内含 isCreateMode 分支
+  components/FooForm.tsx
+  fooFormShared.ts     # 默认值、校验、路径常量
+  index.tsx            # 列表页
+```
+
+参考：`PageAction/Form`、`Workflow/Detail`。
+
+## Hook 约定
+
+- 用 `useLocation().pathname.endsWith('/create')` 或 `useParams` 判断 `isCreateMode`
+- `isEditMode = !isCreateMode`；编辑模式校验 `id` 是否合法
+- 创建：`initCreate()` 重置表单；编辑：`loadDetail(id)` 拉取详情
+- `handleSubmit` 内按 `isCreateMode` 调 create / update API
+- 路径常量写在 `*FormShared.ts` 或 `*Shared.ts`（如 `FOO_CREATE_PATH`、`buildFooDetailPath(id)`）
+
+## 页面组件
+
+- 顶栏：`AppDetailPage`；`title` / `saveLabel` 按 `isCreateMode` 切换文案
+- 编辑态：`loading={!isCreateMode && loading}`；无记录时 `ContentEmpty`
+- 表单子组件用 `mode="create" | "edit"` 区分字段只读等行为
+
+## 禁止
+
+- 为同一资源维护两套平行的 `useXxxCreate` + `useXxxEdit` 与两个 `index.tsx`（除非创建与编辑 UI 差异极大）
+- 在 hook 外散落 `/create` 路径字符串；统一用 shared 常量

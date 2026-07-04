@@ -22,7 +22,11 @@ type HttpRequestOptions = {
 
 const DEFAULT_API_BASE_URL = 'http://localhost:3030';
 const DEFAULT_API_PATH_PREFIX = '/admin';
-const LOGIN_PATHS = ['/admin-user/login', '/admin/admin-user/login'] as const;
+const LOGIN_PATHS = [
+  '/admin-user/login',
+  '/admin/admin-user/login',
+  '/admin/admin-user/change-password',
+] as const;
 const DEV_PROXY_PREFIX = '/api';
 const API_SUCCESS_STATUSES = new Set<number>([200]);
 const API_ERROR_STATUSES = new Set<number>([
@@ -30,10 +34,10 @@ const API_ERROR_STATUSES = new Set<number>([
 ]);
 let unauthorizedHandling = false;
 
-/** Local `max dev` with UMI_ENV=dev uses the `/api` proxy; test/staging uses env URLs as-is. */
+/** 仅 UMI_ENV=dev 的本地开发走 `/api` 反向代理；test 联调用 env 里的完整 URL。 */
 const usesLocalApiProxy = (): boolean => {
   return (
-    process.env.NODE_ENV === 'development' && process.env.UMI_ENV !== 'test'
+    process.env.NODE_ENV === 'development' && process.env.UMI_ENV === 'dev'
   );
 };
 
@@ -43,13 +47,15 @@ const ensureDevApiPrefix = (baseUrl: string): string => {
   }
 
   const normalizedPath = baseUrl.startsWith('/') ? baseUrl : `/${baseUrl}`;
-  if (normalizedPath === '/') {
-    return DEV_PROXY_PREFIX;
+  if (
+    normalizedPath === '/' ||
+    normalizedPath === DEV_PROXY_PREFIX ||
+    normalizedPath.startsWith(`${DEV_PROXY_PREFIX}/`)
+  ) {
+    return normalizedPath === '/' ? DEV_PROXY_PREFIX : normalizedPath;
   }
 
-  return normalizedPath.startsWith(`${DEV_PROXY_PREFIX}/`)
-    ? normalizedPath
-    : `${DEV_PROXY_PREFIX}${normalizedPath}`;
+  return `${DEV_PROXY_PREFIX}${normalizedPath}`;
 };
 
 export const getApiBaseUrl = (): string => {

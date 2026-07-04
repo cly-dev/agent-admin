@@ -1,26 +1,31 @@
-import type { HostTool } from '@/types/host-tool';
 import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
-import type { WorkflowBindingValue } from '@/types/workflow';
+import type { HostTool } from '@/types/host-tool';
 import type { PageActionFillField } from '@/types/page-action';
+import type { WorkflowBindingValue } from '@/types/workflow';
 import {
+  ApartmentOutlined,
   ApiOutlined,
   CheckCircleFilled,
   FileTextOutlined,
-  LinkOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Alert, Collapse, Form, Input, InputNumber, Select, Switch } from 'antd';
+import { Alert, Form, Input, InputNumber, Select, Switch } from 'antd';
 import type { FormInstance } from 'antd/es/form';
 import type { ReactNode } from 'react';
+import styles from '../index.module.scss';
+import type {
+  PageActionConfigMode,
+  PageActionFormValues,
+} from '../pageActionFormShared';
 import {
   DEFAULT_PAGE_ACTION_SYSTEM_PROMPT,
   PAGE_ACTION_SYSTEM_PROMPT_MAX,
   formatHostToolOptionLabel,
   hostToolHasStreamFillField,
 } from '../pageActionShared';
-import type { PageActionFormValues } from '../pageActionFormShared';
-import styles from '../index.module.scss';
+import PageActionConfigModePicker from './PageActionConfigModePicker';
+import PageActionWorkflowPushPreview from './PageActionWorkflowPushPreview';
 
 type PageActionFormProps = {
   form: FormInstance<PageActionFormValues>;
@@ -29,10 +34,19 @@ type PageActionFormProps = {
   hostTools: HostTool[];
   hostToolsLoading?: boolean;
   projectId?: number;
+  configMode: PageActionConfigMode;
+  onConfigModeChange: (mode: PageActionConfigMode) => void;
   workflowBinding?: WorkflowBindingValue;
   onWorkflowBindingChange?: (value: WorkflowBindingValue) => void;
-  onPushHostToolResolved?: (hostToolId: number | null, hasPushNode: boolean) => void;
-  hostToolIdLocked?: boolean;
+  onPushHostToolResolved?: (
+    hostToolId: number | null,
+    hasPushNode: boolean,
+  ) => void;
+  workflowPushState?: {
+    hasPushNode: boolean;
+    pushHostToolId: number | null;
+  };
+  onApplyPushHostTool?: () => void;
   onFinish?: (values: PageActionFormValues) => void;
   onHostToolChange: (hostToolId?: number) => void;
   onActionKeyBlur?: () => void;
@@ -114,7 +128,9 @@ function HostToolSummary({ tool }: { tool: HostTool }) {
           <span className={styles.hostToolSummaryLabel}>
             {intl.formatMessage({ id: 'hostTool.column.description' })}
           </span>
-          <span className={styles.hostToolSummaryValue}>{tool.description}</span>
+          <span className={styles.hostToolSummaryValue}>
+            {tool.description}
+          </span>
         </div>
       ) : null}
     </div>
@@ -128,6 +144,7 @@ function HostToolBindingFields({
   onHostToolChange,
   showInlineOverrides,
   hostToolIdLocked = false,
+  required = false,
 }: {
   form: FormInstance<PageActionFormValues>;
   hostTools: HostTool[];
@@ -135,6 +152,7 @@ function HostToolBindingFields({
   onHostToolChange: (hostToolId?: number) => void;
   showInlineOverrides: boolean;
   hostToolIdLocked?: boolean;
+  required?: boolean;
 }) {
   const intl = useIntl();
   const hostToolId = Form.useWatch('hostToolId', form);
@@ -147,12 +165,26 @@ function HostToolBindingFields({
         label={intl.formatMessage({ id: 'pageAction.form.hostToolIdLabel' })}
         extra={
           hostToolIdLocked
-            ? intl.formatMessage({ id: 'pageAction.form.workflowHostToolLockedHint' })
+            ? intl.formatMessage({
+                id: 'pageAction.form.workflowHostToolLockedHint',
+              })
             : intl.formatMessage({ id: 'pageAction.form.hostToolBindHint' })
+        }
+        rules={
+          required
+            ? [
+                {
+                  required: true,
+                  message: intl.formatMessage({
+                    id: 'pageAction.form.hostToolRequired',
+                  }),
+                },
+              ]
+            : undefined
         }
       >
         <Select
-          allowClear={!hostToolIdLocked}
+          allowClear={!hostToolIdLocked && !required}
           showSearch={!hostToolIdLocked}
           disabled={hostToolIdLocked}
           loading={hostToolsLoading}
@@ -195,7 +227,9 @@ function HostToolBindingFields({
         <div className={`${styles.formFieldGrid} ${styles.formFieldGrid2}`}>
           <Form.Item
             name="hostToolName"
-            label={intl.formatMessage({ id: 'pageAction.form.hostToolNameLabel' })}
+            label={intl.formatMessage({
+              id: 'pageAction.form.hostToolNameLabel',
+            })}
           >
             <Input className="app-input" placeholder="fill_draft" />
           </Form.Item>
@@ -224,7 +258,10 @@ function HostToolBindingFields({
             })}
             className={styles.formFieldSpan2}
           >
-            <Input.TextArea className="app-input" autoSize={{ minRows: 2, maxRows: 4 }} />
+            <Input.TextArea
+              className="app-input"
+              autoSize={{ minRows: 2, maxRows: 4 }}
+            />
           </Form.Item>
         </div>
       ) : null}
@@ -266,8 +303,14 @@ function IdentityFields({
           />
         </Form.Item>
       ) : (
-        <Form.Item label={intl.formatMessage({ id: 'pageAction.column.actionKey' })}>
-          <Input className="app-input font-mono text-sm" value={editingActionKey} disabled />
+        <Form.Item
+          label={intl.formatMessage({ id: 'pageAction.column.actionKey' })}
+        >
+          <Input
+            className="app-input font-mono text-sm"
+            value={editingActionKey}
+            disabled
+          />
         </Form.Item>
       )}
 
@@ -291,14 +334,20 @@ function IdentityFields({
           label={intl.formatMessage({ id: 'pageAction.column.pageScope' })}
           extra={intl.formatMessage({ id: 'pageAction.form.pageScopeHint' })}
         >
-          <Input className="app-input font-mono text-sm" placeholder="demo-playground" />
+          <Input
+            className="app-input font-mono text-sm"
+            placeholder="demo-playground"
+          />
         </Form.Item>
         <Form.Item
           name="description"
           label={intl.formatMessage({ id: 'pageAction.column.description' })}
           className={styles.formFieldSpan2}
         >
-          <Input.TextArea className="app-input" autoSize={{ minRows: 2, maxRows: 4 }} />
+          <Input.TextArea
+            className="app-input"
+            autoSize={{ minRows: 2, maxRows: 4 }}
+          />
         </Form.Item>
       </div>
     </>
@@ -320,9 +369,15 @@ function PublishFields() {
       <div className={styles.formSwitchRow}>
         <div className={styles.formSwitchItem}>
           <span className={styles.formSwitchLabel}>
-            {intl.formatMessage({ id: 'pageAction.column.allowCustomInstruction' })}
+            {intl.formatMessage({
+              id: 'pageAction.column.allowCustomInstruction',
+            })}
           </span>
-          <Form.Item name="allowCustomInstruction" valuePropName="checked" noStyle>
+          <Form.Item
+            name="allowCustomInstruction"
+            valuePropName="checked"
+            noStyle
+          >
             <Switch />
           </Form.Item>
         </div>
@@ -342,7 +397,8 @@ function PublishFields() {
 function PromptField({ form }: { form: FormInstance<PageActionFormValues> }) {
   const intl = useIntl();
   const systemPrompt = Form.useWatch('systemPrompt', form);
-  const promptLength = typeof systemPrompt === 'string' ? systemPrompt.length : 0;
+  const promptLength =
+    typeof systemPrompt === 'string' ? systemPrompt.length : 0;
 
   return (
     <Form.Item
@@ -350,7 +406,9 @@ function PromptField({ form }: { form: FormInstance<PageActionFormValues> }) {
       className={styles.promptField}
       label={
         <div className={styles.promptToolbar}>
-          <span>{intl.formatMessage({ id: 'pageAction.column.systemPrompt' })}</span>
+          <span>
+            {intl.formatMessage({ id: 'pageAction.column.systemPrompt' })}
+          </span>
           <span className={styles.promptCounter}>
             {promptLength}/{PAGE_ACTION_SYSTEM_PROMPT_MAX}
           </span>
@@ -361,7 +419,10 @@ function PromptField({ form }: { form: FormInstance<PageActionFormValues> }) {
           type="button"
           className={styles.promptTemplateBtn}
           onClick={() =>
-            form.setFieldValue('systemPrompt', DEFAULT_PAGE_ACTION_SYSTEM_PROMPT)
+            form.setFieldValue(
+              'systemPrompt',
+              DEFAULT_PAGE_ACTION_SYSTEM_PROMPT,
+            )
           }
         >
           {intl.formatMessage({ id: 'pageAction.form.insertTemplate' })}
@@ -398,94 +459,21 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
   hostTools,
   hostToolsLoading = false,
   projectId,
+  configMode,
+  onConfigModeChange,
   workflowBinding,
   onWorkflowBindingChange,
   onPushHostToolResolved,
-  hostToolIdLocked = false,
+  workflowPushState,
+  onApplyPushHostTool,
   onFinish,
   onHostToolChange,
   onActionKeyBlur,
 }) => {
   const intl = useIntl();
   const isCreate = mode === 'create';
+  const isPromptMode = configMode === 'prompt';
   const hostToolId = Form.useWatch('hostToolId', form);
-
-  const contextMessage = isCreate
-    ? intl.formatMessage({
-        id: hostToolId
-          ? 'pageAction.form.hostToolCreateHint'
-          : 'pageAction.form.simpleCreateHint',
-      })
-    : null;
-
-  const hostToolPanel = (
-    <FormPanel
-      icon={<LinkOutlined />}
-      title={intl.formatMessage({ id: 'pageAction.form.section.hostTool' })}
-      hint={intl.formatMessage({ id: 'pageAction.form.section.hostToolHint' })}
-    >
-      <HostToolBindingFields
-        form={form}
-        hostTools={hostTools}
-        hostToolsLoading={hostToolsLoading}
-        onHostToolChange={onHostToolChange}
-        showInlineOverrides={isCreate}
-        hostToolIdLocked={hostToolIdLocked}
-      />
-    </FormPanel>
-  );
-
-  const identityPanel = (
-    <FormPanel
-      icon={<ApiOutlined />}
-      title={intl.formatMessage({ id: 'pageAction.form.section.identity' })}
-      hint={intl.formatMessage({ id: 'pageAction.form.section.identityHint' })}
-    >
-      <IdentityFields
-        isCreate={isCreate}
-        editingActionKey={editingActionKey}
-        onActionKeyBlur={onActionKeyBlur}
-      />
-    </FormPanel>
-  );
-
-  const publishPanel = (
-    <FormPanel
-      icon={<SettingOutlined />}
-      title={intl.formatMessage({ id: 'pageAction.form.section.publish' })}
-      hint={intl.formatMessage({ id: 'pageAction.form.section.publishHint' })}
-    >
-      <PublishFields />
-      {workflowBinding && onWorkflowBindingChange ? (
-        <div className={styles.workflowBindingSection}>
-          <h3 className={styles.workflowBindingTitle}>
-            {intl.formatMessage({ id: 'pageAction.form.section.workflow' })}
-          </h3>
-          <WorkflowBindingPanel
-            projectId={projectId}
-            entry="page_action"
-            value={workflowBinding}
-            onChange={onWorkflowBindingChange}
-            onPushHostToolResolved={onPushHostToolResolved}
-          />
-        </div>
-      ) : null}
-    </FormPanel>
-  );
-
-  const promptPanel = (
-    <FormPanel
-      icon={<FileTextOutlined />}
-      iconAccent
-      title={intl.formatMessage({ id: 'pageAction.form.section.prompt' })}
-      hint={intl.formatMessage({ id: 'pageAction.form.section.promptHint' })}
-      className={styles.formPanelPrompt}
-    >
-      <div className={styles.formPanelBodyGrow}>
-        <PromptField form={form} />
-      </div>
-    </FormPanel>
-  );
 
   return (
     <Form<PageActionFormValues>
@@ -496,49 +484,101 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
       onFinish={onFinish}
     >
       <div className={styles.formLayout}>
-        {contextMessage ? (
-          <p className={styles.contextStrip} role="note">
-            {contextMessage}
-          </p>
-        ) : null}
+        <FormPanel
+          icon={<ApiOutlined />}
+          title={intl.formatMessage({ id: 'pageAction.form.section.identity' })}
+          hint={intl.formatMessage({
+            id: 'pageAction.form.section.identityHint',
+          })}
+        >
+          <IdentityFields
+            isCreate={isCreate}
+            editingActionKey={editingActionKey}
+            onActionKeyBlur={onActionKeyBlur}
+          />
+        </FormPanel>
 
-        {isCreate ? (
-          <div className={`${styles.formGrid} ${styles.formGridPage}`}>
-            <div className={styles.formMain}>
-              {hostToolPanel}
-              {identityPanel}
-              {publishPanel}
+        <PageActionConfigModePicker
+          value={configMode}
+          onChange={onConfigModeChange}
+        />
+
+        {isPromptMode ? (
+          <FormPanel
+            icon={<FileTextOutlined />}
+            iconAccent
+            title={intl.formatMessage({
+              id: 'pageAction.form.configMode.prompt.panelTitle',
+            })}
+            hint={intl.formatMessage({
+              id: 'pageAction.form.configMode.prompt.panelHint',
+            })}
+            className={styles.formPanelPrompt}
+          >
+            <div className={styles.formPanelBodyGrow}>
+              <PromptField form={form} />
             </div>
-            <aside className={`${styles.formAside} ${styles.formAsideSticky}`}>
-              {promptPanel}
-            </aside>
-          </div>
-        ) : (
-          <div className={styles.formCompactStack}>
-            {identityPanel}
-            {promptPanel}
-            {publishPanel}
-            <Collapse
-              bordered={false}
-              className="bg-transparent"
-              items={[
-                {
-                  key: 'advanced',
-                  label: intl.formatMessage({ id: 'pageAction.form.advancedTitle' }),
-                  children: (
-                    <HostToolBindingFields
-                      form={form}
-                      hostTools={hostTools}
-                      hostToolsLoading={hostToolsLoading}
-                      onHostToolChange={onHostToolChange}
-                      showInlineOverrides={false}
-                    />
-                  ),
-                },
-              ]}
+            <HostToolBindingFields
+              form={form}
+              hostTools={hostTools}
+              hostToolsLoading={hostToolsLoading}
+              onHostToolChange={onHostToolChange}
+              showInlineOverrides={isCreate}
+              required={isCreate}
             />
-          </div>
+          </FormPanel>
+        ) : (
+          <FormPanel
+            icon={<ApartmentOutlined />}
+            title={intl.formatMessage({
+              id: 'pageAction.form.configMode.workflow.panelTitle',
+            })}
+            hint={intl.formatMessage({
+              id: 'pageAction.form.configMode.workflow.panelHint',
+            })}
+          >
+            <Alert
+              type="info"
+              showIcon
+              className={styles.configModeWorkflowAlert}
+              message={intl.formatMessage({
+                id: 'pageAction.form.configMode.workflow.alert',
+              })}
+            />
+            {workflowBinding && onWorkflowBindingChange ? (
+              <WorkflowBindingPanel
+                projectId={projectId}
+                entry="page_action"
+                value={workflowBinding}
+                onChange={onWorkflowBindingChange}
+                onPushHostToolResolved={onPushHostToolResolved}
+              />
+            ) : null}
+            <PageActionWorkflowPushPreview
+              hasPushNode={workflowPushState?.hasPushNode ?? false}
+              pushHostToolId={workflowPushState?.pushHostToolId ?? null}
+              hostTools={hostTools}
+              currentHostToolId={hostToolId}
+              onApplyPushHostTool={onApplyPushHostTool}
+            />
+            <div className={styles.workflowModePromptSection}>
+              <PromptField form={form} />
+            </div>
+            <Form.Item name="hostToolId" hidden>
+              <Input />
+            </Form.Item>
+          </FormPanel>
         )}
+
+        <FormPanel
+          icon={<SettingOutlined />}
+          title={intl.formatMessage({ id: 'pageAction.form.section.publish' })}
+          hint={intl.formatMessage({
+            id: 'pageAction.form.section.publishHint',
+          })}
+        >
+          <PublishFields />
+        </FormPanel>
       </div>
     </Form>
   );

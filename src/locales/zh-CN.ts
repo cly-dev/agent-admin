@@ -35,8 +35,12 @@ export default {
   'menu.userList': '用户列表',
   'menu.rolePermission': '权限设置',
   'menu.setting': '设置',
+  'menu.setting.settingProfile': '个人资料',
+  'menu.setting.settingAdminUsers': '团队管理员',
   'menu.setting.settingLlmModel': '大模型配置',
   'menu.setting.settingIntentRecall': '意图召回设置',
+  'menu.settingProfile': '个人资料',
+  'menu.settingAdminUsers': '团队管理员',
   'menu.settingLlmModel': '大模型配置',
   'menu.settingIntentRecall': '意图召回设置',
 
@@ -545,11 +549,17 @@ export default {
   'skill.detail.mode.prompt.title': '业务指引',
   'skill.detail.mode.prompt.desc':
     '用自然语言描述处理步骤、工具纪律与回复要求，适合灵活对话场景。',
-  'skill.detail.mode.workflow.title': 'Plan 工作流',
+  'skill.detail.mode.workflow.title': 'Workflow 编排',
   'skill.detail.mode.workflow.desc':
-    '按 gather / analyze / answer 等阶段编排步骤，适合结构化多步任务。',
-  'skill.detail.workflowModeHint':
-    '配置 deliverable 与工作流步骤；保存时将写入 config.workflow。',
+    '绑定 Workflow 资产 + prompt 即可；运行时按节点工具与用户角色权限校验。',
+  'skill.detail.workflowOnlyModeHint':
+    'workflow-only：只需 workflowId 与 prompt。C 端权限由 Workflow 节点工具 ∩ 用户角色决定，无需配置 SkillTool。',
+  'skill.detail.workflowOverlayModeHint':
+    '叠加层模式：在「工具绑定」Tab 勾选工具以收窄 ReAct 白名单，须覆盖 Workflow 全部节点引用。',
+  'skill.detail.toolsWorkflowOnlyHint':
+    'workflow-only 模式下 SkillTool / SkillHostTool 可选；仅当需要收窄 ReAct 工具范围时启用「自定义 HostTool 绑定」。',
+  'skill.detail.toolsOverlayBindingHint':
+    '叠加层模式：HTTP / Host 工具绑定须覆盖 Workflow 节点引用的全部 toolId / hostToolId。',
   'skill.detail.workflowFallbackPrompt': '补充说明',
   'skill.detail.workflowFallbackPromptHint':
     '工作流模式下仍会保存此字段，可作为兜底指引或简短描述。',
@@ -934,6 +944,77 @@ export default {
   'auth.signOutFailed': '退出登录失败，请稍后重试',
   'auth.sessionExpired': '登录已失效，请重新登录',
 
+  'changePassword.title': '修改密码',
+  'changePassword.subtitle': '为保障账号安全，请先设置新密码后再继续使用管理台。',
+  'changePassword.currentPassword': '当前密码',
+  'changePassword.currentPasswordRequired': '请输入当前密码',
+  'changePassword.newPassword': '新密码',
+  'changePassword.newPasswordRequired': '请输入新密码',
+  'changePassword.newPasswordMin': '新密码至少 6 位',
+  'changePassword.confirmPassword': '确认新密码',
+  'changePassword.confirmPasswordRequired': '请再次输入新密码',
+  'changePassword.passwordMismatch': '两次输入的密码不一致',
+  'changePassword.submit': '确认修改',
+  'changePassword.submitting': '提交中…',
+  'changePassword.failed': '修改密码失败，请稍后重试',
+
+  'setting.profile.menu': '个人资料',
+  'setting.profile.title': '个人资料',
+  'setting.profile.subtitle': '查看当前管理员账号信息，或修改登录密码。',
+  'setting.profile.employeeId': '工号',
+  'setting.profile.nickName': '昵称',
+  'setting.profile.changePasswordTitle': '修改密码',
+  'setting.profile.changePasswordHint':
+    '修改成功后无需重新登录；若账号被重置密码，下次登录时仍须改密。',
+
+  'adminUser.title': '团队管理员',
+  'adminUser.subtitle':
+    '邀请同事运维：创建账号后将一次性初始密码通过安全渠道发送给对方。',
+  'adminUser.add': '新建管理员',
+  'adminUser.createTitle': '新建管理员',
+  'adminUser.editTitle': '编辑管理员',
+  'adminUser.loadFailed': '加载管理员列表失败',
+  'adminUser.created': '管理员已创建',
+  'adminUser.updated': '管理员已更新',
+  'adminUser.actionFailed': '操作失败，请稍后重试',
+  'adminUser.passwordReset': '密码已重置',
+  'adminUser.resetFailed': '重置密码失败',
+  'adminUser.resetPasswordTitle': '重置密码',
+  'adminUser.resetPasswordConfirm': '将为 {email} 生成新密码，旧密码立即失效。是否继续？',
+  'adminUser.resetPasswordAction': '重置密码',
+  'adminUser.generatedPasswordTitle': '初始密码（仅显示一次）',
+  'adminUser.generatedPasswordWarning':
+    '请通过企微/飞书等安全渠道发送给同事，不要写入日志或长期保存在浏览器。',
+  'adminUser.generatedPasswordHint':
+    '账号 {email}（{username}）的初始密码如下，对方首次登录后须修改密码：',
+  'adminUser.copyPassword': '复制密码',
+  'adminUser.passwordCopied': '密码已复制',
+  'adminUser.passwordCopyFailed': '复制失败，请手动复制',
+  'adminUser.empty.none': '暂无管理员',
+  'adminUser.filter.keywordPlaceholder': '搜索邮箱或用户名',
+  'adminUser.filter.rolePlaceholder': '全部角色',
+  'adminUser.filter.statusPlaceholder': '全部状态',
+  'adminUser.column.username': '用户名',
+  'adminUser.column.email': '邮箱',
+  'adminUser.column.role': '角色',
+  'adminUser.column.status': '状态',
+  'adminUser.column.mustChangePassword': '须改密',
+  'adminUser.column.createdAt': '创建时间',
+  'adminUser.column.actions': '操作',
+  'adminUser.status.active': '启用',
+  'adminUser.status.inactive': '禁用',
+  'adminUser.mustChangePassword.yes': '是',
+  'adminUser.mustChangePassword.no': '否',
+  'adminUser.role.SUPER_ADMIN': '超级管理员',
+  'adminUser.role.OPERATOR': '运维',
+  'adminUser.role.VIEWER': '只读',
+  'adminUser.form.emailRequired': '请输入邮箱',
+  'adminUser.form.emailInvalid': '邮箱格式不正确',
+  'adminUser.form.emailPlaceholder': 'ops@company.com',
+  'adminUser.form.usernameRequired': '请输入用户名',
+  'adminUser.form.usernamePlaceholder': '展示名称',
+  'adminUser.form.roleRequired': '请选择角色',
+
   'dashboard.title': '平台总览',
   'dashboard.description': '总览各平台 Agent 运行状态、调用量与告警。',
 
@@ -1203,6 +1284,35 @@ export default {
   'pageActionRun.approval.step.approval_confirmed': '已确认',
   'pageActionRun.approval.step.approval_rejected': '已拒绝',
   'pageAction.form.section.workflow': 'Workflow 绑定',
+  'pageAction.form.configMode.eyebrow': '执行方式',
+  'pageAction.form.configMode.title': '选择如何驱动页面工具',
+  'pageAction.form.configMode.lead':
+    '两种方式互斥：用提示词直接指挥 Bot 填表，或绑定 Workflow 由编排节点执行。',
+  'pageAction.form.configMode.active': '当前',
+  'pageAction.form.configMode.inactive': '切换',
+  'pageAction.form.configMode.prompt.title': '提示词 + HostTool',
+  'pageAction.form.configMode.prompt.desc':
+    '编写 systemPrompt，并绑定 HostTool 将生成结果写入页面输入框。',
+  'pageAction.form.configMode.prompt.panelTitle': '提示词与 HostTool',
+  'pageAction.form.configMode.prompt.panelHint':
+    '提示词决定 Bot 如何生成内容；HostTool 决定写回哪个页面字段。',
+  'pageAction.form.configMode.workflow.title': '绑定 Workflow',
+  'pageAction.form.configMode.workflow.desc':
+    '选择 Workflow；push 节点的 HostTool 在运行时推导，hostToolId 可省略。',
+  'pageAction.form.configMode.workflow.panelTitle': 'Workflow 编排',
+  'pageAction.form.configMode.workflow.panelHint':
+    '执行逻辑由 Workflow 节点定义；有 push 节点时可在下方预览 HostTool。',
+  'pageAction.form.configMode.workflow.alert':
+    'Workflow 驱动多步执行；hostToolId 可省略，运行时从 push 节点推导。',
+  'pageAction.form.workflowPushPreview.label': 'Push 节点 HostTool',
+  'pageAction.form.workflowPushPreview.badge': '运行时推导',
+  'pageAction.form.workflowPushPreview.fallback': 'HostTool #{hostToolId}',
+  'pageAction.form.workflowPushPreview.missingHostToolId': 'push 节点未配置 hostToolId',
+  'pageAction.form.workflowPushPreview.hint':
+    '保存时可不传 hostToolId；若填写，须与 push 节点一致。',
+  'pageAction.form.workflowPushPreview.apply': '填入 hostToolId（可选）',
+  'pageAction.form.promptModeHostToolRequired': '提示词模式须绑定 HostTool',
+  'pageAction.form.workflowModeRequired': '请选择要绑定的 Workflow',
   'workflow.title': 'Workflow 资产',
   'workflow.subtitle': '可复用的线性工作流定义，供 Skill 与 PageAction 引用。',
   'workflow.link.pageActions': '前端工具流',
@@ -1302,7 +1412,14 @@ export default {
   'workflow.binding.hostTools': 'Host 工具白名单',
   'workflow.binding.isRequired': '必填',
   'workflow.binding.missingPushNode': '该 Workflow 缺少 generate_and_push 节点，无法绑定 PageAction。',
-  'workflow.binding.pushHostToolHint': '将自动同步 hostToolId 为 push 节点的 #{hostToolId}',
+  'workflow.binding.pushHostToolRuntimeHint':
+    'invoke 将从 push 节点推导 HostTool（#{hostToolId}）；PageAction.hostToolId 可省略。',
+  'workflow.binding.skillWorkflowOnlyHint':
+    'workflow-only：无需配置 SkillTool。请确保目标用户角色具备 Workflow 节点引用的 HTTP / Host 工具权限。',
+  'workflow.binding.missingSkillToolsOverlay':
+    '叠加层：Workflow 引用的 HTTP 工具未加入 SkillTool：{ids}',
+  'workflow.binding.missingSkillHostToolsOverlay':
+    '叠加层：Workflow 引用的 HostTool 未加入 SkillHostTool：{ids}',
   'workflow.binding.missingSkillTools': 'Workflow 节点引用的 HTTP 工具未加入 SkillTool：{ids}',
   'workflow.binding.missingSkillHostTools': 'Workflow 节点引用的 HostTool 未加入 SkillHostTool：{ids}',
   'workflow.binding.skillAligned': 'Workflow 节点所需的 Tool / HostTool 已与 Skill 绑定对齐',
@@ -1377,9 +1494,8 @@ export default {
     '适用于用户在业务页面内通过 Chat 发起写操作。执行到「确认读写」将挂起，用户在 C 端确认后才会调用写接口。请确保 C 端请求携带 pageContext。',
   'workflow.preset.mutationNoDuplicateConfirm':
     'Preset 已内置 await_user_confirm，请勿在节点编排中重复添加，否则会导致双确认。',
-  'pageAction.form.workflowHostToolRequired': '绑定 Workflow 后须配置与 push 节点一致的 hostToolId',
-  'pageAction.form.workflowHostToolMismatch': 'hostToolId 须与 Workflow push 节点一致',
-  'pageAction.form.workflowHostToolLockedHint': '已绑定 Workflow，hostToolId 由 push 节点自动同步且不可修改',
+  'pageAction.form.workflowHostToolMismatch': '若填写 hostToolId，须与 Workflow push 节点一致',
+  'pageAction.form.workflowHostToolLockedHint': '可选：与 push 节点 hostToolId 对齐',
   'common.sortOrder': '排序',
   'common.description': '描述',
   'tool.add': '添加工具',

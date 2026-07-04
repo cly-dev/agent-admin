@@ -1,7 +1,11 @@
 import { AppTopBar } from '@/components/AppLayout';
 import AppLogo from '@/components/AppLogo';
 import OmnixChatWidget from '@/components/OmnixChatWidget';
-import { getAuthSnapshot } from '@/services/auth/user';
+import {
+  fetchCurrentAdminUser,
+  getAuthSnapshot,
+  mustChangePassword,
+} from '@/services/auth/user';
 import type { AuthUser } from '@/types/admin-user';
 import { isAppPage } from '@/utils/project-path';
 import { requestConfig } from '@/utils/request';
@@ -18,13 +22,25 @@ export async function getInitialState(): Promise<{
   user: AuthUser | null;
   isAuthenticated: boolean;
   accessToken: string | null;
+  mustChangePassword: boolean;
 }> {
   const snapshot = getAuthSnapshot();
+  let user = snapshot.user;
+
+  if (snapshot.isAuthenticated && snapshot.accessToken) {
+    try {
+      user = await fetchCurrentAdminUser();
+    } catch {
+      user = snapshot.user;
+    }
+  }
+
   return {
-    name: snapshot.user?.username ?? '',
-    user: snapshot.user,
+    name: user?.username ?? '',
+    user,
     isAuthenticated: snapshot.isAuthenticated,
     accessToken: snapshot.accessToken,
+    mustChangePassword: mustChangePassword(),
   };
 }
 
@@ -100,32 +116,49 @@ export const layout: RunTimeLayoutConfig = ({
       const { location } = history;
       const authSnapshot = getAuthSnapshot();
       const loggedIn = authSnapshot.isAuthenticated;
+      const needsPasswordChange = mustChangePassword();
       const isLoginPage = location.pathname === '/login';
+      const isChangePasswordPage = location.pathname === '/change-password';
 
       if (!loggedIn && !isLoginPage) {
         history.push('/login');
         return;
       }
 
+      if (loggedIn && needsPasswordChange && !isChangePasswordPage) {
+        history.replace('/change-password');
+        return;
+      }
+
       if (loggedIn && isLoginPage) {
+        history.replace(
+          needsPasswordChange ? '/change-password' : '/dashboard',
+        );
+        return;
+      }
+
+      if (loggedIn && isChangePasswordPage && !needsPasswordChange) {
         history.replace('/dashboard');
         return;
       }
 
-      if (loggedIn && !isLoginPage && !isAppPage(location.pathname)) {
+      if (loggedIn && !isLoginPage && !isChangePasswordPage && !isAppPage(location.pathname)) {
         history.replace('/dashboard');
         return;
       }
 
       const userChanged = initialState?.user?.id !== authSnapshot.user?.id;
       const authChanged = initialState?.isAuthenticated !== loggedIn;
+      const passwordFlagChanged =
+        initialState?.mustChangePassword !== needsPasswordChange;
 
-      if (authChanged || userChanged) {
+      if (authChanged || userChanged || passwordFlagChanged) {
         void setInitialState((state) => ({
           name: authSnapshot.user?.username ?? state?.name ?? '',
           user: authSnapshot.user,
           isAuthenticated: loggedIn,
           accessToken: authSnapshot.accessToken,
+          mustChangePassword: needsPasswordChange,
         }));
       }
     },

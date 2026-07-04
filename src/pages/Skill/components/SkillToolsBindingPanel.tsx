@@ -53,7 +53,11 @@ const SkillToolsBindingPanel: React.FC<SkillToolsBindingPanelProps> = ({
   return (
     <div className={styles.skillToolsBindingPanel}>
       <p className={styles.skillDetailSectionHint}>
-        {intl.formatMessage({ id: 'skill.detail.toolsBindingHint' })}
+        {intl.formatMessage({
+          id: useCustomHostToolBinding
+            ? 'skill.detail.toolsOverlayBindingHint'
+            : 'skill.detail.toolsWorkflowOnlyHint',
+        })}
       </p>
 
       <section className={styles.skillToolsSection}>

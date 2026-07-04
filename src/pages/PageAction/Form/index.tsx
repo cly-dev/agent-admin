@@ -3,13 +3,14 @@ import ContentEmpty from '@/components/ContentEmpty';
 import { useIntl } from '@umijs/max';
 import PageActionForm from '../components/PageActionForm';
 import styles from '../index.module.scss';
-import { usePageActionEdit } from '../usePageActionEdit';
+import { usePageActionForm } from '../usePageActionForm';
 
-const PageActionEditPage: React.FC = () => {
+const PageActionFormPage: React.FC = () => {
   const intl = useIntl();
   const {
     projectId,
     currentProject,
+    isCreateMode,
     isValidId,
     record,
     loading,
@@ -19,12 +20,16 @@ const PageActionEditPage: React.FC = () => {
     submitting,
     workflowBinding,
     setWorkflowBinding,
-    hostToolIdLocked,
+    configMode,
+    handleConfigModeChange,
+    workflowPushState,
+    handleApplyPushHostTool,
     handlePushHostToolResolved,
     handleBack,
+    handleActionKeyBlur,
     handleHostToolChange,
     handleSubmit,
-  } = usePageActionEdit();
+  } = usePageActionForm();
 
   const subtitle = record?.name
     ? intl.formatMessage(
@@ -36,15 +41,22 @@ const PageActionEditPage: React.FC = () => {
           { id: 'pageAction.detail.createSubtitle' },
           { name: currentProject.name },
         )
-      : undefined;
+      : projectId
+        ? intl.formatMessage(
+            { id: 'pageAction.detail.createSubtitleFallback' },
+            { appClientId: projectId },
+          )
+        : undefined;
 
   let body: React.ReactNode = null;
 
-  if (!isValidId) {
+  if (!isCreateMode && !isValidId) {
     body = (
       <ContentEmpty
         title={intl.formatMessage({ id: 'pageAction.detail.invalidId' })}
-        description={intl.formatMessage({ id: 'pageAction.detail.notFoundDesc' })}
+        description={intl.formatMessage({
+          id: 'pageAction.detail.notFoundDesc',
+        })}
         action={
           <button
             type="button"
@@ -74,11 +86,13 @@ const PageActionEditPage: React.FC = () => {
         }
       />
     );
-  } else if (!loading && !record) {
+  } else if (!isCreateMode && !loading && !record) {
     body = (
       <ContentEmpty
         title={intl.formatMessage({ id: 'pageAction.detail.notFound' })}
-        description={intl.formatMessage({ id: 'pageAction.detail.notFoundDesc' })}
+        description={intl.formatMessage({
+          id: 'pageAction.detail.notFoundDesc',
+        })}
         action={
           <button
             type="button"
@@ -90,20 +104,24 @@ const PageActionEditPage: React.FC = () => {
         }
       />
     );
-  } else if (record) {
+  } else if (isCreateMode || record) {
     body = (
       <PageActionForm
         form={form}
-        mode="edit"
-        editingActionKey={record.actionKey}
+        mode={isCreateMode ? 'create' : 'edit'}
+        editingActionKey={record?.actionKey}
         projectId={projectId}
+        configMode={configMode}
+        onConfigModeChange={handleConfigModeChange}
         workflowBinding={workflowBinding}
         onWorkflowBindingChange={setWorkflowBinding}
         onPushHostToolResolved={handlePushHostToolResolved}
-        hostToolIdLocked={hostToolIdLocked}
+        workflowPushState={workflowPushState}
+        onApplyPushHostTool={handleApplyPushHostTool}
         hostTools={hostTools}
         hostToolsLoading={hostToolsLoading}
         onHostToolChange={handleHostToolChange}
+        onActionKeyBlur={isCreateMode ? handleActionKeyBlur : undefined}
         onFinish={(values) => void handleSubmit(values)}
       />
     );
@@ -113,13 +131,21 @@ const PageActionEditPage: React.FC = () => {
     <AppDetailPage
       pageClassName={styles.pageActionPage}
       bodyClassName={styles.formPage}
-      loading={loading}
+      loading={!isCreateMode && loading}
       onBack={handleBack}
       onSave={() => form.submit()}
-      saveDisabled={!projectId || !record || submitting}
+      saveDisabled={!projectId || submitting || (!isCreateMode && !record)}
       saveLoading={submitting}
-      saveLabel={intl.formatMessage({ id: 'common.save' })}
-      title={intl.formatMessage({ id: 'pageAction.form.editTitle' })}
+      saveLabel={
+        isCreateMode
+          ? intl.formatMessage({ id: 'pageAction.form.createSubmit' })
+          : intl.formatMessage({ id: 'common.save' })
+      }
+      title={
+        isCreateMode
+          ? intl.formatMessage({ id: 'pageAction.form.createTitle' })
+          : intl.formatMessage({ id: 'pageAction.form.editTitle' })
+      }
       subtitle={subtitle}
     >
       {body}
@@ -127,4 +153,4 @@ const PageActionEditPage: React.FC = () => {
   );
 };
 
-export default PageActionEditPage;
+export default PageActionFormPage;

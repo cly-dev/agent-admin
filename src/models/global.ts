@@ -11,15 +11,23 @@ import { useEffect, useState } from 'react';
 
 const useUser = () => {
   const snapshot = getAuthSnapshot();
-  const [name, setName] = useState<string>(snapshot.user?.username ?? DEFAULT_NAME);
-  const [accessToken, setAccessToken] = useState<string | null>(snapshot.accessToken);
+  const [name, setName] = useState<string>(
+    snapshot.user?.username ?? DEFAULT_NAME,
+  );
+  const [accessToken, setAccessToken] = useState<string | null>(
+    snapshot.accessToken,
+  );
   const [user, setUser] = useState<AuthUser | null>(snapshot.user);
+  const [mustChangePassword, setMustChangePassword] = useState<boolean>(
+    snapshot.mustChangePassword,
+  );
 
   const restoreLoginSession = (): void => {
     const latestSnapshot = getAuthSnapshot();
     setAccessToken(latestSnapshot.accessToken);
     setUser(latestSnapshot.user);
     setName(latestSnapshot.user?.username ?? DEFAULT_NAME);
+    setMustChangePassword(latestSnapshot.mustChangePassword);
   };
 
   useEffect(() => {
@@ -36,6 +44,7 @@ const useUser = () => {
     setAccessToken(null);
     setUser(null);
     setName(DEFAULT_NAME);
+    setMustChangePassword(false);
   };
 
   return {
@@ -43,6 +52,7 @@ const useUser = () => {
     setName,
     accessToken,
     user,
+    mustChangePassword,
     isAuthenticated: Boolean(accessToken),
     saveLoginSession,
     clearLoginSession,

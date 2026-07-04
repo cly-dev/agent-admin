@@ -35,8 +35,12 @@ export default {
   'menu.userList': 'User List',
   'menu.rolePermission': 'Permissions',
   'menu.setting': 'Settings',
+  'menu.setting.settingProfile': 'Profile',
+  'menu.setting.settingAdminUsers': 'Team admins',
   'menu.setting.settingLlmModel': 'LLM configuration',
   'menu.setting.settingIntentRecall': 'Intent recall',
+  'menu.settingProfile': 'Profile',
+  'menu.settingAdminUsers': 'Team admins',
   'menu.settingLlmModel': 'LLM configuration',
   'menu.settingIntentRecall': 'Intent recall',
 
@@ -554,11 +558,17 @@ export default {
   'skill.detail.mode.prompt.title': 'Business prompt',
   'skill.detail.mode.prompt.desc':
     'Describe steps, tool discipline, and reply rules in natural language. Best for flexible dialogue.',
-  'skill.detail.mode.workflow.title': 'Plan workflow',
+  'skill.detail.mode.workflow.title': 'Workflow orchestration',
   'skill.detail.mode.workflow.desc':
-    'Orchestrate gather / analyze / answer phases step by step. Best for structured multi-step tasks.',
-  'skill.detail.workflowModeHint':
-    'Configure deliverable and workflow steps; saved into config.workflow.',
+    'Bind a Workflow asset plus prompt; runtime checks node tools against user role permissions.',
+  'skill.detail.workflowOnlyModeHint':
+    'Workflow-only: workflowId + prompt is enough. C-end permissions come from workflow node tools ∩ user role—no SkillTool required.',
+  'skill.detail.workflowOverlayModeHint':
+    'Overlay mode: select tools in the Tools tab to narrow the ReAct whitelist; must cover every workflow node reference.',
+  'skill.detail.toolsWorkflowOnlyHint':
+    'In workflow-only mode, SkillTool / SkillHostTool are optional. Enable custom HostTool binding only when narrowing ReAct tools.',
+  'skill.detail.toolsOverlayBindingHint':
+    'Overlay mode: HTTP / Host tool bindings must cover every toolId / hostToolId referenced by workflow nodes.',
   'skill.detail.workflowFallbackPrompt': 'Supplementary prompt',
   'skill.detail.workflowFallbackPromptHint':
     'This field is still persisted in workflow mode and can serve as fallback guidance.',
@@ -961,6 +971,80 @@ export default {
   'auth.signOutFailed': 'Sign out failed. Please try again later.',
   'auth.sessionExpired': 'Session expired. Please sign in again.',
 
+  'changePassword.title': 'Change password',
+  'changePassword.subtitle':
+    'For security, set a new password before continuing to the admin console.',
+  'changePassword.currentPassword': 'Current password',
+  'changePassword.currentPasswordRequired': 'Enter your current password',
+  'changePassword.newPassword': 'New password',
+  'changePassword.newPasswordRequired': 'Enter a new password',
+  'changePassword.newPasswordMin': 'Password must be at least 6 characters',
+  'changePassword.confirmPassword': 'Confirm new password',
+  'changePassword.confirmPasswordRequired': 'Confirm your new password',
+  'changePassword.passwordMismatch': 'Passwords do not match',
+  'changePassword.submit': 'Update password',
+  'changePassword.submitting': 'Saving…',
+  'changePassword.failed': 'Failed to change password. Please try again.',
+
+  'setting.profile.menu': 'Profile',
+  'setting.profile.title': 'Profile',
+  'setting.profile.subtitle':
+    'View your admin account details or change your login password.',
+  'setting.profile.employeeId': 'Employee ID',
+  'setting.profile.nickName': 'Nick name',
+  'setting.profile.changePasswordTitle': 'Change password',
+  'setting.profile.changePasswordHint':
+    'You stay signed in after a successful change. Reset accounts must change password on next login.',
+
+  'adminUser.title': 'Team admins',
+  'adminUser.subtitle':
+    'Invite teammates: share the one-time initial password over a secure channel after creation.',
+  'adminUser.add': 'New admin',
+  'adminUser.createTitle': 'Create admin',
+  'adminUser.editTitle': 'Edit admin',
+  'adminUser.loadFailed': 'Failed to load admin users',
+  'adminUser.created': 'Admin user created',
+  'adminUser.updated': 'Admin user updated',
+  'adminUser.actionFailed': 'Action failed. Please try again.',
+  'adminUser.passwordReset': 'Password reset',
+  'adminUser.resetFailed': 'Failed to reset password',
+  'adminUser.resetPasswordTitle': 'Reset password',
+  'adminUser.resetPasswordConfirm':
+    'A new password will be generated for {email}. The old password stops working immediately. Continue?',
+  'adminUser.resetPasswordAction': 'Reset password',
+  'adminUser.generatedPasswordTitle': 'Initial password (shown once)',
+  'adminUser.generatedPasswordWarning':
+    'Share via Slack/WeCom or another secure channel. Do not log it or store it in the browser long term.',
+  'adminUser.generatedPasswordHint':
+    'Initial password for {email} ({username}). They must change it on first login:',
+  'adminUser.copyPassword': 'Copy password',
+  'adminUser.passwordCopied': 'Password copied',
+  'adminUser.passwordCopyFailed': 'Copy failed. Copy manually.',
+  'adminUser.empty.none': 'No admin users',
+  'adminUser.filter.keywordPlaceholder': 'Search email or username',
+  'adminUser.filter.rolePlaceholder': 'All roles',
+  'adminUser.filter.statusPlaceholder': 'All statuses',
+  'adminUser.column.username': 'Username',
+  'adminUser.column.email': 'Email',
+  'adminUser.column.role': 'Role',
+  'adminUser.column.status': 'Status',
+  'adminUser.column.mustChangePassword': 'Must change',
+  'adminUser.column.createdAt': 'Created at',
+  'adminUser.column.actions': 'Actions',
+  'adminUser.status.active': 'Active',
+  'adminUser.status.inactive': 'Inactive',
+  'adminUser.mustChangePassword.yes': 'Yes',
+  'adminUser.mustChangePassword.no': 'No',
+  'adminUser.role.SUPER_ADMIN': 'Super admin',
+  'adminUser.role.OPERATOR': 'Operator',
+  'adminUser.role.VIEWER': 'Viewer',
+  'adminUser.form.emailRequired': 'Email is required',
+  'adminUser.form.emailInvalid': 'Invalid email format',
+  'adminUser.form.emailPlaceholder': 'ops@company.com',
+  'adminUser.form.usernameRequired': 'Username is required',
+  'adminUser.form.usernamePlaceholder': 'Display name',
+  'adminUser.form.roleRequired': 'Select a role',
+
   'dashboard.title': 'Platform Overview',
   'dashboard.description':
     'Overview of agent runtime status, invocation volume, and alerts across platforms.',
@@ -1246,6 +1330,37 @@ export default {
   'pageActionRun.approval.step.approval_confirmed': 'Confirmed',
   'pageActionRun.approval.step.approval_rejected': 'Rejected',
   'pageAction.form.section.workflow': 'Workflow binding',
+  'pageAction.form.configMode.eyebrow': 'Execution',
+  'pageAction.form.configMode.title': 'Choose how this action runs',
+  'pageAction.form.configMode.lead':
+    'Pick one path: direct prompt + HostTool, or a bound Workflow. The two modes are mutually exclusive.',
+  'pageAction.form.configMode.active': 'Active',
+  'pageAction.form.configMode.inactive': 'Switch',
+  'pageAction.form.configMode.prompt.title': 'Prompt + HostTool',
+  'pageAction.form.configMode.prompt.desc':
+    'Write a systemPrompt and bind a HostTool to stream generated text into the page field.',
+  'pageAction.form.configMode.prompt.panelTitle': 'Prompt & HostTool',
+  'pageAction.form.configMode.prompt.panelHint':
+    'The prompt steers generation; the HostTool defines which input receives the stream.',
+  'pageAction.form.configMode.workflow.title': 'Bind Workflow',
+  'pageAction.form.configMode.workflow.desc':
+    'Pick a workflow version and overrides; the push node syncs the HostTool automatically.',
+  'pageAction.form.configMode.workflow.panelTitle': 'Workflow orchestration',
+  'pageAction.form.configMode.workflow.panelHint':
+    'Execution is defined by workflow nodes; push node HostTool can be previewed below when present.',
+  'pageAction.form.configMode.workflow.alert':
+    'Workflow drives multi-step execution; hostToolId is optional and derived from the push node at runtime.',
+  'pageAction.form.workflowPushPreview.label': 'Push node HostTool',
+  'pageAction.form.workflowPushPreview.badge': 'Derived at runtime',
+  'pageAction.form.workflowPushPreview.fallback': 'HostTool #{hostToolId}',
+  'pageAction.form.workflowPushPreview.missingHostToolId':
+    'Push node has no hostToolId configured',
+  'pageAction.form.workflowPushPreview.hint':
+    'You can save without hostToolId; if set, it must match the push node.',
+  'pageAction.form.workflowPushPreview.apply': 'Fill hostToolId (optional)',
+  'pageAction.form.promptModeHostToolRequired':
+    'Prompt mode requires a bound HostTool',
+  'pageAction.form.workflowModeRequired': 'Select a workflow to bind',
   'workflow.title': 'Workflow assets',
   'workflow.subtitle':
     'Reusable linear workflow definitions referenced by Skills and PageActions.',
@@ -1352,8 +1467,14 @@ export default {
   'workflow.binding.isRequired': 'Required',
   'workflow.binding.missingPushNode':
     'This workflow has no generate_and_push node and cannot be bound to a PageAction.',
-  'workflow.binding.pushHostToolHint':
-    'hostToolId will sync to the push node value #{hostToolId}',
+  'workflow.binding.pushHostToolRuntimeHint':
+    'Invoke derives HostTool from the push node (#{hostToolId}); PageAction.hostToolId is optional.',
+  'workflow.binding.skillWorkflowOnlyHint':
+    'Workflow-only: SkillTool is not required. Ensure target user roles have HTTP / Host permissions for workflow node tools.',
+  'workflow.binding.missingSkillToolsOverlay':
+    'Overlay: workflow HTTP tools missing from SkillTool: {ids}',
+  'workflow.binding.missingSkillHostToolsOverlay':
+    'Overlay: workflow HostTools missing from SkillHostTool: {ids}',
   'workflow.binding.missingSkillTools':
     'Workflow nodes reference HTTP tools not in SkillTool: {ids}',
   'workflow.binding.missingSkillHostTools':

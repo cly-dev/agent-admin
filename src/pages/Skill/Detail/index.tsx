@@ -248,6 +248,7 @@ const SkillDetailPage: React.FC = () => {
             hasLegacyWorkflow={hasLegacyWorkflow}
             hostToolNameOptions={hostToolNameOptions}
             useRawConfigOnly={useRawConfigOnly}
+            useCustomHostToolBinding={useCustomHostToolBinding}
             saving={saving}
             promptDisabled={editorDisabled}
             onWorkflowChange={handleWorkflowChange}

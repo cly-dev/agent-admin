@@ -11,7 +11,7 @@ const DEV_PROXY_PREFIX = '/api';
 
 const usesLocalApiProxy = (): boolean => {
   return (
-    process.env.NODE_ENV === 'development' && process.env.UMI_ENV !== 'test'
+    process.env.NODE_ENV === 'development' && process.env.UMI_ENV === 'dev'
   );
 };
 

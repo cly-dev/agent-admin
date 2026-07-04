@@ -28,6 +28,7 @@ type SkillExecutionConfigPanelProps = {
   hasLegacyWorkflow: boolean;
   hostToolNameOptions: string[];
   useRawConfigOnly: boolean;
+  useCustomHostToolBinding?: boolean;
   saving?: boolean;
   promptDisabled?: boolean;
   onWorkflowChange: (workflow: SkillWorkflowState) => void;
@@ -52,14 +53,12 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
   promptHostToolOptions,
   boundToolIds,
   boundHostToolIds,
-  workflow,
   workflowBinding,
   hasLegacyWorkflow,
-  hostToolNameOptions,
   useRawConfigOnly,
+  useCustomHostToolBinding = false,
   saving = false,
   promptDisabled = false,
-  onWorkflowChange: _onWorkflowChange,
   onWorkflowBindingChange,
   skillSync,
 }) => {
@@ -200,12 +199,16 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
             />
           ) : null}
           <p className={styles.skillDetailSectionHint}>
-            {intl.formatMessage({ id: 'skill.detail.workflowModeHint' })}
+            {intl.formatMessage({
+              id: useCustomHostToolBinding
+                ? 'skill.detail.workflowOverlayModeHint'
+                : 'skill.detail.workflowOnlyModeHint',
+            })}
           </p>
           <Form.Item<SkillFormValues>
             name="prompt"
             label={intl.formatMessage({
-              id: 'skill.detail.workflowFallbackPrompt',
+              id: 'skill.column.prompt',
             })}
             extra={intl.formatMessage({
               id: 'skill.detail.workflowFallbackPromptHint',
@@ -248,6 +251,9 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
             boundToolIds={boundToolIds}
             boundHostToolIds={boundHostToolIds}
             onChange={onWorkflowBindingChange}
+            skillBindingMode={
+              useCustomHostToolBinding ? 'overlay' : 'workflow_only'
+            }
             skillSync={skillSync}
           />
         </div>

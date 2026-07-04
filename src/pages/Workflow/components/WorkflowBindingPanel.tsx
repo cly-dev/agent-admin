@@ -1,15 +1,20 @@
-import { LinkOutlined } from '@ant-design/icons';
 import { HostToolController_replaceSkillHostTools } from '@/services/host-tool';
 import { SkillController_replaceTools } from '@/services/skill';
 import {
   WorkflowController_findByAppClient,
   WorkflowController_findOne,
 } from '@/services/workflow';
-import type { WorkflowBindingValue, WorkflowListItem, WorkflowNodeDef } from '@/types/workflow';
+import type {
+  WorkflowBindingValue,
+  WorkflowListItem,
+  WorkflowNodeDef,
+} from '@/types/workflow';
 import { formatApiErrorMessage } from '@/utils/api-error';
+import { LinkOutlined } from '@ant-design/icons';
 import { Link, useIntl } from '@umijs/max';
 import { Alert, Button, Input, InputNumber, Select, Spin, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import styles from '../index.module.scss';
 import {
   compatibleProfilesForEntry,
   extractHostToolIdsFromNodes,
@@ -22,7 +27,6 @@ import {
   parseWorkflowOverridesJson,
   stringifyWorkflowOverrides,
 } from '../workflowShared';
-import styles from '../index.module.scss';
 
 type WorkflowBindingPanelProps = {
   projectId?: number;
@@ -32,13 +36,18 @@ type WorkflowBindingPanelProps = {
   boundToolIds?: number[];
   boundHostToolIds?: number[];
   onChange: (value: WorkflowBindingValue) => void;
-  onPushHostToolResolved?: (hostToolId: number | null, hasPushNode: boolean) => void;
+  onPushHostToolResolved?: (
+    hostToolId: number | null,
+    hasPushNode: boolean,
+  ) => void;
   skillSync?: {
     skillId: number;
     currentToolIds: number[];
     currentHostToolIds: number[];
     onSynced: (toolIds: number[], hostToolIds: number[]) => void;
   };
+  /** workflow-only：SkillTool 可选；overlay：须覆盖 Workflow 节点引用 */
+  skillBindingMode?: 'workflow_only' | 'overlay';
 };
 
 const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
@@ -51,6 +60,7 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
   onChange,
   onPushHostToolResolved,
   skillSync,
+  skillBindingMode = 'workflow_only',
 }) => {
   const intl = useIntl();
   const [loading, setLoading] = useState(false);
@@ -62,7 +72,10 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
     stringifyWorkflowOverrides(value.workflowOverrides ?? undefined),
   );
 
-  const profileFilter = useMemo(() => compatibleProfilesForEntry(entry), [entry]);
+  const profileFilter = useMemo(
+    () => compatibleProfilesForEntry(entry),
+    [entry],
+  );
 
   const loadOptions = useCallback(async () => {
     if (!projectId) {
@@ -78,7 +91,9 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
       });
       setOptions(
         result.list.filter((item) =>
-          profileFilter.includes(item.profile as (typeof profileFilter)[number]),
+          profileFilter.includes(
+            item.profile as (typeof profileFilter)[number],
+          ),
         ),
       );
     } catch {
@@ -171,6 +186,7 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
   );
 
   const canSyncSkillBindings =
+    skillBindingMode === 'overlay' &&
     entry === 'skill' &&
     Boolean(skillSync?.skillId) &&
     (missingToolIds.length > 0 || missingHostToolIds.length > 0);
@@ -201,7 +217,9 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
         });
       }
       skillSync.onSynced(nextToolIds, nextHostToolIds);
-      message.success(intl.formatMessage({ id: 'workflow.binding.syncSuccess' }));
+      message.success(
+        intl.formatMessage({ id: 'workflow.binding.syncSuccess' }),
+      );
     } catch (error: unknown) {
       message.error(
         formatApiErrorMessage(
@@ -284,23 +302,13 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
 
       {value.workflowId && !detailLoading && entry === 'page_action' ? (
         <>
-          {!hasGenerateAndPushNode(workflowNodes) ? (
-            <Alert
-              type="error"
-              showIcon
-              className={styles.workflowBindingAlert}
-              message={intl.formatMessage({
-                id: 'workflow.binding.missingPushNode',
-              })}
-            />
-          ) : null}
           {findPushNodeHostToolId(workflowNodes) ? (
             <Alert
               type="info"
               showIcon
               className={styles.workflowBindingAlert}
               message={intl.formatMessage(
-                { id: 'workflow.binding.pushHostToolHint' },
+                { id: 'workflow.binding.pushHostToolRuntimeHint' },
                 { hostToolId: findPushNodeHostToolId(workflowNodes) },
               )}
             />
@@ -320,6 +328,16 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
 
       {value.workflowId && !detailLoading && entry === 'skill' ? (
         <>
+          {skillBindingMode === 'workflow_only' ? (
+            <Alert
+              type="info"
+              showIcon
+              className={styles.workflowBindingAlert}
+              message={intl.formatMessage({
+                id: 'workflow.binding.skillWorkflowOnlyHint',
+              })}
+            />
+          ) : null}
           {hasApprovalGate || writeToolIds.length > 0 ? (
             <Alert
               type="info"
@@ -331,7 +349,9 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
                   toolIds:
                     writeToolIds.length > 0
                       ? writeToolIds.join(', ')
-                      : intl.formatMessage({ id: 'workflow.binding.writeToolsUnknown' }),
+                      : intl.formatMessage({
+                          id: 'workflow.binding.writeToolsUnknown',
+                        }),
                 },
               )}
             />
@@ -346,36 +366,39 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
               })}
             />
           ) : null}
-          {missingToolIds.length > 0 ? (
+          {skillBindingMode === 'overlay' && missingToolIds.length > 0 ? (
             <Alert
               type="warning"
               showIcon
               className={styles.workflowBindingAlert}
               message={intl.formatMessage(
-                { id: 'workflow.binding.missingSkillTools' },
+                { id: 'workflow.binding.missingSkillToolsOverlay' },
                 { ids: missingToolIds.join(', ') },
               )}
             />
           ) : null}
-          {missingHostToolIds.length > 0 ? (
+          {skillBindingMode === 'overlay' && missingHostToolIds.length > 0 ? (
             <Alert
               type="warning"
               showIcon
               className={styles.workflowBindingAlert}
               message={intl.formatMessage(
-                { id: 'workflow.binding.missingSkillHostTools' },
+                { id: 'workflow.binding.missingSkillHostToolsOverlay' },
                 { ids: missingHostToolIds.join(', ') },
               )}
             />
           ) : null}
-          {missingToolIds.length === 0 &&
+          {skillBindingMode === 'overlay' &&
+          missingToolIds.length === 0 &&
           missingHostToolIds.length === 0 &&
           requiredToolIds.length + requiredHostToolIds.length > 0 ? (
             <Alert
               type="success"
               showIcon
               className={styles.workflowBindingAlert}
-              message={intl.formatMessage({ id: 'workflow.binding.skillAligned' })}
+              message={intl.formatMessage({
+                id: 'workflow.binding.skillAligned',
+              })}
             />
           ) : null}
           {canSyncSkillBindings ? (
@@ -387,10 +410,14 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
                 disabled={disabled || detailLoading}
                 onClick={() => void handleSyncSkillBindings()}
               >
-                {intl.formatMessage({ id: 'workflow.binding.syncSkillBindings' })}
+                {intl.formatMessage({
+                  id: 'workflow.binding.syncSkillBindings',
+                })}
               </Button>
               <span className={styles.workflowBindingFieldHint}>
-                {intl.formatMessage({ id: 'workflow.binding.syncSkillBindingsHint' })}
+                {intl.formatMessage({
+                  id: 'workflow.binding.syncSkillBindingsHint',
+                })}
               </span>
             </div>
           ) : null}

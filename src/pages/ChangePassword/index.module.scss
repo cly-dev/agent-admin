@@ -1,0 +1,122 @@
+.page {
+  --login-ink: #12161f;
+  --login-muted: #5c6678;
+  --login-primary: #003d8f;
+
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  color: var(--login-ink);
+  background: #e8eff9;
+}
+
+.bg {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(165deg, #f8fbff 0%, #edf3fc 42%, #e2eaf6 100%);
+}
+
+.bgGlowTop,
+.bgGlowBottom {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(0);
+}
+
+.bgGlowTop {
+  top: -10%;
+  left: 28%;
+  width: min(640px, 55vw);
+  height: min(440px, 48vh);
+  background: radial-gradient(
+    ellipse at center,
+    rgb(24 119 242 / 14%) 0%,
+    transparent 68%
+  );
+}
+
+.bgGlowBottom {
+  left: -6%;
+  bottom: -12%;
+  width: min(480px, 50vw);
+  height: min(380px, 42vh);
+  background: radial-gradient(
+    ellipse at center,
+    rgb(0 61 143 / 9%) 0%,
+    transparent 70%
+  );
+}
+
+.bgGrid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  background-image:
+    linear-gradient(rgb(0 61 143 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 61 143 / 4%) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.locale {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 2;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 5vw, 3.5rem);
+}
+
+.formPanel {
+  width: 100%;
+  max-width: 440px;
+  border-radius: var(--radius-ui, 16px);
+  background: #fff;
+  padding: clamp(2rem, 5vw, 3rem);
+  box-shadow: 0 16px 48px rgb(15 30 60 / 8%);
+}
+
+.formInner {
+  width: 100%;
+}
+
+.formHead {
+  margin-bottom: 1.75rem;
+}
+
+.formLogoWrap {
+  margin-bottom: 1.25rem;
+}
+
+.formLogo {
+  height: 28px;
+  width: auto;
+}
+
+.cardHead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--login-muted);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}

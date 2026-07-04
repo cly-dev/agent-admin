@@ -6,7 +6,7 @@ loadEnv();
 
 const envDefine = buildUmiAppEnvDefine();
 
-const useLocalDevProxy = process.env.UMI_ENV !== 'test';
+const useLocalDevProxy = process.env.UMI_ENV === 'dev';
 
 export default defineConfig({
   define: envDefine,
@@ -44,6 +44,13 @@ export default defineConfig({
       path: '/login',
       component: './Login',
       layout: false,
+    },
+    {
+      name: 'changePassword',
+      path: '/change-password',
+      component: './ChangePassword',
+      layout: false,
+      hideInMenu: true,
     },
     {
       name: 'dashboard',
@@ -213,12 +220,12 @@ export default defineConfig({
         },
         {
           path: '/workflow/frontend-tool-flow/create',
-          component: './PageAction/Create',
+          component: './PageAction/Form',
           hideInMenu: true,
         },
         {
           path: '/workflow/frontend-tool-flow/detail/:id',
-          component: './PageAction/Edit',
+          component: './PageAction/Form',
           hideInMenu: true,
         },
         {
@@ -299,8 +306,19 @@ export default defineConfig({
       routes: [
         {
           path: '/setting',
-          redirect: '/setting/llm-model',
+          redirect: '/setting/profile',
           hideInMenu: true,
+        },
+        {
+          name: 'settingProfile',
+          path: '/setting/profile',
+          component: './Setting/Profile',
+        },
+        {
+          name: 'settingAdminUsers',
+          path: '/setting/admin-users',
+          component: './AdminUser',
+          access: 'canManageAdminUsers',
         },
         {
           name: 'settingLlmModel',

@@ -1,8 +1,13 @@
 import { getAuthSnapshot, signOut } from '@/services/auth/user';
-import { BellOutlined, LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
-import { history, useModel } from '@umijs/max';
-import { Avatar, Dropdown, Spin } from 'antd';
+import {
+  BellOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import { history, useIntl, useModel } from '@umijs/max';
 import type { MenuProps } from 'antd';
+import { Avatar, Dropdown, Spin } from 'antd';
 import { useMemo, useState } from 'react';
 
 const getInitial = (name?: string, email?: string): string => {
@@ -11,6 +16,7 @@ const getInitial = (name?: string, email?: string): string => {
 };
 
 const RightContent: React.FC = () => {
+  const intl = useIntl();
   const { user, clearLoginSession } = useModel('global');
   const [logoutLoading, setLogoutLoading] = useState(false);
   const displayUser = user ?? getAuthSnapshot().user;
@@ -21,8 +27,12 @@ const RightContent: React.FC = () => {
         key: 'profile',
         label: (
           <div className="py-1">
-            <p className="text-sm font-medium text-on-surface">{displayUser?.username ?? '未登录'}</p>
-            <p className="text-xs text-on-surface/60">{displayUser?.email ?? '-'}</p>
+            <p className="text-sm font-medium text-on-surface">
+              {displayUser?.username ?? '未登录'}
+            </p>
+            <p className="text-xs text-on-surface/60">
+              {displayUser?.email ?? '-'}
+            </p>
           </div>
         ),
         disabled: true,
@@ -31,8 +41,8 @@ const RightContent: React.FC = () => {
       {
         key: 'settings',
         icon: <SettingOutlined />,
-        label: '设置',
-        onClick: () => history.push('/setting'),
+        label: intl.formatMessage({ id: 'setting.profile.menu' }),
+        onClick: () => history.push('/setting/profile'),
       },
       {
         key: 'logout',
@@ -40,7 +50,7 @@ const RightContent: React.FC = () => {
         label: '退出登录',
       },
     ],
-    [displayUser?.email, displayUser?.username],
+    [displayUser?.email, displayUser?.username, intl],
   );
 
   const handleMenuClick: MenuProps['onClick'] = async ({ key }) => {
@@ -75,7 +85,7 @@ const RightContent: React.FC = () => {
         type="button"
         className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface/50 transition-all hover:bg-surface-container-low active:scale-95"
         aria-label="Settings"
-        onClick={() => history.push('/setting')}
+        onClick={() => history.push('/setting/profile')}
       >
         <SettingOutlined />
       </button>
@@ -90,7 +100,9 @@ const RightContent: React.FC = () => {
               {getInitial(displayUser.username, displayUser.email)}
             </Avatar>
             <span className="app-header-user-meta hidden xl:block">
-              <span className="app-header-user-name">{displayUser.username}</span>
+              <span className="app-header-user-name">
+                {displayUser.username}
+              </span>
               <span className="app-header-user-email">{displayUser.email}</span>
             </span>
             <UserOutlined className="text-xs text-on-surface/50 xl:hidden" />

@@ -1,12 +1,12 @@
 import omnixLogo from '@/assets/logo/omnix_final_italic.png';
-import OmnixCanvasLogo from './components/OmnixCanvasLogo';
-import LoginField from './components/LoginField';
 import LocaleSwitcher from '@/components/LocaleSwitcher';
 import { signIn } from '@/services/auth/user';
 import { getDefaultAppPath } from '@/utils/project-nav';
 import { history, useIntl, useModel } from '@umijs/max';
 import { Form } from 'antd';
 import { useState } from 'react';
+import LoginField from './components/LoginField';
+import OmnixCanvasLogo from './components/OmnixCanvasLogo';
 import styles from './index.module.scss';
 
 type LoginFormValues = {
@@ -30,7 +30,14 @@ const LoginPage: React.FC = () => {
 
       saveLoginSession(payload);
       await refreshProjects();
-      history.push(getDefaultAppPath('dashboard'));
+      const needsPasswordChange = Boolean(
+        payload.mustChangePassword || payload.user.mustChangePassword,
+      );
+      history.push(
+        needsPasswordChange
+          ? '/change-password'
+          : getDefaultAppPath('dashboard'),
+      );
     } catch (error: unknown) {
       if (error instanceof Error) {
         setErrorMessage(error.message);

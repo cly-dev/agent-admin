@@ -23,7 +23,6 @@ import {
   PAGE_ACTION_LIST_PATH,
   buildPageActionFormPatchFromHostTool,
   getDefaultPageActionFormValues,
-  validatePageActionWorkflowBinding,
   type PageActionConfigMode,
   type PageActionFormValues,
   type PageActionWorkflowPushState,
@@ -125,7 +124,9 @@ export function usePageActionForm() {
         actionKey: detail.actionKey,
         name: detail.name,
         description: detail.description ?? undefined,
-        hostToolId: detail.hostToolId ?? undefined,
+        hostToolId: detail.workflowId
+          ? undefined
+          : (detail.hostToolId ?? undefined),
         pageScope: detail.pageScope ?? undefined,
         systemPrompt: detail.systemPrompt,
         allowCustomInstruction: detail.allowCustomInstruction,
@@ -190,7 +191,9 @@ export function usePageActionForm() {
         workflowOverrides: null,
       });
       setWorkflowPushState({ hasPushNode: false, pushHostToolId: null });
+      return;
     }
+    form.setFieldValue('hostToolId', undefined);
   };
 
   const handleHostToolChange = (hostToolId?: number) => {
@@ -215,24 +218,6 @@ export function usePageActionForm() {
     },
     [],
   );
-
-  const handleApplyPushHostTool = useCallback(() => {
-    const pushHostToolId = workflowPushState.pushHostToolId;
-    if (!pushHostToolId) {
-      return;
-    }
-    form.setFieldValue('hostToolId', pushHostToolId);
-    const tool = hostTools.find((item) => item.id === pushHostToolId);
-    if (!tool) {
-      return;
-    }
-    const current = form.getFieldsValue();
-    form.setFieldsValue(
-      buildPageActionFormPatchFromHostTool(tool, current, {
-        preserveUserInput: true,
-      }),
-    );
-  }, [form, hostTools, workflowPushState.pushHostToolId]);
 
   const handleSubmit = async (rawValues: PageActionFormValues) => {
     const values = { ...form.getFieldsValue(), ...rawValues };
@@ -280,24 +265,6 @@ export function usePageActionForm() {
       return;
     }
 
-    const workflowError =
-      configMode === 'workflow'
-        ? validatePageActionWorkflowBinding(
-            workflowBinding.workflowId,
-            workflowPushState.pushHostToolId,
-            values.hostToolId,
-            {
-              hostToolMismatch: intl.formatMessage({
-                id: 'pageAction.form.workflowHostToolMismatch',
-              }),
-            },
-          )
-        : null;
-    if (workflowError) {
-      message.error(workflowError);
-      return;
-    }
-
     setSubmitting(true);
     try {
       const workflowPayload =
@@ -339,8 +306,6 @@ export function usePageActionForm() {
             return;
           }
           payload.hostToolId = values.hostToolId;
-        } else if (values.hostToolId) {
-          payload.hostToolId = values.hostToolId;
         }
 
         await PageActionController_create(payload);
@@ -369,7 +334,7 @@ export function usePageActionForm() {
         sortOrder: values.sortOrder,
         ...workflowPayload,
       };
-      if (values.hostToolId) {
+      if (configMode === 'prompt' && values.hostToolId) {
         const boundTool = hostTools.find(
           (tool) => tool.id === values.hostToolId,
         );
@@ -422,7 +387,6 @@ export function usePageActionForm() {
     configMode,
     handleConfigModeChange,
     workflowPushState,
-    handleApplyPushHostTool,
     handlePushHostToolResolved,
     handleBack,
     handleActionKeyBlur,

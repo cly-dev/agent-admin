@@ -1,6 +1,6 @@
 import { DesktopOutlined, ToolOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Tag } from 'antd';
+import { Switch, Tag } from 'antd';
 import { useMemo } from 'react';
 import {
   Mention,
@@ -8,10 +8,16 @@ import {
   type SuggestionDataItem,
 } from 'react-mentions';
 import type {
+  SkillHostToolTabKey,
+  SkillHostToolTabRow,
+} from '../skillHostTools';
+import type {
   SkillPromptHostToolOption,
   SkillPromptToolOption,
 } from '../skillPromptMention';
 import { buildUnifiedMentionData } from '../skillPromptMention';
+import type { SkillToolRow } from '../useSkillDetail';
+import SkillMentionedHostToolsConfig from './SkillMentionedHostToolsConfig';
 import styles from './SkillPromptMentionEditor.module.scss';
 
 type SkillPromptMentionEditorProps = {
@@ -21,9 +27,26 @@ type SkillPromptMentionEditorProps = {
   hostTools: SkillPromptHostToolOption[];
   boundToolIds: number[];
   boundHostToolIds: number[];
+  toolRows?: SkillToolRow[];
+  selectedToolIds?: number[];
+  mutationHostToolRows?: SkillHostToolTabRow[];
+  planHostToolRows?: SkillHostToolTabRow[];
   disabled?: boolean;
+  saving?: boolean;
   placeholder?: string;
   compact?: boolean;
+  onToolSelectionChange?: (toolIds: number[]) => void;
+  onToolRequiredChange?: (toolId: number, isRequired: boolean) => void;
+  onHostToolRowChange?: (
+    tab: SkillHostToolTabKey,
+    hostToolId: number,
+    patch: Partial<
+      Pick<
+        SkillHostToolTabRow,
+        'enabled' | 'trigger' | 'priority' | 'isRequired' | 'argsTemplateJson'
+      >
+    >,
+  ) => void;
 };
 
 type MentionSuggestion = SuggestionDataItem & {
@@ -34,6 +57,10 @@ type MentionSuggestion = SuggestionDataItem & {
   pageScope?: string | null;
 };
 
+function stopRowClick(event: React.MouseEvent) {
+  event.stopPropagation();
+}
+
 const SkillPromptMentionEditor: React.FC<SkillPromptMentionEditorProps> = ({
   value,
   onChange,
@@ -41,11 +68,21 @@ const SkillPromptMentionEditor: React.FC<SkillPromptMentionEditorProps> = ({
   hostTools,
   boundToolIds,
   boundHostToolIds,
+  toolRows = [],
+  selectedToolIds = [],
+  mutationHostToolRows = [],
+  planHostToolRows = [],
   disabled = false,
+  saving = false,
   placeholder,
   compact = false,
+  onToolSelectionChange,
+  onToolRequiredChange,
+  onHostToolRowChange,
 }) => {
   const intl = useIntl();
+  const showToolsAside =
+    !compact && Boolean(onToolSelectionChange && onHostToolRowChange);
 
   const boundTools = useMemo(
     () => tools.filter((tool) => boundToolIds.includes(tool.toolId)),
@@ -109,6 +146,232 @@ const SkillPromptMentionEditor: React.FC<SkillPromptMentionEditorProps> = ({
 
   const editorMinHeight = compact ? 96 : 200;
 
+  const toggleHttpTool = (toolId: number) => {
+    if (!onToolSelectionChange) {
+      return;
+    }
+    const selected = selectedToolIds.includes(toolId);
+    onToolSelectionChange(
+      selected
+        ? selectedToolIds.filter((id) => id !== toolId)
+        : [...selectedToolIds, toolId],
+    );
+  };
+
+  const toggleHostTool = (hostToolId: number) => {
+    if (!onHostToolRowChange) {
+      return;
+    }
+    const enabled = boundHostToolIds.includes(hostToolId);
+    onHostToolRowChange('mutation', hostToolId, { enabled: !enabled });
+  };
+
+  const getHostToolRequired = (hostToolId: number) => {
+    const mutationRow = mutationHostToolRows.find(
+      (row) => row.hostToolId === hostToolId && row.enabled,
+    );
+    if (mutationRow) {
+      return mutationRow.isRequired;
+    }
+    const planRow = planHostToolRows.find(
+      (row) => row.hostToolId === hostToolId && row.enabled,
+    );
+    return planRow?.isRequired ?? false;
+  };
+
+  const setHostToolRequired = (hostToolId: number, isRequired: boolean) => {
+    if (!onHostToolRowChange) {
+      return;
+    }
+    const mutationRow = mutationHostToolRows.find(
+      (row) => row.hostToolId === hostToolId && row.enabled,
+    );
+    if (mutationRow) {
+      onHostToolRowChange('mutation', hostToolId, { isRequired });
+      return;
+    }
+    const planRow = planHostToolRows.find(
+      (row) => row.hostToolId === hostToolId && row.enabled,
+    );
+    if (planRow) {
+      onHostToolRowChange('plan', hostToolId, { isRequired });
+    }
+  };
+
+  const httpToolRequiredMap = useMemo(() => {
+    const map = new Map<number, boolean>();
+    for (const row of toolRows) {
+      map.set(row.toolId, row.isRequired);
+    }
+    return map;
+  }, [toolRows]);
+
+  const hasAvailableTools = tools.length > 0 || hostTools.length > 0;
+
+  const renderToolsAside = () => {
+    if (!showToolsAside) {
+      return null;
+    }
+
+    return (
+      <aside className={styles.toolsAside}>
+        <h4 className={styles.toolsAsideTitle}>
+          {intl.formatMessage({ id: 'skill.promptMention.sidePanelAvailable' })}
+        </h4>
+        {!hasAvailableTools ? (
+          <p className={styles.toolsAsideEmpty}>
+            {intl.formatMessage({ id: 'skill.promptMention.noTools' })}
+          </p>
+        ) : (
+          <ul className={styles.toolsAsideList}>
+            {tools.map((tool) => {
+              const selected = selectedToolIds.includes(tool.toolId);
+              const isRequired =
+                httpToolRequiredMap.get(tool.toolId) ?? false;
+              return (
+                <li key={`tool-${tool.toolId}`}>
+                  <div
+                    className={
+                      selected
+                        ? styles.toolsAsideItemSelected
+                        : styles.toolsAsideItem
+                    }
+                    onClick={() => toggleHttpTool(tool.toolId)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        toggleHttpTool(tool.toolId);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <span className={styles.toolsAsideItemIcon} aria-hidden>
+                      <ToolOutlined />
+                    </span>
+                    <div className={styles.toolsAsideItemBody}>
+                      <span className={styles.toolsAsideItemName}>
+                        {tool.name}
+                      </span>
+                      {tool.method || tool.path ? (
+                        <span className={styles.toolsAsideItemMeta}>
+                          {tool.method ? `${tool.method} ` : ''}
+                          {tool.path ?? ''}
+                        </span>
+                      ) : null}
+                      <span className={styles.toolsAsideItemTag}>
+                        {intl.formatMessage({
+                          id: 'skill.promptMention.kind.httpTool',
+                        })}
+                      </span>
+                      {selected ? (
+                        <label
+                          className={styles.toolsAsideItemRequired}
+                          onClick={stopRowClick}
+                        >
+                          <span>
+                            {intl.formatMessage({
+                              id: 'skill.tools.column.required',
+                            })}
+                          </span>
+                          <Switch
+                            size="small"
+                            disabled={disabled || saving}
+                            checked={isRequired}
+                            onChange={(checked) =>
+                              onToolRequiredChange?.(tool.toolId, checked)
+                            }
+                          />
+                        </label>
+                      ) : null}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+            {hostTools.length > 0 && tools.length > 0 ? (
+              <li>
+                <p className={styles.toolsAsideSubtitle}>
+                  {intl.formatMessage({
+                    id: 'skill.promptMention.kind.hostTool',
+                  })}
+                </p>
+              </li>
+            ) : null}
+            {hostTools.map((hostTool) => {
+              const selected = boundHostToolIds.includes(hostTool.hostToolId);
+              const isRequired = getHostToolRequired(hostTool.hostToolId);
+              return (
+                <li key={`host-${hostTool.hostToolId}`}>
+                  <div
+                    className={
+                      selected
+                        ? styles.toolsAsideItemSelectedHost
+                        : styles.toolsAsideItemHost
+                    }
+                    onClick={() => toggleHostTool(hostTool.hostToolId)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        toggleHostTool(hostTool.hostToolId);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <span
+                      className={styles.toolsAsideItemIconHost}
+                      aria-hidden
+                    >
+                      <DesktopOutlined />
+                    </span>
+                    <div className={styles.toolsAsideItemBody}>
+                      <span className={styles.toolsAsideItemName}>
+                        {hostTool.name}
+                      </span>
+                      <span className={styles.toolsAsideItemMeta}>
+                        {hostTool.pageScope
+                          ? hostTool.pageScope
+                          : intl.formatMessage({
+                              id: 'hostTool.pageScope.generic',
+                            })}
+                      </span>
+                      <span className={styles.toolsAsideItemTagHost}>
+                        {intl.formatMessage({
+                          id: 'skill.promptMention.kind.hostTool',
+                        })}
+                      </span>
+                      {selected ? (
+                        <label
+                          className={styles.toolsAsideItemRequiredHost}
+                          onClick={stopRowClick}
+                        >
+                          <span>
+                            {intl.formatMessage({
+                              id: 'skill.tools.column.required',
+                            })}
+                          </span>
+                          <Switch
+                            size="small"
+                            disabled={disabled || saving}
+                            checked={isRequired}
+                            onChange={(checked) =>
+                              setHostToolRequired(hostTool.hostToolId, checked)
+                            }
+                          />
+                        </label>
+                      ) : null}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </aside>
+    );
+  };
+
   return (
     <div className={styles.composerWrap}>
       <div
@@ -134,7 +397,11 @@ const SkillPromptMentionEditor: React.FC<SkillPromptMentionEditorProps> = ({
         ) : null}
 
         {showEditor ? (
-          <div className={styles.composerBodySingle}>
+          <div
+            className={
+              showToolsAside ? styles.composerBody : styles.composerBodySingle
+            }
+          >
             <div
               className={styles.composerEditor}
               style={{ minHeight: editorMinHeight }}
@@ -227,11 +494,21 @@ const SkillPromptMentionEditor: React.FC<SkillPromptMentionEditorProps> = ({
                 />
               </MentionsInput>
             </div>
+            {renderToolsAside()}
           </div>
         ) : (
           <div className={styles.composerDisabledBody}>{disabledMessage}</div>
         )}
       </div>
+      {showToolsAside && boundHostToolIds.length > 0 && onHostToolRowChange ? (
+        <SkillMentionedHostToolsConfig
+          mutationRows={mutationHostToolRows}
+          planRows={planHostToolRows}
+          selectedHostToolIds={boundHostToolIds}
+          saving={saving}
+          onRowChange={onHostToolRowChange}
+        />
+      ) : null}
     </div>
   );
 };

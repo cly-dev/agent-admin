@@ -1,44 +1,51 @@
-import { FileTextOutlined, NodeIndexOutlined } from '@ant-design/icons';
+import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
+import type { WorkflowBindingValue } from '@/types/workflow';
 import { useIntl } from '@umijs/max';
-import { Alert, Form, Tag } from 'antd';
+import { Alert, Form, Input, Tag } from 'antd';
 import { useMemo } from 'react';
 import styles from '../index.module.scss';
 import type {
   SkillPromptHostToolOption,
   SkillPromptToolOption,
 } from '../skillPromptMention';
-import type { SkillWorkflowState } from '../skillWorkflow';
-import type { SkillExecutionMode, SkillFormValues } from '../useSkillDetail';
+import type {
+  SkillHostToolTabKey,
+  SkillHostToolTabRow,
+} from '../skillHostTools';
+import type { SkillExecutionMode, SkillFormValues, SkillToolRow } from '../useSkillDetail';
 import SkillPromptMentionEditor from './SkillPromptMentionEditor';
-import type { WorkflowBindingValue } from '@/types/workflow';
-import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
 
 type SkillExecutionConfigPanelProps = {
   projectId?: number;
   mode: SkillExecutionMode;
-  onModeChange: (mode: SkillExecutionMode) => void;
   promptValue: string;
   onPromptChange: (value: string) => void;
-  promptToolOptions: SkillPromptToolOption[];
-  promptHostToolOptions: SkillPromptHostToolOption[];
-  boundToolIds: number[];
-  boundHostToolIds: number[];
-  workflow: SkillWorkflowState;
-  workflowBinding: WorkflowBindingValue;
-  hasLegacyWorkflow: boolean;
-  hostToolNameOptions: string[];
-  useRawConfigOnly: boolean;
-  useCustomHostToolBinding?: boolean;
+  promptToolOptions?: SkillPromptToolOption[];
+  promptHostToolOptions?: SkillPromptHostToolOption[];
+  boundToolIds?: number[];
+  boundHostToolIds?: number[];
+  toolRows?: SkillToolRow[];
+  selectedToolIds?: number[];
+  mutationHostToolRows?: SkillHostToolTabRow[];
+  planHostToolRows?: SkillHostToolTabRow[];
+  workflowBinding?: WorkflowBindingValue;
+  hasLegacyWorkflow?: boolean;
+  useRawConfigOnly?: boolean;
   saving?: boolean;
   promptDisabled?: boolean;
-  onWorkflowChange: (workflow: SkillWorkflowState) => void;
-  onWorkflowBindingChange: (value: WorkflowBindingValue) => void;
-  skillSync?: {
-    skillId: number;
-    currentToolIds: number[];
-    currentHostToolIds: number[];
-    onSynced: (toolIds: number[], hostToolIds: number[]) => void;
-  };
+  onWorkflowBindingChange?: (value: WorkflowBindingValue) => void;
+  onToolSelectionChange?: (toolIds: number[]) => void;
+  onToolRequiredChange?: (toolId: number, isRequired: boolean) => void;
+  onHostToolRowChange?: (
+    tab: SkillHostToolTabKey,
+    hostToolId: number,
+    patch: Partial<
+      Pick<
+        SkillHostToolTabRow,
+        'enabled' | 'trigger' | 'priority' | 'isRequired' | 'argsTemplateJson'
+      >
+    >,
+  ) => void;
 };
 
 const PROMPT_PRIORITY_CHAR_LIMIT = 1200;
@@ -46,21 +53,25 @@ const PROMPT_PRIORITY_CHAR_LIMIT = 1200;
 const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
   projectId,
   mode,
-  onModeChange,
   promptValue,
   onPromptChange,
-  promptToolOptions,
-  promptHostToolOptions,
-  boundToolIds,
-  boundHostToolIds,
+  promptToolOptions = [],
+  promptHostToolOptions = [],
+  boundToolIds = [],
+  boundHostToolIds = [],
+  toolRows = [],
+  selectedToolIds = [],
+  mutationHostToolRows = [],
+  planHostToolRows = [],
   workflowBinding,
-  hasLegacyWorkflow,
-  useRawConfigOnly,
-  useCustomHostToolBinding = false,
+  hasLegacyWorkflow = false,
+  useRawConfigOnly = false,
   saving = false,
   promptDisabled = false,
   onWorkflowBindingChange,
-  skillSync,
+  onToolSelectionChange,
+  onToolRequiredChange,
+  onHostToolRowChange,
 }) => {
   const intl = useIntl();
 
@@ -75,68 +86,8 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
     return plain.length;
   }, [promptValue]);
 
-  const modeOptions: Array<{
-    key: SkillExecutionMode;
-    icon: React.ReactNode;
-    titleId: string;
-    descId: string;
-  }> = [
-    {
-      key: 'prompt',
-      icon: <FileTextOutlined />,
-      titleId: 'skill.detail.mode.prompt.title',
-      descId: 'skill.detail.mode.prompt.desc',
-    },
-    {
-      key: 'workflow',
-      icon: <NodeIndexOutlined />,
-      titleId: 'skill.detail.mode.workflow.title',
-      descId: 'skill.detail.mode.workflow.desc',
-    },
-  ];
-
   return (
     <div className={styles.skillExecutionPanel}>
-      <div className={styles.skillExecutionIntro}>
-        <p className={styles.skillDetailSectionHint}>
-          {intl.formatMessage({ id: 'skill.detail.executionModeHint' })}
-        </p>
-      </div>
-
-      <div
-        className={styles.skillModeSelector}
-        role="radiogroup"
-        aria-label={intl.formatMessage({
-          id: 'skill.detail.executionModeLabel',
-        })}
-      >
-        {modeOptions.map((option) => {
-          const active = mode === option.key;
-          return (
-            <button
-              key={option.key}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              className={`${styles.skillModeCard} ${active ? styles.skillModeCardActive : ''}`.trim()}
-              onClick={() => onModeChange(option.key)}
-            >
-              <span className={styles.skillModeCardIcon} aria-hidden>
-                {option.icon}
-              </span>
-              <span className={styles.skillModeCardBody}>
-                <span className={styles.skillModeCardTitle}>
-                  {intl.formatMessage({ id: option.titleId })}
-                </span>
-                <span className={styles.skillModeCardDesc}>
-                  {intl.formatMessage({ id: option.descId })}
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
       {mode === 'prompt' ? (
         <div className={styles.skillExecutionContent}>
           <p className={styles.skillDetailSectionHint}>
@@ -182,7 +133,15 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
               hostTools={promptHostToolOptions}
               boundToolIds={boundToolIds}
               boundHostToolIds={boundHostToolIds}
+              toolRows={toolRows}
+              selectedToolIds={selectedToolIds}
+              mutationHostToolRows={mutationHostToolRows}
+              planHostToolRows={planHostToolRows}
               disabled={promptDisabled}
+              saving={saving}
+              onToolSelectionChange={onToolSelectionChange}
+              onToolRequiredChange={onToolRequiredChange}
+              onHostToolRowChange={onHostToolRowChange}
             />
           </Form.Item>
         </div>
@@ -199,11 +158,7 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
             />
           ) : null}
           <p className={styles.skillDetailSectionHint}>
-            {intl.formatMessage({
-              id: useCustomHostToolBinding
-                ? 'skill.detail.workflowOverlayModeHint'
-                : 'skill.detail.workflowOnlyModeHint',
-            })}
+            {intl.formatMessage({ id: 'skill.detail.workflowOnlyModeHint' })}
           </p>
           <Form.Item<SkillFormValues>
             name="prompt"
@@ -222,18 +177,13 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
               },
             ]}
           >
-            <SkillPromptMentionEditor
-              value={promptValue}
-              onChange={onPromptChange}
-              tools={promptToolOptions}
-              hostTools={promptHostToolOptions}
-              boundToolIds={boundToolIds}
-              boundHostToolIds={boundHostToolIds}
+            <Input.TextArea
+              className="app-input"
+              autoSize={{ minRows: 3, maxRows: 8 }}
               disabled={promptDisabled}
-              compact
             />
           </Form.Item>
-          {hasLegacyWorkflow && !workflowBinding.workflowId ? (
+          {hasLegacyWorkflow && !workflowBinding?.workflowId ? (
             <Alert
               type="warning"
               showIcon
@@ -243,19 +193,16 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
               })}
             />
           ) : null}
-          <WorkflowBindingPanel
-            projectId={projectId}
-            entry="skill"
-            value={workflowBinding}
-            disabled={saving || promptDisabled}
-            boundToolIds={boundToolIds}
-            boundHostToolIds={boundHostToolIds}
-            onChange={onWorkflowBindingChange}
-            skillBindingMode={
-              useCustomHostToolBinding ? 'overlay' : 'workflow_only'
-            }
-            skillSync={skillSync}
-          />
+          {workflowBinding && onWorkflowBindingChange ? (
+            <WorkflowBindingPanel
+              projectId={projectId}
+              entry="skill"
+              value={workflowBinding}
+              disabled={saving || promptDisabled}
+              onChange={onWorkflowBindingChange}
+              skillBindingMode="workflow_only"
+            />
+          ) : null}
         </div>
       )}
     </div>

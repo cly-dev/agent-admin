@@ -148,12 +148,30 @@ const WorkflowNodePropertyDrawer: React.FC<WorkflowNodePropertyDrawerProps> = ({
         <Form.Item
           name="name"
           label={intl.formatMessage({ id: 'workflow.nodes.name' })}
+          rules={[
+            {
+              required: true,
+              whitespace: true,
+              message: intl.formatMessage({
+                id: 'workflow.form.nodeNameRequired',
+              }),
+            },
+          ]}
         >
           <Input className="app-input" disabled={disabled} />
         </Form.Item>
         <Form.Item
           name="objective"
           label={intl.formatMessage({ id: 'workflow.nodes.objective' })}
+          rules={[
+            {
+              required: true,
+              whitespace: true,
+              message: intl.formatMessage({
+                id: 'workflow.form.nodeObjectiveRequired',
+              }),
+            },
+          ]}
         >
           <Input.TextArea
             className="app-input"

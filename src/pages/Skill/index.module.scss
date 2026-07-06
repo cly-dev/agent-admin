@@ -46,6 +46,248 @@
   gap: 28px;
 }
 
+.skillFormLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.skillDetailBasics,
+.skillDetailAdvanced {
+  :global(.ant-collapse) {
+    border: 0;
+    background: transparent;
+  }
+
+  :global(.ant-collapse-item) {
+    border: 1px solid rgb(193 198 215 / 0.28);
+    border-radius: calc(var(--radius-ui) + 2px);
+    overflow: hidden;
+    background: var(--color-surface-container-lowest);
+  }
+
+  :global(.ant-collapse-header) {
+    padding: 14px 16px !important;
+    font-weight: 700;
+  }
+
+  :global(.ant-collapse-content-box) {
+    padding: 0 16px 16px !important;
+  }
+}
+
+.skillDetailBasicsBody,
+.skillDetailAdvancedBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formPanel {
+  border: 1px solid rgb(193 198 215 / 0.28);
+  border-radius: calc(var(--radius-ui) + 2px);
+  padding: 18px 18px 20px;
+  background: var(--color-surface-container-lowest);
+}
+
+.formPanelHeader {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.formPanelIcon {
+  display: flex;
+  height: 36px;
+  width: 36px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: var(--color-primary);
+  font-size: 1rem;
+  background: rgb(0 87 194 / 0.08);
+}
+
+.formPanelIconAccent {
+  color: rgb(0 110 120);
+  background: rgb(0 110 120 / 0.1);
+}
+
+.formPanelTitle {
+  margin: 0;
+  color: var(--color-on-surface);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.formPanelHint {
+  margin: 4px 0 0;
+  color: rgb(25 28 30 / 0.48);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.formPanelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formPanelPrompt .formPanelBody {
+  min-height: 280px;
+}
+
+.configModeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.configModeHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.configModeEyebrow {
+  margin: 0;
+  color: rgb(25 28 30 / 0.42);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.configModeTitle {
+  margin: 0;
+  color: var(--color-on-surface);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.configModeLead {
+  margin: 0;
+  max-width: 62ch;
+  color: rgb(25 28 30 / 0.58);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.configModeGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+.configModeCard {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  width: 100%;
+  border: 1px solid rgb(193 198 215 / 0.35);
+  border-radius: calc(var(--radius-ui) + 2px);
+  padding: 16px 16px 14px;
+  text-align: left;
+  background: var(--color-surface-container-lowest);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+
+  &:hover {
+    border-color: rgb(0 87 194 / 0.28);
+    box-shadow: 0 8px 24px rgb(25 28 30 / 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.configModeCardSelected {
+  border-color: rgb(0 87 194 / 0.45);
+  box-shadow: 0 10px 28px rgb(0 87 194 / 0.08);
+}
+
+.configModeCardAccentPrompt.configModeCardSelected {
+  border-color: rgb(0 110 120 / 0.45);
+  box-shadow: 0 10px 28px rgb(0 110 120 / 0.08);
+}
+
+.configModeCardAccentWorkflow.configModeCardSelected {
+  border-color: rgb(0 87 194 / 0.45);
+}
+
+.configModeCardIcon {
+  display: flex;
+  height: 40px;
+  width: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  font-size: 1.05rem;
+  background: rgb(0 87 194 / 0.08);
+  color: var(--color-primary);
+}
+
+.configModeCardAccentPrompt .configModeCardIcon {
+  color: rgb(0 110 120);
+  background: rgb(0 110 120 / 0.1);
+}
+
+.configModeCardBody {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.configModeCardTitle {
+  color: var(--color-on-surface);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.configModeCardDesc {
+  color: rgb(25 28 30 / 0.58);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.configModeCardMark {
+  flex-shrink: 0;
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: rgb(25 28 30 / 0.45);
+  font-size: 11px;
+  font-weight: 700;
+  background: rgb(25 28 30 / 0.06);
+}
+
+.configModeCardSelected .configModeCardMark {
+  color: var(--color-primary);
+  background: rgb(0 87 194 / 0.1);
+}
+
+.configModeCardAccentPrompt.configModeCardSelected .configModeCardMark {
+  color: rgb(0 110 120);
+  background: rgb(0 110 120 / 0.12);
+}
+
 .skillDetailSection {
   display: flex;
   flex-direction: column;

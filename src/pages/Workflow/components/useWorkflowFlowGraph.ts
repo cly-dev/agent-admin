@@ -51,6 +51,8 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
   } = options;
 
   const graphRef = useRef<Graph | null>(null);
+  const disabledRef = useRef(disabled);
+  disabledRef.current = disabled;
   const callbacksRef = useRef({
     onCellsChanged,
     onNodeSelect,
@@ -119,7 +121,7 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
           });
         },
         validateConnection(args): boolean {
-          if (disabled) {
+          if (disabledRef.current) {
             return false;
           }
           const { sourceCell, targetCell, sourcePort, targetPort } = args;
@@ -153,7 +155,7 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
         vertexAddable: false,
         vertexDeletable: false,
         edgeLabelMovable: false,
-        magnetConnectable: !disabled,
+        magnetConnectable: true,
       },
       highlighting: {
         magnetAdsorbed: {
@@ -288,13 +290,29 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
     };
   }, [
     containerRef,
-    disabled,
     nodeIdsWithNoOutputRef,
     setOverlayTransform,
     setPlusButtonPositions,
     onReady,
     suppressEmitRef,
   ]);
+
+  useEffect(() => {
+    const graph = graphRef.current;
+    if (!graph) {
+      return;
+    }
+    graph.options.interacting = {
+      nodeMovable: false,
+      edgeMovable: false,
+      arrowheadMovable: false,
+      vertexMovable: false,
+      vertexAddable: false,
+      vertexDeletable: false,
+      edgeLabelMovable: false,
+      magnetConnectable: !disabled,
+    };
+  }, [disabled]);
 
   return { graphRef };
 }

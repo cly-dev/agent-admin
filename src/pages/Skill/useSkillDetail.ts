@@ -550,15 +550,39 @@ export function useSkillDetail() {
     [form],
   );
 
-  const handleExecutionModeChange = useCallback((mode: SkillExecutionMode) => {
-    setExecutionMode(mode);
-    if (mode === 'prompt') {
-      setWorkflow({ steps: [] });
-      setUseRawConfigOnly(false);
-      return;
-    }
-    setUseRawConfigOnly(false);
+  const clearToolBindings = useCallback(() => {
+    setSelectedToolIds([]);
+    setToolRows((rows) =>
+      rows.map((row) => ({
+        ...row,
+        bound: false,
+        isRequired: false,
+      })),
+    );
+    setUseCustomHostToolBinding(false);
+    setHostToolsDirty(true);
+    setMutationHostToolRows((rows) =>
+      rows.map((row) => ({ ...row, enabled: false })),
+    );
+    setPlanHostToolRows((rows) =>
+      rows.map((row) => ({ ...row, enabled: false })),
+    );
   }, []);
+
+  const handleExecutionModeChange = useCallback(
+    (mode: SkillExecutionMode) => {
+      setExecutionMode(mode);
+      if (mode === 'prompt') {
+        setWorkflow({ steps: [] });
+        setWorkflowBinding(emptyWorkflowBinding());
+        setUseRawConfigOnly(false);
+        return;
+      }
+      setUseRawConfigOnly(false);
+      clearToolBindings();
+    },
+    [clearToolBindings],
+  );
 
   const handleToolSelectionChange = useCallback((toolIds: number[]) => {
     setSelectedToolIds(toolIds);
@@ -703,26 +727,30 @@ export function useSkillDetail() {
 
     let hostToolsPayload: ReturnType<typeof buildSkillHostToolsPayload> | null =
       null;
-    try {
-      if (useCustomHostToolBinding) {
-        hostToolsPayload = buildHostToolsPayload();
-      } else if (hostToolsDirty) {
-        hostToolsPayload = [];
+    if (executionMode === 'prompt') {
+      try {
+        if (useCustomHostToolBinding) {
+          hostToolsPayload = buildHostToolsPayload();
+        } else if (hostToolsDirty) {
+          hostToolsPayload = [];
+        }
+      } catch {
+        message.error(
+          intl.formatMessage({ id: 'skill.hostTools.argsTemplateInvalid' }),
+        );
+        return;
       }
-    } catch {
-      message.error(
-        intl.formatMessage({ id: 'skill.hostTools.argsTemplateInvalid' }),
-      );
-      return;
     }
 
     setSaving(true);
     try {
       if (isCreateMode) {
-        const toolsPayload = buildToolsPayload();
-        const tools: SkillToolBindingItemDto[] | undefined = toolsPayload.length
-          ? toolsPayload
-          : undefined;
+        const toolsPayload =
+          executionMode === 'prompt' ? buildToolsPayload() : [];
+        const tools: SkillToolBindingItemDto[] | undefined =
+          executionMode === 'prompt' && toolsPayload.length
+            ? toolsPayload
+            : undefined;
 
         const payload: CreateSkillDto = {
           name: values.name.trim(),
@@ -755,7 +783,7 @@ export function useSkillDetail() {
               )
             : await SkillController_createByAppClient(projectId, payload);
 
-        if (created.id && hostToolsPayload !== null) {
+        if (created.id && executionMode === 'prompt' && hostToolsPayload !== null) {
           await HostToolController_replaceSkillHostTools(created.id, {
             tools: hostToolsPayload,
           });
@@ -791,23 +819,39 @@ export function useSkillDetail() {
       };
 
       const updated = await SkillController_update(skill.id, payload);
-      const toolsPayload = buildToolsPayload();
-      const withTools =
-        toolsPayload.length > 0
-          ? await SkillController_replaceTools(updated.id, {
-              tools: toolsPayload,
-            })
-          : await SkillController_replaceTools(updated.id, { tools: [] });
-      let nextSkill = withTools;
-      if (hostToolsPayload !== null || hostToolsDirty) {
+      let nextSkill = updated;
+      if (executionMode === 'prompt') {
+        const toolsPayload = buildToolsPayload();
+        nextSkill =
+          toolsPayload.length > 0
+            ? await SkillController_replaceTools(updated.id, {
+                tools: toolsPayload,
+              })
+            : await SkillController_replaceTools(updated.id, { tools: [] });
+        if (hostToolsPayload !== null || hostToolsDirty) {
+          const hostResult = await HostToolController_replaceSkillHostTools(
+            nextSkill.id,
+            {
+              tools: hostToolsPayload ?? [],
+            },
+          );
+          nextSkill = {
+            ...nextSkill,
+            skillHostTools: hostResult.skillHostTools,
+            hostTools: hostResult.hostTools,
+            hostToolCount: hostResult.skillHostTools.length,
+          };
+        }
+      } else {
+        nextSkill = await SkillController_replaceTools(updated.id, {
+          tools: [],
+        });
         const hostResult = await HostToolController_replaceSkillHostTools(
-          withTools.id,
-          {
-            tools: hostToolsPayload ?? [],
-          },
+          nextSkill.id,
+          { tools: [] },
         );
         nextSkill = {
-          ...withTools,
+          ...nextSkill,
           skillHostTools: hostResult.skillHostTools,
           hostTools: hostResult.hostTools,
           hostToolCount: hostResult.skillHostTools.length,

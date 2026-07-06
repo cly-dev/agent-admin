@@ -70,3 +70,13 @@ export type PageActionListQuery = {
   pageScope?: string;
   isActive?: boolean;
 };
+
+export type PageScopeOption = {
+  scope: string;
+  label: string | null;
+  isActive: boolean;
+};
+
+export type PageScopeListQuery = {
+  activeOnly?: boolean;
+};

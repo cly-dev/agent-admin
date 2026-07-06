@@ -3,6 +3,8 @@ import type {
   CreatePageActionDto,
   PageAction,
   PageActionListQuery,
+  PageScopeListQuery,
+  PageScopeOption,
   UpdatePageActionDto,
 } from '@/types/page-action';
 import type { WorkflowOverrides } from '@/types/workflow';
@@ -165,4 +167,40 @@ export async function PageActionController_findByAppClient(
     query,
   );
   return normalizePageResult(raw, normalizePageAction);
+}
+
+function normalizePageScopeOption(raw: unknown): PageScopeOption | null {
+  if (typeof raw !== 'object' || raw === null) {
+    return null;
+  }
+  const item = raw as Record<string, unknown>;
+  const scope = String(item.scope ?? '').trim();
+  if (!scope) {
+    return null;
+  }
+  const labelRaw = item.label;
+  return {
+    scope,
+    label:
+      typeof labelRaw === 'string'
+        ? labelRaw
+        : labelRaw === null
+          ? null
+          : null,
+    isActive: normalizeBoolean(item.isActive ?? item.is_active ?? true),
+  };
+}
+
+export async function PageActionController_findPageScopesByAppClient(
+  appClientId: number,
+  query: PageScopeListQuery = {},
+): Promise<PageScopeOption[]> {
+  const raw = await http.get<unknown>(
+    `${PAGE_ACTION_BASE}/page-scopes/by-app-client/${appClientId}`,
+    query,
+  );
+  const list = Array.isArray(raw) ? raw : [];
+  return list
+    .map((item) => normalizePageScopeOption(item))
+    .filter((item): item is PageScopeOption => item !== null);
 }

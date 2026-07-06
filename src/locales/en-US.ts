@@ -447,7 +447,7 @@ export default {
   'skill.promptMention.composerBadge': 'Type @ to cite HTTP / host tools',
   'skill.promptMention.composerBadgeBound': 'Type @ to cite bound tools',
   'skill.promptMention.bindToolsFirst':
-    'Select tools under Tool bindings first, then @ mention them here',
+    'Select tools on the right first, then @ mention them here',
   'skill.promptMention.boundToolsLabel': 'Mentioned tools',
   'skill.promptMention.placeholder':
     'Describe steps and tone. Type @ to pick HTTP tools or host tools…',
@@ -590,7 +590,25 @@ export default {
   'skill.detail.inferredRiskLevel':
     'When unset, the server infers {level} from bound tools.',
   'skill.detail.configAdvancedHint':
-    'Advanced raw JSON editor; edits here override the visual Plan workflow tab on save.',
+    'Advanced raw JSON editor; edits here override visual Workflow configuration on save.',
+  'skill.form.configMode.eyebrow': 'Execution mode',
+  'skill.form.configMode.title': 'Choose how this Skill runs',
+  'skill.form.configMode.lead':
+    'Use a business prompt for flexible chat, or bind a Workflow for step orchestration.',
+  'skill.form.configMode.active': 'Current',
+  'skill.form.configMode.inactive': 'Switch',
+  'skill.form.configMode.prompt.title': 'Business prompt',
+  'skill.form.configMode.prompt.desc':
+    'Describe steps, tool discipline, and reply rules in natural language.',
+  'skill.form.configMode.prompt.panelTitle': 'Business prompt',
+  'skill.form.configMode.prompt.panelHint':
+    'Keep intent and tool rules within the first ~1200 characters; @ mention bound tools.',
+  'skill.form.configMode.workflow.title': 'Workflow orchestration',
+  'skill.form.configMode.workflow.desc':
+    'Bind a Workflow asset; runtime checks node tools against user role permissions.',
+  'skill.form.configMode.workflow.panelTitle': 'Workflow orchestration',
+  'skill.form.configMode.workflow.panelHint':
+    'Select a Workflow and add a fallback prompt; tool access follows Workflow nodes and user roles.',
   'skill.workflow.hint':
     'Configure config.workflow and deliverable for Plan-mode step orchestration.',
   'skill.workflow.deliverable': 'Deliverable type',
@@ -1189,6 +1207,8 @@ export default {
   'pageAction.column.description': 'Description',
   'pageAction.column.actions': 'Actions',
   'pageAction.pageScope.generic': 'Generic',
+  'pageScope.selectPlaceholder': 'Select page scope',
+  'pageScope.option.inactive': 'Inactive',
   'pageAction.delivery.inline_stream': 'Stream',
   'pageAction.delivery.sync': 'Sync',
   'pageAction.status.active': 'Active',
@@ -1573,6 +1593,11 @@ export default {
   'workflow.nodeInput.confirmKind': 'Confirm kind',
   'workflow.nodeInput.confirmKind.mutation': 'Mutation',
   'workflow.nodeInput.confirmKind.generic': 'Generic',
+  'workflow.form.nodeNameRequired': 'Display name is required',
+  'workflow.form.nodeObjectiveRequired': 'Objective is required',
+  'workflow.validation.name_required': 'Node {nodeId} requires a display name',
+  'workflow.validation.objective_required':
+    'Node {nodeId} requires an objective',
   'workflow.validation.tool_id_required':
     'Node {nodeId} requires an HTTP tool (toolId)',
   'workflow.validation.host_tool_id_required':

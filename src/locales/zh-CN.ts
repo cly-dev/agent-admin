@@ -440,7 +440,7 @@ export default {
   'skill.promptMention.composerBadge': '输入 @ 引用 HTTP / 前端工具',
   'skill.promptMention.composerBadgeBound': '输入 @ 引用已绑定工具',
   'skill.promptMention.bindToolsFirst':
-    '请先在「工具绑定」中勾选工具，再在此通过 @ 引用',
+    '请先在右侧勾选工具，再在此通过 @ 引用',
   'skill.promptMention.boundToolsLabel': '已 @ 绑定的工具',
   'skill.promptMention.placeholder':
     '描述处理步骤与回复要求。需要调用工具时输入 @，可选择 HTTP 工具或前端工具…',
@@ -580,7 +580,25 @@ export default {
   'skill.detail.inferredRiskLevel':
     '未显式设置时，服务端按绑定工具推断为 {level}。',
   'skill.detail.configAdvancedHint':
-    '高级用户可直接编辑原始 JSON；编辑后将覆盖「Plan 工作流」Tab 的可视化配置。',
+    '高级用户可直接编辑原始 JSON；编辑后将覆盖 Workflow 可视化配置。',
+  'skill.form.configMode.eyebrow': '执行方式',
+  'skill.form.configMode.title': '选择 Skill 如何执行',
+  'skill.form.configMode.lead':
+    '业务指引适合灵活对话；Workflow 适合按节点编排、绑定资产后复用。',
+  'skill.form.configMode.active': '当前',
+  'skill.form.configMode.inactive': '切换',
+  'skill.form.configMode.prompt.title': '业务指引',
+  'skill.form.configMode.prompt.desc':
+    '用自然语言描述处理步骤、工具纪律与回复要求，适合灵活对话场景。',
+  'skill.form.configMode.prompt.panelTitle': '业务指引',
+  'skill.form.configMode.prompt.panelHint':
+    '意图识别与工具纪律建议写在前 1200 字内；可通过 @ 引用已绑定的工具。',
+  'skill.form.configMode.workflow.title': 'Workflow 编排',
+  'skill.form.configMode.workflow.desc':
+    '绑定 Workflow 资产；运行时按节点工具与用户角色权限校验。',
+  'skill.form.configMode.workflow.panelTitle': 'Workflow 编排',
+  'skill.form.configMode.workflow.panelHint':
+    '选择 Workflow 并填写补充说明；工具权限由 Workflow 节点与用户角色决定。',
   'skill.workflow.hint':
     '配置 config.workflow 与 deliverable，用于 Plan 模式下的步骤编排。',
   'skill.workflow.deliverable': '交付物类型（deliverable）',
@@ -1156,6 +1174,8 @@ export default {
   'pageAction.column.description': '说明',
   'pageAction.column.actions': '操作',
   'pageAction.pageScope.generic': '通用',
+  'pageScope.selectPlaceholder': '选择页面作用域',
+  'pageScope.option.inactive': '已停用',
   'pageAction.delivery.inline_stream': '流式',
   'pageAction.delivery.sync': '同步',
   'pageAction.status.active': '已启用',
@@ -1533,6 +1553,11 @@ export default {
   'workflow.nodeInput.confirmKind': '确认类型（confirmKind）',
   'workflow.nodeInput.confirmKind.mutation': '变更确认（mutation）',
   'workflow.nodeInput.confirmKind.generic': '通用确认（generic）',
+  'workflow.form.nodeNameRequired': '请填写展示名',
+  'workflow.form.nodeObjectiveRequired': '请填写目标（objective）',
+  'workflow.validation.name_required': '节点 {nodeId} 须填写展示名',
+  'workflow.validation.objective_required':
+    '节点 {nodeId} 须填写目标（objective）',
   'workflow.validation.tool_id_required':
     '节点 {nodeId} 须选择 HTTP 工具（toolId）',
   'workflow.validation.host_tool_id_required':

@@ -1,4 +1,5 @@
 import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
+import PageScopeSelect from '@/components/PageScopeSelect';
 import type { HostTool } from '@/types/host-tool';
 import type { WorkflowBindingValue } from '@/types/workflow';
 import {
@@ -45,8 +46,6 @@ type PageActionFormProps = {
     hasPushNode: boolean;
     pushHostToolId: number | null;
   };
-  onApplyPushHostTool?: () => void;
-  hostToolClearDisabled?: boolean;
   onFinish?: (values: PageActionFormValues) => void;
   onHostToolChange: (hostToolId?: number) => void;
   onActionKeyBlur?: () => void;
@@ -231,10 +230,14 @@ function HostToolBindingFields({
 function IdentityFields({
   isCreate,
   editingActionKey,
+  projectId,
+  currentPageScope,
   onActionKeyBlur,
 }: {
   isCreate: boolean;
   editingActionKey?: string;
+  projectId?: number;
+  currentPageScope?: string;
   onActionKeyBlur?: () => void;
 }) {
   const intl = useIntl();
@@ -293,9 +296,12 @@ function IdentityFields({
           label={intl.formatMessage({ id: 'pageAction.column.pageScope' })}
           extra={intl.formatMessage({ id: 'pageAction.form.pageScopeHint' })}
         >
-          <Input
-            className="app-input font-mono text-sm"
-            placeholder="demo-playground"
+          <PageScopeSelect
+            appClientId={projectId}
+            extraScope={currentPageScope}
+            placeholder={intl.formatMessage({
+              id: 'pageScope.selectPlaceholder',
+            })}
           />
         </Form.Item>
         <Form.Item
@@ -424,8 +430,6 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
   onWorkflowBindingChange,
   onPushHostToolResolved,
   workflowPushState,
-  onApplyPushHostTool,
-  hostToolClearDisabled = false,
   onFinish,
   onHostToolChange,
   onActionKeyBlur,
@@ -433,7 +437,7 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
   const intl = useIntl();
   const isCreate = mode === 'create';
   const isPromptMode = configMode === 'prompt';
-  const hostToolId = Form.useWatch('hostToolId', form);
+  const currentPageScope = Form.useWatch('pageScope', form);
 
   return (
     <Form<PageActionFormValues>
@@ -454,6 +458,10 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
           <IdentityFields
             isCreate={isCreate}
             editingActionKey={editingActionKey}
+            projectId={projectId}
+            currentPageScope={
+              typeof currentPageScope === 'string' ? currentPageScope : undefined
+            }
             onActionKeyBlur={onActionKeyBlur}
           />
         </FormPanel>
@@ -517,15 +525,6 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
               hasPushNode={workflowPushState?.hasPushNode ?? false}
               pushHostToolId={workflowPushState?.pushHostToolId ?? null}
               hostTools={hostTools}
-              currentHostToolId={hostToolId}
-              onApplyPushHostTool={onApplyPushHostTool}
-            />
-            <HostToolBindingFields
-              form={form}
-              hostTools={hostTools}
-              hostToolsLoading={hostToolsLoading}
-              onHostToolChange={onHostToolChange}
-              allowClear={!hostToolClearDisabled}
             />
             <div className={styles.workflowModePromptSection}>
               <PromptField form={form} />

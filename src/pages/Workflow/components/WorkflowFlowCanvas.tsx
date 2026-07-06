@@ -64,6 +64,8 @@ const WorkflowFlowCanvas: React.FC<WorkflowFlowCanvasProps> = ({
   const nodeIdsWithNoOutputRef = useRef<string[]>([]);
   const syncingFromPropsRef = useRef(false);
   const suppressEmitRef = useRef(false);
+  const nodesRef = useRef(nodes);
+  nodesRef.current = nodes;
   const lastEmittedSignatureRef = useRef('');
 
   const [orientation, setOrientation] = useState<FlowCanvasOrientation>('vertical');
@@ -105,6 +107,9 @@ const WorkflowFlowCanvas: React.FC<WorkflowFlowCanvasProps> = ({
       return;
     }
     const nextNodes = extractWorkflowNodesFromGraph(graph);
+    if (nextNodes.length === 0 && nodesRef.current.length > 0) {
+      return;
+    }
     const signature = nodesSignature(nextNodes);
     if (signature === lastEmittedSignatureRef.current) {
       return;
@@ -338,9 +343,14 @@ const WorkflowFlowCanvas: React.FC<WorkflowFlowCanvasProps> = ({
     if (!graph || disabled) {
       return;
     }
-    graph.clearCells();
-    lastEmittedSignatureRef.current = nodesSignature([]);
-    onChange([]);
+    suppressEmitRef.current = true;
+    try {
+      graph.clearCells();
+      lastEmittedSignatureRef.current = nodesSignature([]);
+      onChange([]);
+    } finally {
+      suppressEmitRef.current = false;
+    }
   };
 
   const handleAutoLayout = () => {

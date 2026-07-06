@@ -1,7 +1,7 @@
 import type { HostTool } from '@/types/host-tool';
 import { CheckCircleFilled } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Alert, Button } from 'antd';
+import { Alert } from 'antd';
 import styles from '../index.module.scss';
 import { formatHostToolOptionLabel } from '../pageActionShared';
 
@@ -9,8 +9,6 @@ type PageActionWorkflowPushPreviewProps = {
   hasPushNode: boolean;
   pushHostToolId: number | null;
   hostTools: HostTool[];
-  currentHostToolId?: number;
-  onApplyPushHostTool?: () => void;
 };
 
 const PageActionWorkflowPushPreview: React.FC<
@@ -19,8 +17,6 @@ const PageActionWorkflowPushPreview: React.FC<
   hasPushNode,
   pushHostToolId,
   hostTools,
-  currentHostToolId,
-  onApplyPushHostTool,
 }) => {
   const intl = useIntl();
 
@@ -31,14 +27,6 @@ const PageActionWorkflowPushPreview: React.FC<
   const pushTool = pushHostToolId
     ? hostTools.find((tool) => tool.id === pushHostToolId)
     : undefined;
-  const hasMismatch =
-    currentHostToolId !== undefined &&
-    pushHostToolId !== null &&
-    currentHostToolId !== pushHostToolId;
-  const canApply =
-    pushHostToolId !== null &&
-    currentHostToolId !== pushHostToolId &&
-    onApplyPushHostTool;
 
   return (
     <div className={styles.workflowPushPreview}>
@@ -78,29 +66,6 @@ const PageActionWorkflowPushPreview: React.FC<
       <p className={styles.workflowPushPreviewHint}>
         {intl.formatMessage({ id: 'pageAction.form.workflowPushPreview.hint' })}
       </p>
-
-      {hasMismatch ? (
-        <Alert
-          type="warning"
-          showIcon
-          className={styles.workflowPushPreviewAlert}
-          message={intl.formatMessage({
-            id: 'pageAction.form.workflowHostToolMismatch',
-          })}
-        />
-      ) : null}
-
-      {canApply ? (
-        <Button
-          type="link"
-          className={styles.workflowPushPreviewApply}
-          onClick={onApplyPushHostTool}
-        >
-          {intl.formatMessage({
-            id: 'pageAction.form.workflowPushPreview.apply',
-          })}
-        </Button>
-      ) : null}
     </div>
   );
 };

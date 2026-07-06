@@ -1,8 +1,9 @@
 import {
-  AppQueryInput,
   AppQueryPanel,
   AppQuerySelect,
 } from '@/components/AppQueryPanel';
+import { usePageScopeOptions } from '@/hooks/usePageScopeOptions';
+import { useProjectRoute } from '@/hooks/useProjectRoute';
 import { useIntl } from '@umijs/max';
 import { Form } from 'antd';
 import { useMemo } from 'react';
@@ -28,6 +29,12 @@ const PageActionFilter: React.FC<PageActionFilterProps> = ({
   onReset,
 }) => {
   const intl = useIntl();
+  const { projectId } = useProjectRoute();
+  const { selectOptions: pageScopeOptions, loading: pageScopeLoading } =
+    usePageScopeOptions({
+      appClientId: projectId,
+      activeOnly: false,
+    });
 
   const anyOption = useMemo(
     () => [
@@ -71,9 +78,15 @@ const PageActionFilter: React.FC<PageActionFilterProps> = ({
             name="pageScope"
             label={intl.formatMessage({ id: 'pageAction.column.pageScope' })}
           >
-            <AppQueryInput
+            <AppQuerySelect
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              loading={pageScopeLoading}
+              disabled={!projectId}
+              options={[...anyOption, ...pageScopeOptions]}
               placeholder={intl.formatMessage({
-                id: 'pageAction.filter.pageScopePlaceholder',
+                id: 'pageScope.selectPlaceholder',
               })}
             />
           </Form.Item>

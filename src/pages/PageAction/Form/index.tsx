@@ -23,7 +23,6 @@ const PageActionFormPage: React.FC = () => {
     configMode,
     handleConfigModeChange,
     workflowPushState,
-    handleApplyPushHostTool,
     handlePushHostToolResolved,
     handleBack,
     handleActionKeyBlur,
@@ -117,8 +116,6 @@ const PageActionFormPage: React.FC = () => {
         onWorkflowBindingChange={setWorkflowBinding}
         onPushHostToolResolved={handlePushHostToolResolved}
         workflowPushState={workflowPushState}
-        onApplyPushHostTool={handleApplyPushHostTool}
-        hostToolClearDisabled={Boolean(record?.hostToolId)}
         hostTools={hostTools}
         hostToolsLoading={hostToolsLoading}
         onHostToolChange={handleHostToolChange}

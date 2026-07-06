@@ -21,7 +21,11 @@ export type WorkflowHostToolRow = {
 
 export type WorkflowNodeValidationIssue = {
   nodeId: string;
-  code: 'tool_id_required' | 'host_tool_id_required';
+  code:
+    | 'name_required'
+    | 'objective_required'
+    | 'tool_id_required'
+    | 'host_tool_id_required';
 };
 
 export const WORKFLOW_PROFILE_OPTIONS: WorkflowProfile[] = [
@@ -66,16 +70,8 @@ export function compatibleProfilesForEntry(
     : ['page_action', 'shared'];
 }
 
-export function createEmptyWorkflowNode(
-  action: WorkflowActionKind = 'summarize',
-): WorkflowNodeDef {
-  return {
-    id: `step_${Date.now()}`,
-    action,
-    name: '',
-    objective: '',
-    input: defaultInputForAction(action),
-  };
+function defaultLabelForAction(action: WorkflowActionKind): string {
+  return action.replace(/_/g, ' ');
 }
 
 export function defaultInputForAction(action: WorkflowActionKind): Record<string, unknown> {
@@ -98,6 +94,19 @@ export function defaultInputForAction(action: WorkflowActionKind): Record<string
     default:
       return {};
   }
+}
+
+export function createEmptyWorkflowNode(
+  action: WorkflowActionKind = 'summarize',
+): WorkflowNodeDef {
+  const label = defaultLabelForAction(action);
+  return {
+    id: `step_${Date.now()}`,
+    action,
+    name: label,
+    objective: label,
+    input: defaultInputForAction(action),
+  };
 }
 
 export function normalizeWorkflowNode(raw: unknown): WorkflowNodeDef | null {
@@ -278,6 +287,12 @@ export function validateWorkflowNodes(
 ): WorkflowNodeValidationIssue[] {
   const issues: WorkflowNodeValidationIssue[] = [];
   for (const node of nodes) {
+    if (!node.name?.trim()) {
+      issues.push({ nodeId: node.id, code: 'name_required' });
+    }
+    if (!node.objective?.trim()) {
+      issues.push({ nodeId: node.id, code: 'objective_required' });
+    }
     const toolId = node.input?.toolId;
     const hostToolId = node.input?.hostToolId;
     if (TOOL_ACTIONS.includes(node.action)) {

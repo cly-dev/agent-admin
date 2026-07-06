@@ -27,23 +27,6 @@ export type PageActionWorkflowPushState = {
   pushHostToolId: number | null;
 };
 
-export function validatePageActionWorkflowBinding(
-  workflowId: number | null | undefined,
-  pushHostToolId: number | null,
-  hostToolId: number | undefined,
-  messages: {
-    hostToolMismatch: string;
-  },
-): string | null {
-  if (!workflowId) {
-    return null;
-  }
-  if (hostToolId && pushHostToolId && hostToolId !== pushHostToolId) {
-    return messages.hostToolMismatch;
-  }
-  return null;
-}
-
 export function getDefaultPageActionFormValues(): Partial<PageActionFormValues> {
   return {
     allowCustomInstruction: true,

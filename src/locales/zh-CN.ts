@@ -1947,6 +1947,48 @@ export default {
   'tool.agentMetadata.operation.EXPORT': 'EXPORT · 导出',
   'tool.agentMetadata.operation.PUBLISH': 'PUBLISH · 发布',
   'tool.agentMetadata.operation.UNPUBLISH': 'UNPUBLISH · 下架',
+  'tool.agentMetadata.draftReview.title': '写确认配置',
+  'tool.agentMetadata.draftReview.desc':
+    '配置 C 端写确认 / 审批时用户能改什么。保存后写入 agentMetadata，由服务端推导下发策略。',
+  'tool.agentMetadata.draftReview.step.businessFields': '业务标识',
+  'tool.agentMetadata.draftReview.step.businessFieldsHint':
+    '标识本次写操作关联的业务对象（如 reviewId、skuId），这些字段在 C 端自动锁定不可改。',
+  'tool.agentMetadata.draftReview.step.businessFieldsPlaceholder':
+    '从 inputSchema 参数中选择业务标识字段',
+  'tool.agentMetadata.draftReview.step.userCanEdit': '用户能改什么',
+  'tool.agentMetadata.draftReview.step.userCanEditHint':
+    '选择 C 端确认前用户可编辑的范围。',
+  'tool.agentMetadata.draftReview.simpleMode.content_only': '仅正文',
+  'tool.agentMetadata.draftReview.simpleMode.allowlisted': '白名单字段',
+  'tool.agentMetadata.draftReview.simpleMode.readonly_confirm': '只读确认',
+  'tool.agentMetadata.draftReview.simpleModeHint.content_only':
+    '用户只能修改正文字段（下方第 3 步指定），其他参数不可改。',
+  'tool.agentMetadata.draftReview.simpleModeHint.allowlisted':
+    '除正文外，还可修改下方勾选的白名单字段。',
+  'tool.agentMetadata.draftReview.simpleModeHint.readonly_confirm':
+    '用户只能预览全部内容，不能修改任何字段，仅确认提交。',
+  'tool.agentMetadata.draftReview.step.editablePaths': '可改字段',
+  'tool.agentMetadata.draftReview.step.editablePathsHint':
+    '勾选 C 端允许用户修改的 string 类型参数（不含业务标识）。',
+  'tool.agentMetadata.draftReview.step.editablePathsPlaceholder':
+    '选择可编辑字段',
+  'tool.agentMetadata.draftReview.step.submitPath': '正文字段',
+  'tool.agentMetadata.draftReview.step.submitPathHint':
+    '用户编辑或预览的正文所在参数，仅可选择 string 类型字段（如 content、body.reply）。',
+  'tool.agentMetadata.draftReview.step.submitPathPlaceholder': '选择正文字段',
+  'tool.agentMetadata.draftReview.step.submitPathEmpty':
+    '请先在 inputSchema 中配置 string 类型参数。',
+  'tool.agentMetadata.draftReview.step.readonlySubmitNote':
+    '只读确认模式下，正文字段仅展示不可编辑。',
+  'tool.agentMetadata.draftReview.step.fieldLabels': '字段中文名（可选）',
+  'tool.agentMetadata.draftReview.step.fieldLabelsHint':
+    '为 C 端展示配置中文字段名，避免显示原始参数名。',
+  'tool.agentMetadata.draftReview.step.fieldLabelPlaceholder': '如：回复内容',
+  'tool.agentMetadata.draftReview.fieldOverridesEmpty': '暂无，可点击下方添加',
+  'tool.agentMetadata.draftReview.fieldOverridesAdd': '添加字段中文名',
+  'tool.agentMetadata.draftReview.override.path': '参数字段',
+  'tool.agentMetadata.draftReview.override.label': '中文名',
+  'tool.agentMetadata.draftReview.override.pathRequired': '请选择字段',
   'tool.detail.metaTitle': '概览',
   'tool.detail.metaRisk': '风险等级',
   'tool.detail.metaIntegration': 'Integration',

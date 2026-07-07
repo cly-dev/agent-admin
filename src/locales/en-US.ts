@@ -2016,6 +2016,48 @@ export default {
   'tool.agentMetadata.operation.EXPORT': 'EXPORT',
   'tool.agentMetadata.operation.PUBLISH': 'PUBLISH',
   'tool.agentMetadata.operation.UNPUBLISH': 'UNPUBLISH',
+  'tool.agentMetadata.draftReview.title': 'Write confirm settings',
+  'tool.agentMetadata.draftReview.desc':
+    'Configure what users can edit on C-end write confirm / approval. Saved to agentMetadata; server derives the runtime policy.',
+  'tool.agentMetadata.draftReview.step.businessFields': 'Business identifiers',
+  'tool.agentMetadata.draftReview.step.businessFieldsHint':
+    'Fields that identify the business object (e.g. reviewId, skuId). Auto-locked on C-end.',
+  'tool.agentMetadata.draftReview.step.businessFieldsPlaceholder':
+    'Select identifier fields from inputSchema',
+  'tool.agentMetadata.draftReview.step.userCanEdit': 'What users can edit',
+  'tool.agentMetadata.draftReview.step.userCanEditHint':
+    'How much users may change before confirming.',
+  'tool.agentMetadata.draftReview.simpleMode.content_only': 'Body text only',
+  'tool.agentMetadata.draftReview.simpleMode.allowlisted': 'Allowlisted fields',
+  'tool.agentMetadata.draftReview.simpleMode.readonly_confirm': 'Read-only confirm',
+  'tool.agentMetadata.draftReview.simpleModeHint.content_only':
+    'Users may edit only the body field (step 3); other params stay locked.',
+  'tool.agentMetadata.draftReview.simpleModeHint.allowlisted':
+    'Users may also edit the allowlisted fields selected below.',
+  'tool.agentMetadata.draftReview.simpleModeHint.readonly_confirm':
+    'Users preview everything but cannot edit; confirm only.',
+  'tool.agentMetadata.draftReview.step.editablePaths': 'Editable fields',
+  'tool.agentMetadata.draftReview.step.editablePathsHint':
+    'String params users may edit (excluding business identifiers).',
+  'tool.agentMetadata.draftReview.step.editablePathsPlaceholder':
+    'Select editable fields',
+  'tool.agentMetadata.draftReview.step.submitPath': 'Body field',
+  'tool.agentMetadata.draftReview.step.submitPathHint':
+    'String param for body text users edit or preview (e.g. content, body.reply).',
+  'tool.agentMetadata.draftReview.step.submitPathPlaceholder': 'Select body field',
+  'tool.agentMetadata.draftReview.step.submitPathEmpty':
+    'Add string parameters in inputSchema first.',
+  'tool.agentMetadata.draftReview.step.readonlySubmitNote':
+    'In read-only confirm mode, the body field is shown but not editable.',
+  'tool.agentMetadata.draftReview.step.fieldLabels': 'Field labels (optional)',
+  'tool.agentMetadata.draftReview.step.fieldLabelsHint':
+    'Chinese display names for C-end; avoids raw parameter names.',
+  'tool.agentMetadata.draftReview.step.fieldLabelPlaceholder': 'e.g. Reply content',
+  'tool.agentMetadata.draftReview.fieldOverridesEmpty': 'None yet — add below',
+  'tool.agentMetadata.draftReview.fieldOverridesAdd': 'Add field label',
+  'tool.agentMetadata.draftReview.override.path': 'Parameter',
+  'tool.agentMetadata.draftReview.override.label': 'Label',
+  'tool.agentMetadata.draftReview.override.pathRequired': 'Select a field',
   'tool.detail.metaTitle': 'Overview',
   'tool.detail.metaRisk': 'Risk Level',
   'tool.detail.metaIntegration': 'Integration',

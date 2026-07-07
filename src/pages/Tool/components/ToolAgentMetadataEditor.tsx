@@ -37,6 +37,7 @@ import {
 import type { ToolParameter } from '../toolSchema';
 import type { ToolFormValues } from '../useTools';
 import CommaSeparatedInput from './CommaSeparatedInput';
+import ToolDraftReviewEditor from './ToolDraftReviewEditor';
 
 type ToolAgentMetadataEditorProps = {
   form: FormInstance<ToolFormValues>;
@@ -252,6 +253,7 @@ export default function ToolAgentMetadataEditor({
       mode,
       priority: defaultPriorityForMode(mode),
       isMutation: mode === 'WRITE',
+      ...(mode !== 'WRITE' ? { draftReview: null } : {}),
     });
   };
 
@@ -482,6 +484,7 @@ export default function ToolAgentMetadataEditor({
               </span>
             ) : null
           }
+          hidden={agentMetadata?.mode === 'WRITE'}
         >
           <Select
             mode="multiple"
@@ -681,6 +684,16 @@ export default function ToolAgentMetadataEditor({
             })}
           />
         </Form.Item>
+
+        {agentMetadata?.mode === 'WRITE' ? (
+          <ToolDraftReviewEditor
+            disabled={disabled}
+            parameters={watchedParameters}
+            businessFieldOptions={businessFieldOptions}
+            hasInputParameters={hasInputParameters}
+            isCreateMode={isCreateMode}
+          />
+        ) : null}
       </div>
     </section>
   );

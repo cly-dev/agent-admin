@@ -1,9 +1,17 @@
 import type {
   AgentMetadata,
+  DraftReviewEditMode,
+  DraftReviewFieldOverride,
+  DraftReviewFieldRole,
+  DraftReviewFieldWidget,
+  DraftReviewPolicy,
   ParamFormatHint,
   ToolAgentMode,
 } from '@/types/tool-agent-metadata';
 import {
+  DRAFT_REVIEW_EDIT_MODES,
+  DRAFT_REVIEW_FIELD_ROLES,
+  DRAFT_REVIEW_FIELD_WIDGETS,
   OPERATION_TYPE_OPTIONS,
   RESOURCE_TYPE_OPTIONS,
   TOOL_MODE_OPTIONS,
@@ -58,6 +66,11 @@ export const AGENT_METADATA_TEMPLATES: Record<
     priority: 200,
     isMutation: true,
     paramFormatHints: [],
+    draftReview: {
+      editMode: 'preview_only',
+      submitPath: 'price',
+      lockedPaths: ['skuId'],
+    },
   },
   productCreate: {
     mode: 'WRITE',
@@ -69,6 +82,11 @@ export const AGENT_METADATA_TEMPLATES: Record<
     priority: 200,
     isMutation: true,
     paramFormatHints: [],
+    draftReview: {
+      editMode: 'allowlisted_fields',
+      submitPath: 'content',
+      editablePaths: ['title', 'content'],
+    },
   },
 };
 
@@ -109,6 +127,152 @@ function normalizeStringArray(value: unknown): string[] {
     return [];
   }
   return value.map((item) => String(item ?? '').trim()).filter(Boolean);
+}
+
+function normalizeDraftReviewEnum<T extends string>(
+  value: unknown,
+  options: readonly T[],
+): T | undefined {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  return options.includes(normalized as T) ? (normalized as T) : undefined;
+}
+
+export function normalizeDraftReviewFieldOverrides(
+  value: unknown,
+): DraftReviewFieldOverride[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .map((item) => {
+      if (typeof item !== 'object' || item === null) {
+        return null;
+      }
+      const record = item as Record<string, unknown>;
+      const path = String(record.path ?? '').trim();
+      if (!path) {
+        return null;
+      }
+      const role = normalizeDraftReviewEnum(
+        record.role,
+        DRAFT_REVIEW_FIELD_ROLES,
+      ) as DraftReviewFieldRole | undefined;
+      const widget = normalizeDraftReviewEnum(
+        record.widget,
+        DRAFT_REVIEW_FIELD_WIDGETS,
+      ) as DraftReviewFieldWidget | undefined;
+      const label =
+        typeof record.label === 'string' ? record.label.trim() : undefined;
+      const reason =
+        typeof record.reason === 'string' ? record.reason.trim() : undefined;
+      return {
+        path,
+        ...(role ? { role } : {}),
+        ...(label ? { label } : {}),
+        ...(reason ? { reason } : {}),
+        ...(widget ? { widget } : {}),
+      };
+    })
+    .filter((item): item is DraftReviewFieldOverride => item !== null);
+}
+
+export function normalizeDraftReviewPolicy(
+  value: unknown,
+): DraftReviewPolicy | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  const record = value as Record<string, unknown>;
+  const editMode = normalizeDraftReviewEnum(
+    record.editMode,
+    DRAFT_REVIEW_EDIT_MODES,
+  ) as DraftReviewEditMode | undefined;
+  const submitPath =
+    typeof record.submitPath === 'string' ? record.submitPath.trim() : '';
+  const editablePaths = normalizeStringArray(record.editablePaths);
+  const lockedPaths = normalizeStringArray(record.lockedPaths);
+  const fieldOverrides = normalizeDraftReviewFieldOverrides(
+    record.fieldOverrides,
+  );
+  const allowArgumentsPatch =
+    typeof record.allowArgumentsPatch === 'boolean'
+      ? record.allowArgumentsPatch
+      : undefined;
+
+  if (
+    !editMode &&
+    !submitPath &&
+    editablePaths.length === 0 &&
+    lockedPaths.length === 0 &&
+    fieldOverrides.length === 0 &&
+    allowArgumentsPatch === undefined
+  ) {
+    return null;
+  }
+
+  return {
+    ...(editMode ? { editMode } : {}),
+    ...(submitPath ? { submitPath } : {}),
+    ...(editablePaths.length > 0 ? { editablePaths } : {}),
+    ...(lockedPaths.length > 0 ? { lockedPaths } : {}),
+    ...(fieldOverrides.length > 0 ? { fieldOverrides } : {}),
+    ...(allowArgumentsPatch !== undefined ? { allowArgumentsPatch } : {}),
+  };
+}
+
+export function isDraftReviewPolicyEmpty(
+  policy: DraftReviewPolicy | null | undefined,
+): boolean {
+  if (!policy) {
+    return true;
+  }
+  return normalizeDraftReviewPolicy(policy) === null;
+}
+
+export function defaultDraftReviewPolicy(): DraftReviewPolicy {
+  return { editMode: 'preview_only' };
+}
+
+export function buildDraftReviewForPersist(
+  raw: DraftReviewPolicy | null | undefined,
+): DraftReviewPolicy | undefined {
+  const normalized = normalizeDraftReviewPolicy(raw);
+  if (!normalized) {
+    return undefined;
+  }
+
+  const fieldOverrides = normalized.fieldOverrides
+    ?.map((item) => {
+      const path = item.path.trim();
+      const label = item.label?.trim();
+      if (!path) {
+        return null;
+      }
+      return label ? { path, label } : { path };
+    })
+    .filter((item): item is { path: string; label?: string } => item !== null);
+
+  const result: DraftReviewPolicy = {
+    ...(normalized.editMode ? { editMode: normalized.editMode } : {}),
+    ...(normalized.submitPath ? { submitPath: normalized.submitPath } : {}),
+    ...(normalized.editablePaths && normalized.editablePaths.length > 0
+      ? { editablePaths: normalized.editablePaths }
+      : {}),
+    ...(normalized.lockedPaths && normalized.lockedPaths.length > 0
+      ? { lockedPaths: normalized.lockedPaths }
+      : {}),
+    ...(fieldOverrides && fieldOverrides.length > 0
+      ? { fieldOverrides }
+      : {}),
+  };
+
+  return Object.keys(result).length > 0 ? result : undefined;
 }
 
 /** 逗号（中英文）分隔字符串 → 数组 */
@@ -195,6 +359,7 @@ export function normalizeAgentMetadata(raw: unknown): AgentMetadata | null {
     priority,
     isMutation: mode === 'WRITE',
     paramFormatHints: normalizeParamFormatHints(item.paramFormatHints),
+    draftReview: normalizeDraftReviewPolicy(item.draftReview),
   };
 }
 
@@ -418,6 +583,78 @@ export function buildParamNameOptionsFromParameters(
     });
 }
 
+export function buildStringParamOptionsFromParameters(
+  parameters: ToolParameter[],
+): Array<{ value: string; label: string }> {
+  return buildParamNameOptionsFromParameters(
+    parameters.filter((param) => param.type === 'string'),
+  );
+}
+
+export type DraftReviewSimpleMode =
+  | 'content_only'
+  | 'allowlisted'
+  | 'readonly_confirm';
+
+export function deriveDraftReviewSimpleMode(
+  policy: DraftReviewPolicy | null | undefined,
+): DraftReviewSimpleMode {
+  if (!policy) {
+    return 'content_only';
+  }
+  const editMode = policy.editMode ?? 'preview_only';
+  const submitPath = policy.submitPath?.trim() ?? '';
+  const lockedPaths = policy.lockedPaths ?? [];
+  if (editMode === 'allowlisted_fields') {
+    return 'allowlisted';
+  }
+  if (
+    editMode === 'preview_only' &&
+    submitPath &&
+    lockedPaths.includes(submitPath)
+  ) {
+    return 'readonly_confirm';
+  }
+  return 'content_only';
+}
+
+export function applyDraftReviewSimpleMode(
+  mode: DraftReviewSimpleMode,
+  draftReview: DraftReviewPolicy,
+): DraftReviewPolicy {
+  const submitPath = draftReview.submitPath?.trim() ?? '';
+  const lockedPaths = (draftReview.lockedPaths ?? []).filter(
+    (path) => path !== submitPath,
+  );
+
+  if (mode === 'allowlisted') {
+    return {
+      ...draftReview,
+      editMode: 'allowlisted_fields',
+      lockedPaths: lockedPaths.length > 0 ? lockedPaths : undefined,
+    };
+  }
+
+  if (mode === 'readonly_confirm') {
+    const nextLocked = submitPath
+      ? [...new Set([...lockedPaths, submitPath])]
+      : lockedPaths;
+    return {
+      ...draftReview,
+      editMode: 'preview_only',
+      editablePaths: undefined,
+      lockedPaths: nextLocked.length > 0 ? nextLocked : undefined,
+    };
+  }
+
+  return {
+    ...draftReview,
+    editMode: 'preview_only',
+    editablePaths: undefined,
+    lockedPaths: lockedPaths.length > 0 ? lockedPaths : undefined,
+  };
+}
+
 /** 与服务端 deriveDecisionRoleFromAgentMetadata 规则对齐（只读展示） */
 export function deriveDecisionRoleFromAgentMetadata(
   meta: AgentMetadata,
@@ -489,6 +726,14 @@ export function buildAgentMetadataForPersist(
     ? priorityRaw
     : defaultPriorityForMode(mode);
 
+  const paramFormatHints = normalizeParamFormatHints(raw.paramFormatHints).filter(
+    (item) => item.param && item.hint,
+  );
+  const draftReview =
+    mode === 'WRITE'
+      ? buildDraftReviewForPersist(raw.draftReview ?? undefined)
+      : undefined;
+
   return {
     mode,
     resource,
@@ -498,9 +743,8 @@ export function buildAgentMetadataForPersist(
     examples: normalizeStringArray(raw.examples),
     priority,
     isMutation: mode === 'WRITE',
-    paramFormatHints: normalizeParamFormatHints(raw.paramFormatHints).filter(
-      (item) => item.param && item.hint,
-    ),
+    paramFormatHints,
+    ...(draftReview ? { draftReview } : {}),
   };
 }
 

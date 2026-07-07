@@ -39,6 +39,47 @@ export interface ParamFormatHint {
   example?: string;
 }
 
+export const DRAFT_REVIEW_EDIT_MODES = [
+  'preview_only',
+  'allowlisted_fields',
+  'full',
+] as const;
+export type DraftReviewEditMode = (typeof DRAFT_REVIEW_EDIT_MODES)[number];
+
+export const DRAFT_REVIEW_FIELD_ROLES = [
+  'content',
+  'identifier',
+  'scenario',
+  'enum',
+  'system',
+] as const;
+export type DraftReviewFieldRole = (typeof DRAFT_REVIEW_FIELD_ROLES)[number];
+
+export const DRAFT_REVIEW_FIELD_WIDGETS = [
+  'text',
+  'textarea',
+  'select',
+  'hidden',
+] as const;
+export type DraftReviewFieldWidget = (typeof DRAFT_REVIEW_FIELD_WIDGETS)[number];
+
+export type DraftReviewFieldOverride = {
+  path: string;
+  role?: DraftReviewFieldRole;
+  label?: string;
+  reason?: string;
+  widget?: DraftReviewFieldWidget;
+};
+
+export type DraftReviewPolicy = {
+  editMode?: DraftReviewEditMode;
+  submitPath?: string;
+  editablePaths?: string[];
+  lockedPaths?: string[];
+  fieldOverrides?: DraftReviewFieldOverride[];
+  allowArgumentsPatch?: boolean;
+};
+
 export interface AgentMetadata {
   mode: ToolAgentMode;
   resource: ToolAgentResource;
@@ -49,4 +90,6 @@ export interface AgentMetadata {
   priority: number;
   isMutation: boolean;
   paramFormatHints: ParamFormatHint[];
+  /** WRITE Tool 草稿评审策略（C 端写确认 / 审批收件箱） */
+  draftReview?: DraftReviewPolicy | null;
 }

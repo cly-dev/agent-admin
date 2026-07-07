@@ -143,7 +143,7 @@ const SkillPromptMentionEditor: React.FC<SkillPromptMentionEditorProps> = ({
     }
     return '';
   })();
-
+ 
   const editorMinHeight = compact ? 96 : 200;
 
   const toggleHttpTool = (toolId: number) => {

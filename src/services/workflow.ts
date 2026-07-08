@@ -1,3 +1,5 @@
+import { parseWorkflowNodes } from '@/pages/Workflow/workflowShared';
+import type { PageResult } from '@/types/integration';
 import type {
   CreateWorkflowDto,
   UpdateWorkflowDto,
@@ -6,11 +8,11 @@ import type {
   WorkflowListQuery,
   WorkflowPresetCatalogEntry,
   WorkflowRevision,
+  WorkflowRevisionListQuery,
+  WorkflowRevisionSummary,
 } from '@/types/workflow';
-import type { PageResult } from '@/types/integration';
 import { normalizePageResult } from '@/utils/api-page';
 import { http } from '@/utils/request';
-import { parseWorkflowNodes } from '@/pages/Workflow/workflowShared';
 
 const WORKFLOW_BASE = 'admin/workflow';
 
@@ -96,10 +98,13 @@ function normalizeHostToolBinding(raw: unknown) {
             id: Number((hostToolRaw as Record<string, unknown>).id),
             name: String((hostToolRaw as Record<string, unknown>).name ?? ''),
             pageScope:
-              typeof (hostToolRaw as Record<string, unknown>).pageScope === 'string'
+              typeof (hostToolRaw as Record<string, unknown>).pageScope ===
+              'string'
                 ? ((hostToolRaw as Record<string, unknown>).pageScope as string)
-                : typeof (hostToolRaw as Record<string, unknown>).page_scope === 'string'
-                  ? ((hostToolRaw as Record<string, unknown>).page_scope as string)
+                : typeof (hostToolRaw as Record<string, unknown>).page_scope ===
+                    'string'
+                  ? ((hostToolRaw as Record<string, unknown>)
+                      .page_scope as string)
                   : null,
             definitionKey: String(
               (hostToolRaw as Record<string, unknown>).definitionKey ??
@@ -143,7 +148,11 @@ function normalizeWorkflowBase(item: Record<string, unknown>) {
           ? null
           : null,
     goal:
-      typeof item.goal === 'string' ? item.goal : item.goal === null ? null : null,
+      typeof item.goal === 'string'
+        ? item.goal
+        : item.goal === null
+          ? null
+          : null,
     profile: String(item.profile ?? 'shared'),
     deliverable: String(item.deliverable ?? 'answer'),
     nodes,
@@ -199,13 +208,17 @@ export function normalizeWorkflowRevision(raw: unknown): WorkflowRevision {
   const item = unwrapPayload(raw);
   const id = Number(item.id);
   const workflowId = Number(item.workflowId ?? item.workflow_id);
+  const constraintsRaw = item.constraints;
+  const constraints = Array.isArray(constraintsRaw)
+    ? constraintsRaw.map((c) => String(c))
+    : [];
   return {
     id,
     workflowId,
     version: Number(item.version ?? 0),
     deliverable: String(item.deliverable ?? ''),
     nodes: parseWorkflowNodes(item.nodes),
-    constraints: item.constraints ?? null,
+    constraints,
     changeNote:
       typeof item.changeNote === 'string'
         ? item.changeNote
@@ -213,6 +226,54 @@ export function normalizeWorkflowRevision(raw: unknown): WorkflowRevision {
           ? item.change_note
           : null,
     createdAt: String(item.createdAt ?? item.created_at ?? ''),
+    isCurrent: normalizeBoolean(item.isCurrent ?? item.is_current ?? false),
+  };
+}
+
+export function normalizeWorkflowRevisionSummary(
+  raw: unknown,
+): WorkflowRevisionSummary {
+  const item = unwrapPayload(raw);
+  return {
+    id: Number(item.id),
+    workflowId: Number(item.workflowId ?? item.workflow_id),
+    version: Number(item.version ?? 0),
+    deliverable: String(item.deliverable ?? ''),
+    changeNote:
+      typeof item.changeNote === 'string'
+        ? item.changeNote
+        : typeof item.change_note === 'string'
+          ? item.change_note
+          : null,
+    createdAt: String(item.createdAt ?? item.created_at ?? ''),
+    isCurrent: normalizeBoolean(item.isCurrent ?? item.is_current ?? false),
+  };
+}
+
+function normalizePresetCatalogEntry(raw: unknown): WorkflowPresetCatalogEntry {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error('Invalid preset catalog entry');
+  }
+  const item = raw as Record<string, unknown>;
+  return {
+    kind: String(item.kind) as WorkflowPresetCatalogEntry['kind'],
+    label: String(item.label ?? ''),
+    description: String(item.description ?? ''),
+    profiles: (Array.isArray(item.profiles) ? item.profiles : []).map(
+      String,
+    ) as WorkflowPresetCatalogEntry['profiles'],
+    requiredConfig: (Array.isArray(item.requiredConfig)
+      ? item.requiredConfig
+      : []
+    ).map(String) as WorkflowPresetCatalogEntry['requiredConfig'],
+    optionalConfig: (Array.isArray(item.optionalConfig)
+      ? item.optionalConfig
+      : []
+    ).map(String) as WorkflowPresetCatalogEntry['optionalConfig'],
+    expandedActions: (Array.isArray(item.expandedActions)
+      ? item.expandedActions
+      : []
+    ).map(String),
   };
 }
 
@@ -231,30 +292,6 @@ export async function WorkflowController_listPresetsCatalog(
   return list.map(normalizePresetCatalogEntry);
 }
 
-function normalizePresetCatalogEntry(raw: unknown): WorkflowPresetCatalogEntry {
-  if (typeof raw !== 'object' || raw === null) {
-    throw new Error('Invalid preset catalog entry');
-  }
-  const item = raw as Record<string, unknown>;
-  return {
-    kind: String(item.kind) as WorkflowPresetCatalogEntry['kind'],
-    label: String(item.label ?? ''),
-    description: String(item.description ?? ''),
-    profiles: (Array.isArray(item.profiles) ? item.profiles : []).map(
-      String,
-    ) as WorkflowPresetCatalogEntry['profiles'],
-    requiredConfig: (Array.isArray(item.requiredConfig) ? item.requiredConfig : []).map(
-      String,
-    ) as WorkflowPresetCatalogEntry['requiredConfig'],
-    optionalConfig: (Array.isArray(item.optionalConfig) ? item.optionalConfig : []).map(
-      String,
-    ) as WorkflowPresetCatalogEntry['optionalConfig'],
-    expandedActions: (Array.isArray(item.expandedActions) ? item.expandedActions : []).map(
-      String,
-    ),
-  };
-}
-
 export async function WorkflowController_findByAppClient(
   appClientId: number,
   query: WorkflowListQuery = {},
@@ -266,7 +303,9 @@ export async function WorkflowController_findByAppClient(
   return normalizePageResult(raw, normalizeWorkflowListItem);
 }
 
-export async function WorkflowController_findOne(id: number): Promise<Workflow> {
+export async function WorkflowController_findOne(
+  id: number,
+): Promise<Workflow> {
   const raw = await http.get<unknown>(`${WORKFLOW_BASE}/${id}`);
   return normalizeWorkflow(raw);
 }
@@ -288,13 +327,24 @@ export async function WorkflowController_update(
 
 export async function WorkflowController_listRevisions(
   id: number,
-): Promise<WorkflowRevision[]> {
-  const raw = await http.get(`${WORKFLOW_BASE}/${id}/revisions`);
+  query: WorkflowRevisionListQuery = {},
+): Promise<WorkflowRevisionSummary[]> {
+  const raw = await http.get(`${WORKFLOW_BASE}/${id}/revisions`, query);
   const payload = unwrapPayload(raw);
   const list = Array.isArray(payload)
     ? payload
     : Array.isArray(payload.list)
       ? payload.list
       : [];
-  return list.map(normalizeWorkflowRevision);
+  return list.map(normalizeWorkflowRevisionSummary);
+}
+
+export async function WorkflowController_getRevision(
+  workflowId: number,
+  version: number,
+): Promise<WorkflowRevision> {
+  const raw = await http.get<unknown>(
+    `${WORKFLOW_BASE}/${workflowId}/revisions/${version}`,
+  );
+  return normalizeWorkflowRevision(raw);
 }

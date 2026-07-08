@@ -69,12 +69,18 @@ function RefBadges({
     <div className={styles.refBadges}>
       {skillRefCount > 0 ? (
         <span className={styles.refBadgeSkill}>
-          {intl.formatMessage({ id: 'workflow.list.refSkill' }, { count: skillRefCount })}
+          {intl.formatMessage(
+            { id: 'workflow.list.refSkill' },
+            { count: skillRefCount },
+          )}
         </span>
       ) : null}
       {pageActionRefCount > 0 ? (
         <span className={styles.refBadgePage}>
-          {intl.formatMessage({ id: 'workflow.list.refPage' }, { count: pageActionRefCount })}
+          {intl.formatMessage(
+            { id: 'workflow.list.refPage' },
+            { count: pageActionRefCount },
+          )}
         </span>
       ) : null}
     </div>
@@ -130,8 +136,23 @@ const WorkflowTable: React.FC<WorkflowTableProps> = ({
       key: 'version',
       width: 72,
       align: 'center',
-      render: (value: number) => (
-        <span className={styles.versionBadge}>v{value}</span>
+      render: (value: number, record) => (
+        <span
+          className={styles.versionBadge}
+          title={
+            record.revisionCount
+              ? intl.formatMessage(
+                  { id: 'workflow.list.revisionCount' },
+                  { count: record.revisionCount },
+                )
+              : undefined
+          }
+        >
+          v{value}
+          {record.revisionCount && record.revisionCount > 1
+            ? ` · ${record.revisionCount}`
+            : ''}
+        </span>
       ),
     },
     {

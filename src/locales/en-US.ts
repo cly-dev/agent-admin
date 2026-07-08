@@ -1482,6 +1482,17 @@ export default {
   'workflow.detail.changeNote': 'Change note',
   'workflow.detail.changeNotePlaceholder': 'Describe node changes (optional)',
   'workflow.detail.revisions': 'Revision history',
+  'workflow.detail.revisionCount': 'Revision count',
+  'workflow.revision.selectorHint':
+    'Switch versions to preview historical node snapshots read-only; does not change the live definition.',
+  'workflow.revision.optionCurrent': '{label} (current)',
+  'workflow.revision.readonlyBanner':
+    'Viewing historical version v{version} (read-only)',
+  'workflow.revision.backToCurrent': 'Back to current',
+  'workflow.revision.loadFailed': 'Failed to load revision snapshot',
+  'workflow.revision.readonlySave':
+    'Historical versions are read-only. Return to current before saving.',
+  'workflow.list.revisionCount': '{count} revision snapshots',
   'workflow.form.createSubmit': 'Create',
   'workflow.form.workflowKeyRequired': 'workflowKey is required',
   'workflow.form.nameRequired': 'Name is required',
@@ -1525,7 +1536,9 @@ export default {
   'workflow.binding.version': 'Pin version (optional)',
   'workflow.binding.versionPlaceholder': 'Leave empty for latest',
   'workflow.binding.versionHint':
-    'Pin workflowVersion to avoid auto-upgrading when the asset is published.',
+    'Leave empty to follow the latest workflow version; pick a revision to pin.',
+  'workflow.binding.pinnedStale':
+    'Pinned to historical v{version}; will not auto-follow the latest workflow.',
   'workflow.binding.overrides': 'Node overrides (workflowOverrides)',
   'workflow.binding.overridesPlaceholder': '{"answer":{"objective":"..."}}',
   'workflow.binding.manageAssets': 'Manage workflow assets',
@@ -2029,7 +2042,8 @@ export default {
     'How much users may change before confirming.',
   'tool.agentMetadata.draftReview.simpleMode.content_only': 'Body text only',
   'tool.agentMetadata.draftReview.simpleMode.allowlisted': 'Allowlisted fields',
-  'tool.agentMetadata.draftReview.simpleMode.readonly_confirm': 'Read-only confirm',
+  'tool.agentMetadata.draftReview.simpleMode.readonly_confirm':
+    'Read-only confirm',
   'tool.agentMetadata.draftReview.simpleModeHint.content_only':
     'Users may edit only the body field (step 3); other params stay locked.',
   'tool.agentMetadata.draftReview.simpleModeHint.allowlisted':
@@ -2044,7 +2058,8 @@ export default {
   'tool.agentMetadata.draftReview.step.submitPath': 'Body field',
   'tool.agentMetadata.draftReview.step.submitPathHint':
     'String param for body text users edit or preview (e.g. content, body.reply).',
-  'tool.agentMetadata.draftReview.step.submitPathPlaceholder': 'Select body field',
+  'tool.agentMetadata.draftReview.step.submitPathPlaceholder':
+    'Select body field',
   'tool.agentMetadata.draftReview.step.submitPathEmpty':
     'Add string parameters in inputSchema first.',
   'tool.agentMetadata.draftReview.step.readonlySubmitNote':
@@ -2052,7 +2067,8 @@ export default {
   'tool.agentMetadata.draftReview.step.fieldLabels': 'Field labels (optional)',
   'tool.agentMetadata.draftReview.step.fieldLabelsHint':
     'Chinese display names for C-end; avoids raw parameter names.',
-  'tool.agentMetadata.draftReview.step.fieldLabelPlaceholder': 'e.g. Reply content',
+  'tool.agentMetadata.draftReview.step.fieldLabelPlaceholder':
+    'e.g. Reply content',
   'tool.agentMetadata.draftReview.fieldOverridesEmpty': 'None yet — add below',
   'tool.agentMetadata.draftReview.fieldOverridesAdd': 'Add field label',
   'tool.agentMetadata.draftReview.override.path': 'Parameter',

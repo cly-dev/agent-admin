@@ -124,9 +124,26 @@ export type WorkflowRevision = {
   version: number;
   deliverable: string;
   nodes: WorkflowNodeDef[];
-  constraints: unknown;
+  constraints: string[];
   changeNote: string | null;
   createdAt: string;
+  isCurrent?: boolean;
+};
+
+export type WorkflowRevisionSummary = Pick<
+  WorkflowRevision,
+  | 'id'
+  | 'workflowId'
+  | 'version'
+  | 'deliverable'
+  | 'changeNote'
+  | 'createdAt'
+  | 'isCurrent'
+>;
+
+export type WorkflowRevisionListQuery = {
+  summary?: boolean;
+  limit?: number;
 };
 
 export type WorkflowToolBindingDto = {

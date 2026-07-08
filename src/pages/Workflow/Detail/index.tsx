@@ -3,9 +3,19 @@ import ContentEmpty from '@/components/ContentEmpty';
 import {
   WORKFLOW_DELIVERABLE_OPTIONS,
   WORKFLOW_PROFILE_OPTIONS,
+  formatWorkflowRevisionLabel,
 } from '@/pages/Workflow/workflowShared';
 import { useIntl } from '@umijs/max';
-import { Collapse, Form, Input, InputNumber, Segmented, Select, Switch } from 'antd';
+import {
+  Alert,
+  Collapse,
+  Form,
+  Input,
+  InputNumber,
+  Segmented,
+  Select,
+  Switch,
+} from 'antd';
 import WorkflowFlowCanvas from '../components/WorkflowFlowCanvas';
 import WorkflowPresetPanel from '../components/WorkflowPresetPanel';
 import WorkflowRequiredBindingsPanel from '../components/WorkflowRequiredBindingsPanel';
@@ -30,19 +40,29 @@ const WorkflowDetailPage: React.FC = () => {
     setPresetForm,
     presetCatalog,
     catalogLoading,
-    nodes,
     setNodes,
+    displayNodes,
     toolRows,
     hostToolRows,
     tools,
     hostTools,
     toolsLoading,
-    revisions,
+    revisionSummaries,
+    selectedVersion,
+    revisionSnapshot,
+    revisionLoading,
+    isViewingHistory,
+    handleVersionSelect,
+    resetToCurrentVersion,
     handleToolRequiredChange,
     handleHostToolRequiredChange,
     handleBack,
     handleSave,
   } = useWorkflowDetail();
+
+  const editingDisabled = saving || isViewingHistory;
+  const activeVersion = workflow?.version ?? null;
+  const viewedVersion = selectedVersion ?? activeVersion;
 
   const subtitle = currentProject?.name
     ? intl.formatMessage(
@@ -59,6 +79,34 @@ const WorkflowDetailPage: React.FC = () => {
           { name: workflow.name },
         )
       : intl.formatMessage({ id: 'workflow.detail.title' });
+
+  const revisionOptions =
+    revisionSummaries.length > 0
+      ? revisionSummaries.map((item) => ({
+          value: item.version,
+          label: item.isCurrent
+            ? intl.formatMessage(
+                { id: 'workflow.revision.optionCurrent' },
+                {
+                  label: formatWorkflowRevisionLabel(
+                    item.version,
+                    item.changeNote,
+                  ),
+                },
+              )
+            : formatWorkflowRevisionLabel(item.version, item.changeNote),
+        }))
+      : activeVersion
+        ? [
+            {
+              value: activeVersion,
+              label: intl.formatMessage(
+                { id: 'workflow.revision.optionCurrent' },
+                { label: `v${activeVersion}` },
+              ),
+            },
+          ]
+        : [];
 
   const basicsCollapseItems = [
     {
@@ -81,7 +129,7 @@ const WorkflowDetailPage: React.FC = () => {
             >
               <Input
                 className="app-input"
-                disabled={isEditMode}
+                disabled={isEditMode || isViewingHistory}
                 placeholder="skill.order.inquiry"
               />
             </Form.Item>
@@ -97,7 +145,7 @@ const WorkflowDetailPage: React.FC = () => {
                 },
               ]}
             >
-              <Input className="app-input" />
+              <Input className="app-input" disabled={isViewingHistory} />
             </Form.Item>
             <Form.Item
               name="profile"
@@ -106,10 +154,12 @@ const WorkflowDetailPage: React.FC = () => {
             >
               <Select
                 className="app-input"
-                disabled={isEditMode}
+                disabled={isEditMode || isViewingHistory}
                 options={WORKFLOW_PROFILE_OPTIONS.map((value) => ({
                   value,
-                  label: intl.formatMessage({ id: `workflow.profile.${value}` }),
+                  label: intl.formatMessage({
+                    id: `workflow.profile.${value}`,
+                  }),
                 }))}
               />
             </Form.Item>
@@ -120,6 +170,7 @@ const WorkflowDetailPage: React.FC = () => {
             >
               <Select
                 className="app-input"
+                disabled={isViewingHistory}
                 options={WORKFLOW_DELIVERABLE_OPTIONS.map((value) => ({
                   value,
                   label: intl.formatMessage({
@@ -130,29 +181,44 @@ const WorkflowDetailPage: React.FC = () => {
             </Form.Item>
           </div>
           <div className={styles.workflowDetailBasicsSecondary}>
-            <Form.Item name="sortOrder" label={intl.formatMessage({ id: 'common.sortOrder' })}>
-              <InputNumber className="app-input w-full" min={0} />
+            <Form.Item
+              name="sortOrder"
+              label={intl.formatMessage({ id: 'common.sortOrder' })}
+            >
+              <InputNumber
+                className="app-input w-full"
+                min={0}
+                disabled={isViewingHistory}
+              />
             </Form.Item>
             <Form.Item
               name="isActive"
               label={intl.formatMessage({ id: 'workflow.column.isActive' })}
               valuePropName="checked"
             >
-              <Switch />
+              <Switch disabled={isViewingHistory} />
             </Form.Item>
             <Form.Item
               name="description"
               label={intl.formatMessage({ id: 'common.description' })}
               className={styles.workflowDetailBasicsWide}
             >
-              <Input.TextArea className="app-input" autoSize={{ minRows: 1, maxRows: 3 }} />
+              <Input.TextArea
+                className="app-input"
+                autoSize={{ minRows: 1, maxRows: 3 }}
+                disabled={isViewingHistory}
+              />
             </Form.Item>
             <Form.Item
               name="goal"
               label={intl.formatMessage({ id: 'workflow.column.goal' })}
               className={styles.workflowDetailBasicsWide}
             >
-              <Input.TextArea className="app-input" autoSize={{ minRows: 1, maxRows: 3 }} />
+              <Input.TextArea
+                className="app-input"
+                autoSize={{ minRows: 1, maxRows: 3 }}
+                disabled={isViewingHistory}
+              />
             </Form.Item>
           </div>
         </div>
@@ -168,7 +234,7 @@ const WorkflowDetailPage: React.FC = () => {
       loading={loading}
       onBack={handleBack}
       onSave={() => void handleSave()}
-      saveDisabled={!projectId || saving}
+      saveDisabled={!projectId || editingDisabled}
       saveLoading={saving}
       saveLabel={intl.formatMessage({
         id: isCreateMode ? 'workflow.form.createSubmit' : 'common.save',
@@ -184,7 +250,34 @@ const WorkflowDetailPage: React.FC = () => {
           })}
         />
       ) : (
-        <Form form={form} layout="vertical" className={styles.workflowDetailLayout}>
+        <Form
+          form={form}
+          layout="vertical"
+          className={styles.workflowDetailLayout}
+        >
+          {isViewingHistory && viewedVersion ? (
+            <Alert
+              type="info"
+              showIcon
+              className={styles.workflowRevisionBanner}
+              message={intl.formatMessage(
+                { id: 'workflow.revision.readonlyBanner' },
+                { version: viewedVersion },
+              )}
+              action={
+                <button
+                  type="button"
+                  className="app-button-secondary px-3 py-1 text-sm font-semibold"
+                  onClick={resetToCurrentVersion}
+                >
+                  {intl.formatMessage({
+                    id: 'workflow.revision.backToCurrent',
+                  })}
+                </button>
+              }
+            />
+          ) : null}
+
           <section className={styles.workflowDetailBasics}>
             <Collapse
               bordered={false}
@@ -198,20 +291,26 @@ const WorkflowDetailPage: React.FC = () => {
               <div className={styles.workflowConfigModeBar}>
                 <Segmented
                   value={configMode}
-                  disabled={saving}
+                  disabled={editingDisabled}
                   options={[
                     {
                       value: 'preset',
-                      label: intl.formatMessage({ id: 'workflow.configMode.preset' }),
+                      label: intl.formatMessage({
+                        id: 'workflow.configMode.preset',
+                      }),
                     },
                     {
                       value: 'nodes',
-                      label: intl.formatMessage({ id: 'workflow.configMode.nodes' }),
+                      label: intl.formatMessage({
+                        id: 'workflow.configMode.nodes',
+                      }),
                     },
                   ]}
-                  onChange={(value) => setConfigMode(value as 'preset' | 'nodes')}
+                  onChange={(value) =>
+                    setConfigMode(value as 'preset' | 'nodes')
+                  }
                 />
-                {configMode === 'preset' && isEditMode ? (
+                {configMode === 'preset' && isEditMode && !isViewingHistory ? (
                   <p className={styles.workflowConfigModeHint}>
                     {intl.formatMessage({ id: 'workflow.preset.rebuildHint' })}
                   </p>
@@ -227,29 +326,31 @@ const WorkflowDetailPage: React.FC = () => {
                   tools={tools}
                   hostTools={hostTools}
                   toolsLoading={toolsLoading}
-                  disabled={saving}
+                  disabled={editingDisabled}
                   onChange={setPresetForm}
                 />
               ) : (
                 <>
                   <WorkflowFlowCanvas
                     profile={profile ?? 'shared'}
-                    nodes={nodes}
+                    nodes={displayNodes}
                     tools={tools}
                     hostTools={hostTools}
                     toolsLoading={toolsLoading}
-                    disabled={saving}
-                    onChange={setNodes}
+                    disabled={editingDisabled}
+                    onChange={isViewingHistory ? () => undefined : setNodes}
                   />
-                  <WorkflowRequiredBindingsPanel
-                    toolRows={toolRows}
-                    hostToolRows={hostToolRows}
-                    tools={tools}
-                    hostTools={hostTools}
-                    disabled={saving}
-                    onToolRequiredChange={handleToolRequiredChange}
-                    onHostToolRequiredChange={handleHostToolRequiredChange}
-                  />
+                  {!isViewingHistory ? (
+                    <WorkflowRequiredBindingsPanel
+                      toolRows={toolRows}
+                      hostToolRows={hostToolRows}
+                      tools={tools}
+                      hostTools={hostTools}
+                      disabled={editingDisabled}
+                      onToolRequiredChange={handleToolRequiredChange}
+                      onHostToolRequiredChange={handleHostToolRequiredChange}
+                    />
+                  ) : null}
                 </>
               )}
             </section>
@@ -262,11 +363,25 @@ const WorkflowDetailPage: React.FC = () => {
                   </h2>
                   <dl className={styles.workflowMetaList}>
                     <div className={styles.workflowMetaItem}>
-                      <dt>{intl.formatMessage({ id: 'workflow.column.version' })}</dt>
+                      <dt>
+                        {intl.formatMessage({ id: 'workflow.column.version' })}
+                      </dt>
                       <dd>v{workflow.version}</dd>
                     </div>
                     <div className={styles.workflowMetaItem}>
-                      <dt>{intl.formatMessage({ id: 'workflow.column.refs' })}</dt>
+                      <dt>
+                        {intl.formatMessage({
+                          id: 'workflow.detail.revisionCount',
+                        })}
+                      </dt>
+                      <dd>
+                        {workflow.revisionCount ?? revisionSummaries.length}
+                      </dd>
+                    </div>
+                    <div className={styles.workflowMetaItem}>
+                      <dt>
+                        {intl.formatMessage({ id: 'workflow.column.refs' })}
+                      </dt>
                       <dd>
                         {intl.formatMessage(
                           { id: 'workflow.column.refsValue' },
@@ -278,14 +393,49 @@ const WorkflowDetailPage: React.FC = () => {
                       </dd>
                     </div>
                     <div className={styles.workflowMetaItem}>
-                      <dt>{intl.formatMessage({ id: 'workflow.column.nodeCount' })}</dt>
-                      <dd>{nodes.length}</dd>
+                      <dt>
+                        {intl.formatMessage({
+                          id: 'workflow.column.nodeCount',
+                        })}
+                      </dt>
+                      <dd>{displayNodes.length}</dd>
                     </div>
                   </dl>
                 </section>
               ) : null}
 
-              {isEditMode ? (
+              {isEditMode && revisionOptions.length > 0 ? (
+                <section className={styles.workflowAsidePanel}>
+                  <h2 className={styles.workflowAsideTitle}>
+                    {intl.formatMessage({ id: 'workflow.detail.revisions' })}
+                  </h2>
+                  <p className={styles.workflowRevisionHint}>
+                    {intl.formatMessage({
+                      id: 'workflow.revision.selectorHint',
+                    })}
+                  </p>
+                  <Select
+                    className="app-input w-full"
+                    loading={revisionLoading}
+                    disabled={revisionLoading}
+                    value={viewedVersion ?? undefined}
+                    options={revisionOptions}
+                    onChange={(version) => void handleVersionSelect(version)}
+                  />
+                  {isViewingHistory && revisionSnapshot?.changeNote ? (
+                    <p className={styles.workflowRevisionNote}>
+                      {revisionSnapshot.changeNote}
+                    </p>
+                  ) : null}
+                  {isViewingHistory && revisionSnapshot?.createdAt ? (
+                    <p className={styles.workflowRevisionDate}>
+                      {revisionSnapshot.createdAt}
+                    </p>
+                  ) : null}
+                </section>
+              ) : null}
+
+              {isEditMode && !isViewingHistory ? (
                 <section className={styles.workflowAsidePanel}>
                   <h2 className={styles.workflowAsideTitle}>
                     {intl.formatMessage({ id: 'workflow.detail.changeNote' })}
@@ -299,25 +449,6 @@ const WorkflowDetailPage: React.FC = () => {
                       })}
                     />
                   </Form.Item>
-                </section>
-              ) : null}
-
-              {revisions.length > 0 ? (
-                <section className={styles.workflowAsidePanel}>
-                  <h2 className={styles.workflowAsideTitle}>
-                    {intl.formatMessage({ id: 'workflow.detail.revisions' })}
-                  </h2>
-                  <ul className={styles.revisionList}>
-                    {revisions.map((revision) => (
-                      <li key={revision.id} className={styles.revisionItem}>
-                        <span className={styles.revisionVersion}>v{revision.version}</span>
-                        <span className={styles.revisionDate}>{revision.createdAt}</span>
-                        {revision.changeNote ? (
-                          <span className={styles.revisionNote}>{revision.changeNote}</span>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
                 </section>
               ) : null}
             </aside>

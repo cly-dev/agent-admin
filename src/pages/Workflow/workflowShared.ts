@@ -55,7 +55,9 @@ export const CHAT_SKILL_ACTIONS: WorkflowActionKind[] = [
   'await_user_confirm',
 ];
 
-export function actionsForProfile(profile: WorkflowProfile | string): WorkflowActionKind[] {
+export function actionsForProfile(
+  profile: WorkflowProfile | string,
+): WorkflowActionKind[] {
   if (profile === 'page_action') {
     return PAGE_ACTION_ACTIONS;
   }
@@ -74,7 +76,9 @@ function defaultLabelForAction(action: WorkflowActionKind): string {
   return action.replace(/_/g, ' ');
 }
 
-export function defaultInputForAction(action: WorkflowActionKind): Record<string, unknown> {
+export function defaultInputForAction(
+  action: WorkflowActionKind,
+): Record<string, unknown> {
   switch (action) {
     case 'load_page_context':
       return { materialize: true };
@@ -123,7 +127,9 @@ export function normalizeWorkflowNode(raw: unknown): WorkflowNodeDef | null {
   }
   const inputRaw = item.input;
   const input =
-    typeof inputRaw === 'object' && inputRaw !== null && !Array.isArray(inputRaw)
+    typeof inputRaw === 'object' &&
+    inputRaw !== null &&
+    !Array.isArray(inputRaw)
       ? (inputRaw as Record<string, unknown>)
       : {};
   return {
@@ -173,7 +179,9 @@ export function extractToolIdsFromNodes(nodes: WorkflowNodeDef[]): number[] {
   return [...ids];
 }
 
-export function extractHostToolIdsFromNodes(nodes: WorkflowNodeDef[]): number[] {
+export function extractHostToolIdsFromNodes(
+  nodes: WorkflowNodeDef[],
+): number[] {
   const ids = new Set<number>();
   for (const node of nodes) {
     if (node.action !== 'generate_and_push') {
@@ -187,7 +195,9 @@ export function extractHostToolIdsFromNodes(nodes: WorkflowNodeDef[]): number[] 
   return [...ids];
 }
 
-export function findPushNodeHostToolId(nodes: WorkflowNodeDef[]): number | null {
+export function findPushNodeHostToolId(
+  nodes: WorkflowNodeDef[],
+): number | null {
   const pushNode = nodes.find((node) => node.action === 'generate_and_push');
   const hostToolId = pushNode?.input?.hostToolId;
   return typeof hostToolId === 'number' && hostToolId > 0 ? hostToolId : null;
@@ -206,7 +216,9 @@ export function hasLoadPageContextNode(nodes: WorkflowNodeDef[]): boolean {
   return nodes.some((node) => node.action === 'load_page_context');
 }
 
-export function isPageContextMutationWorkflow(nodes: WorkflowNodeDef[]): boolean {
+export function isPageContextMutationWorkflow(
+  nodes: WorkflowNodeDef[],
+): boolean {
   return hasLoadPageContextNode(nodes) && hasAwaitUserConfirmNode(nodes);
 }
 
@@ -215,7 +227,9 @@ export function countAwaitUserConfirmNodes(nodes: WorkflowNodeDef[]): number {
 }
 
 /** Tool ids referenced by `write_data` nodes only. */
-export function extractWriteToolIdsFromNodes(nodes: WorkflowNodeDef[]): number[] {
+export function extractWriteToolIdsFromNodes(
+  nodes: WorkflowNodeDef[],
+): number[] {
   const ids = new Set<number>();
   for (const node of nodes) {
     if (node.action !== 'write_data') continue;
@@ -236,7 +250,8 @@ export function syncBindingRowsFromNodes(
     toolRows: extractToolIdsFromNodes(nodes).map((toolId) => ({
       toolId,
       isRequired:
-        existingToolRows.find((row) => row.toolId === toolId)?.isRequired ?? true,
+        existingToolRows.find((row) => row.toolId === toolId)?.isRequired ??
+        true,
       name: existingToolRows.find((row) => row.toolId === toolId)?.name,
     })),
     hostToolRows: extractHostToolIdsFromNodes(nodes).map((hostToolId) => ({
@@ -244,7 +259,8 @@ export function syncBindingRowsFromNodes(
       isRequired:
         existingHostToolRows.find((row) => row.hostToolId === hostToolId)
           ?.isRequired ?? true,
-      name: existingHostToolRows.find((row) => row.hostToolId === hostToolId)?.name,
+      name: existingHostToolRows.find((row) => row.hostToolId === hostToolId)
+        ?.name,
     })),
   };
 }
@@ -318,11 +334,23 @@ export function parseWorkflowOverridesJson(
   }
   try {
     const parsed = JSON.parse(trimmed) as unknown;
-    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      !Array.isArray(parsed)
+    ) {
       return parsed as Record<string, { objective?: string }>;
     }
     return null;
   } catch {
     return null;
   }
+}
+
+export function formatWorkflowRevisionLabel(
+  version: number,
+  changeNote?: string | null,
+): string {
+  const note = changeNote?.trim();
+  return note ? `v${version} · ${note}` : `v${version}`;
 }

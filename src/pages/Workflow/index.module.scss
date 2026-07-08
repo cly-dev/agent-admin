@@ -928,3 +928,27 @@ $workflow-neutral-grid: rgb(15 23 42 / 0.045);
   color: rgb(25 28 30 / 0.72);
   line-height: 1.45;
 }
+
+.workflowRevisionBanner {
+  margin-bottom: 12px;
+}
+
+.workflowRevisionHint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+  line-height: 1.45;
+}
+
+.workflowRevisionNote {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--color-on-surface);
+  line-height: 1.45;
+}
+
+.workflowRevisionDate {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--color-on-surface-variant);
+}

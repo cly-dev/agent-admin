@@ -439,8 +439,7 @@ export default {
   'skill.promptMention.composerTitle': '撰写业务指引',
   'skill.promptMention.composerBadge': '输入 @ 引用 HTTP / 前端工具',
   'skill.promptMention.composerBadgeBound': '输入 @ 引用已绑定工具',
-  'skill.promptMention.bindToolsFirst':
-    '请先在右侧勾选工具，再在此通过 @ 引用',
+  'skill.promptMention.bindToolsFirst': '请先在右侧勾选工具，再在此通过 @ 引用',
   'skill.promptMention.boundToolsLabel': '已 @ 绑定的工具',
   'skill.promptMention.placeholder':
     '描述处理步骤与回复要求。需要调用工具时输入 @，可选择 HTTP 工具或前端工具…',
@@ -1442,6 +1441,16 @@ export default {
   'workflow.detail.changeNote': '变更说明',
   'workflow.detail.changeNotePlaceholder': '描述本次 nodes 变更（可选）',
   'workflow.detail.revisions': '版本历史',
+  'workflow.detail.revisionCount': '历史版本数',
+  'workflow.revision.selectorHint':
+    '切换版本可只读查看历史 nodes 快照，不影响当前生效定义。',
+  'workflow.revision.optionCurrent': '{label}（当前）',
+  'workflow.revision.readonlyBanner': '正在查看历史版本 v{version}（只读预览）',
+  'workflow.revision.backToCurrent': '返回当前版本',
+  'workflow.revision.loadFailed': '加载版本快照失败',
+  'workflow.revision.readonlySave':
+    '历史版本为只读预览，请返回当前版本后再保存',
+  'workflow.list.revisionCount': '共 {count} 个历史快照',
   'workflow.form.createSubmit': '创建',
   'workflow.form.workflowKeyRequired': '请输入 workflowKey',
   'workflow.form.nameRequired': '请输入名称',
@@ -1485,7 +1494,9 @@ export default {
   'workflow.binding.version': 'pin 版本（可选）',
   'workflow.binding.versionPlaceholder': '留空使用最新版',
   'workflow.binding.versionHint':
-    '固定 workflowVersion 可避免资产发版后自动升级。',
+    '留空表示跟随 Workflow 当前最新版本；选择历史版本将 pin 到该快照。',
+  'workflow.binding.pinnedStale':
+    '已 pin 到历史版本 v{version}，不会自动跟随 Workflow 最新版。',
   'workflow.binding.overrides': '节点覆盖（workflowOverrides）',
   'workflow.binding.overridesPlaceholder': '{"answer":{"objective":"..."}}',
   'workflow.binding.manageAssets': '管理 Workflow 资产',

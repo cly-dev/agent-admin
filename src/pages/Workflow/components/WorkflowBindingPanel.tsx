@@ -3,16 +3,19 @@ import { SkillController_replaceTools } from '@/services/skill';
 import {
   WorkflowController_findByAppClient,
   WorkflowController_findOne,
+  WorkflowController_getRevision,
+  WorkflowController_listRevisions,
 } from '@/services/workflow';
 import type {
   WorkflowBindingValue,
   WorkflowListItem,
   WorkflowNodeDef,
+  WorkflowRevisionSummary,
 } from '@/types/workflow';
 import { formatApiErrorMessage } from '@/utils/api-error';
 import { LinkOutlined } from '@ant-design/icons';
 import { Link, useIntl } from '@umijs/max';
-import { Alert, Button, Input, InputNumber, Select, Spin, message } from 'antd';
+import { Alert, Button, Input, Select, Spin, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from '../index.module.scss';
 import {
@@ -21,6 +24,7 @@ import {
   extractToolIdsFromNodes,
   extractWriteToolIdsFromNodes,
   findPushNodeHostToolId,
+  formatWorkflowRevisionLabel,
   hasAwaitUserConfirmNode,
   hasGenerateAndPushNode,
   isPageContextMutationWorkflow,
@@ -68,6 +72,10 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
   const [syncingBindings, setSyncingBindings] = useState(false);
   const [options, setOptions] = useState<WorkflowListItem[]>([]);
   const [workflowNodes, setWorkflowNodes] = useState<WorkflowNodeDef[]>([]);
+  const [revisionOptions, setRevisionOptions] = useState<
+    WorkflowRevisionSummary[]
+  >([]);
+  const [revisionsLoading, setRevisionsLoading] = useState(false);
   const [overridesJson, setOverridesJson] = useState(() =>
     stringifyWorkflowOverrides(value.workflowOverrides ?? undefined),
   );
@@ -118,41 +126,67 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
   useEffect(() => {
     if (!value.workflowId) {
       setWorkflowNodes([]);
+      setRevisionOptions([]);
       onPushHostToolResolved?.(null, false);
       return;
     }
 
     let cancelled = false;
     setDetailLoading(true);
-    void WorkflowController_findOne(value.workflowId)
-      .then((detail) => {
+    setRevisionsLoading(true);
+
+    const loadWorkflowContext = async () => {
+      try {
+        const [detail, revisions] = await Promise.all([
+          WorkflowController_findOne(value.workflowId!),
+          WorkflowController_listRevisions(value.workflowId!, {
+            summary: true,
+            limit: 100,
+          }),
+        ]);
         if (cancelled) {
           return;
         }
-        setWorkflowNodes(detail.nodes);
+        setRevisionOptions(revisions);
+
+        const pinnedVersion = value.workflowVersion;
+        const nodes =
+          pinnedVersion && pinnedVersion !== detail.version
+            ? (
+                await WorkflowController_getRevision(
+                  value.workflowId!,
+                  pinnedVersion,
+                )
+              ).nodes
+            : detail.nodes;
+
+        setWorkflowNodes(nodes);
         if (entry === 'page_action') {
-          const pushHostToolId = findPushNodeHostToolId(detail.nodes);
+          const pushHostToolId = findPushNodeHostToolId(nodes);
           onPushHostToolResolved?.(
             pushHostToolId,
-            hasGenerateAndPushNode(detail.nodes),
+            hasGenerateAndPushNode(nodes),
           );
         }
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) {
           setWorkflowNodes([]);
+          setRevisionOptions([]);
         }
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) {
           setDetailLoading(false);
+          setRevisionsLoading(false);
         }
-      });
+      }
+    };
+
+    void loadWorkflowContext();
 
     return () => {
       cancelled = true;
     };
-  }, [entry, onPushHostToolResolved, value.workflowId]);
+  }, [entry, onPushHostToolResolved, value.workflowId, value.workflowVersion]);
 
   const requiredToolIds = useMemo(
     () => extractToolIdsFromNodes(workflowNodes),
@@ -232,6 +266,13 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
     }
   }, [intl, missingHostToolIds, missingToolIds, skillSync]);
 
+  const pinnedRevision = revisionOptions.find(
+    (item) => item.version === value.workflowVersion,
+  );
+  const isPinnedStale = Boolean(
+    value.workflowVersion && pinnedRevision && !pinnedRevision.isCurrent,
+  );
+
   const workflowOptions = options.map((item) => ({
     value: item.id,
     label: `${item.name} (${item.workflowKey}) v${item.version}`,
@@ -261,10 +302,9 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
           options={workflowOptions}
           notFoundContent={loading ? <Spin size="small" /> : undefined}
           onChange={(workflowId) => {
-            const next = options.find((item) => item.id === workflowId);
             onChange({
               workflowId: workflowId ?? null,
-              workflowVersion: next?.version ?? null,
+              workflowVersion: null,
               workflowOverrides: value.workflowOverrides ?? null,
             });
           }}
@@ -285,12 +325,24 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
                     id: `workflow.profile.${selected.profile}`,
                     defaultMessage: selected.profile,
                   }),
-                  version: selected.version,
+                  version: value.workflowVersion ?? selected.version,
                   nodes: selected.nodeCount,
                 },
               )}
             </span>
           }
+        />
+      ) : null}
+
+      {isPinnedStale && value.workflowVersion ? (
+        <Alert
+          type="warning"
+          showIcon
+          className={styles.workflowBindingAlert}
+          message={intl.formatMessage(
+            { id: 'workflow.binding.pinnedStale' },
+            { version: value.workflowVersion },
+          )}
         />
       ) : null}
 
@@ -428,14 +480,29 @@ const WorkflowBindingPanel: React.FC<WorkflowBindingPanelProps> = ({
         <label className={styles.workflowBindingLabel}>
           {intl.formatMessage({ id: 'workflow.binding.version' })}
         </label>
-        <InputNumber
-          className="app-input w-full"
+        <Select
+          allowClear
+          className="app-input"
           disabled={disabled || !value.workflowId}
-          min={1}
+          loading={revisionsLoading}
           placeholder={intl.formatMessage({
             id: 'workflow.binding.versionPlaceholder',
           })}
           value={value.workflowVersion ?? undefined}
+          options={revisionOptions.map((item) => ({
+            value: item.version,
+            label: item.isCurrent
+              ? intl.formatMessage(
+                  { id: 'workflow.revision.optionCurrent' },
+                  {
+                    label: formatWorkflowRevisionLabel(
+                      item.version,
+                      item.changeNote,
+                    ),
+                  },
+                )
+              : formatWorkflowRevisionLabel(item.version, item.changeNote),
+          }))}
           onChange={(next) =>
             onChange({
               ...value,

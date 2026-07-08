@@ -7,6 +7,7 @@ import { ToolController_findByAppClient } from '@/services/tool';
 import {
   WorkflowController_create,
   WorkflowController_findOne,
+  WorkflowController_getRevision,
   WorkflowController_listPresetsCatalog,
   WorkflowController_listRevisions,
   WorkflowController_update,
@@ -22,6 +23,7 @@ import type {
   WorkflowPresetCatalogEntry,
   WorkflowProfile,
   WorkflowRevision,
+  WorkflowRevisionSummary,
 } from '@/types/workflow';
 import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
@@ -115,7 +117,67 @@ export function useWorkflowDetail() {
   const [tools, setTools] = useState<Tool[]>([]);
   const [hostTools, setHostTools] = useState<HostTool[]>([]);
   const [toolsLoading, setToolsLoading] = useState(false);
-  const [revisions, setRevisions] = useState<WorkflowRevision[]>([]);
+  const [revisionSummaries, setRevisionSummaries] = useState<
+    WorkflowRevisionSummary[]
+  >([]);
+  const [selectedVersion, setSelectedVersion] = useState<number | null>(null);
+  const [revisionSnapshot, setRevisionSnapshot] =
+    useState<WorkflowRevision | null>(null);
+  const [revisionLoading, setRevisionLoading] = useState(false);
+
+  const isViewingHistory =
+    isEditMode &&
+    selectedVersion !== null &&
+    workflow !== null &&
+    selectedVersion !== workflow.version;
+
+  const displayNodes = isViewingHistory
+    ? (revisionSnapshot?.nodes ?? [])
+    : nodes;
+
+  const loadRevisionSummaries = useCallback(async (id: number) => {
+    const list = await WorkflowController_listRevisions(id, {
+      summary: true,
+      limit: 100,
+    });
+    setRevisionSummaries(list);
+    return list;
+  }, []);
+
+  const resetToCurrentVersion = useCallback(() => {
+    setSelectedVersion(null);
+    setRevisionSnapshot(null);
+  }, []);
+
+  const handleVersionSelect = useCallback(
+    async (version: number) => {
+      if (!workflow) {
+        return;
+      }
+      if (version === workflow.version) {
+        resetToCurrentVersion();
+        return;
+      }
+      setRevisionLoading(true);
+      try {
+        const snapshot = await WorkflowController_getRevision(
+          workflow.id,
+          version,
+        );
+        setRevisionSnapshot(snapshot);
+        setSelectedVersion(version);
+      } catch (error: unknown) {
+        message.error(
+          error instanceof Error
+            ? error.message
+            : intl.formatMessage({ id: 'workflow.revision.loadFailed' }),
+        );
+      } finally {
+        setRevisionLoading(false);
+      }
+    },
+    [intl, resetToCurrentVersion, workflow],
+  );
 
   const loadToolOptions = useCallback(async () => {
     if (!projectId) {
@@ -211,8 +273,8 @@ export function useWorkflowDetail() {
         isActive: detail.isActive,
         sortOrder: detail.sortOrder,
       });
-      const revisionList = await WorkflowController_listRevisions(workflowId);
-      setRevisions(revisionList);
+      resetToCurrentVersion();
+      await loadRevisionSummaries(workflowId);
     } catch (error: unknown) {
       message.error(
         error instanceof Error
@@ -223,7 +285,14 @@ export function useWorkflowDetail() {
     } finally {
       setLoading(false);
     }
-  }, [form, intl, isEditMode, workflowId]);
+  }, [
+    form,
+    intl,
+    isEditMode,
+    loadRevisionSummaries,
+    resetToCurrentVersion,
+    workflowId,
+  ]);
 
   const initCreate = useCallback(async () => {
     if (!isCreateMode) {
@@ -234,7 +303,8 @@ export function useWorkflowDetail() {
     setNodes([]);
     setToolRows([]);
     setHostToolRows([]);
-    setRevisions([]);
+    setRevisionSummaries([]);
+    resetToCurrentVersion();
     form.resetFields();
     form.setFieldsValue({
       profile: 'page_action',
@@ -251,6 +321,7 @@ export function useWorkflowDetail() {
     isCreateMode,
     loadPresetCatalog,
     loadToolOptions,
+    resetToCurrentVersion,
   ]);
 
   useEffect(() => {
@@ -358,6 +429,12 @@ export function useWorkflowDetail() {
   };
 
   const handleSave = async () => {
+    if (isViewingHistory) {
+      message.warning(
+        intl.formatMessage({ id: 'workflow.revision.readonlySave' }),
+      );
+      return;
+    }
     if (!projectId) {
       message.warning(intl.formatMessage({ id: 'workflow.selectProject' }));
       return;
@@ -441,10 +518,8 @@ export function useWorkflowDetail() {
         );
         setToolRows(synced.toolRows);
         setHostToolRows(synced.hostToolRows);
-        const revisionList = await WorkflowController_listRevisions(
-          savedWorkflow.id,
-        );
-        setRevisions(revisionList);
+        resetToCurrentVersion();
+        await loadRevisionSummaries(savedWorkflow.id);
         message.success(intl.formatMessage({ id: 'workflow.updated' }));
         history.replace(WORKFLOW_LIST_PATH);
         return;
@@ -530,10 +605,8 @@ export function useWorkflowDetail() {
       );
       setToolRows(synced.toolRows);
       setHostToolRows(synced.hostToolRows);
-      const revisionList = await WorkflowController_listRevisions(
-        savedWorkflow.id,
-      );
-      setRevisions(revisionList);
+      resetToCurrentVersion();
+      await loadRevisionSummaries(savedWorkflow.id);
       message.success(intl.formatMessage({ id: 'workflow.updated' }));
       history.replace(WORKFLOW_LIST_PATH);
     } catch (error: unknown) {
@@ -568,7 +641,14 @@ export function useWorkflowDetail() {
     tools,
     hostTools,
     toolsLoading,
-    revisions,
+    revisionSummaries,
+    selectedVersion,
+    revisionSnapshot,
+    revisionLoading,
+    isViewingHistory,
+    displayNodes,
+    handleVersionSelect,
+    resetToCurrentVersion,
     handleToolRequiredChange,
     handleHostToolRequiredChange,
     handleBack,

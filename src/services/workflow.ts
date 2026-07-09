@@ -325,6 +325,17 @@ export async function WorkflowController_update(
   return normalizeWorkflow(raw);
 }
 
+export async function WorkflowController_remove(
+  id: number,
+): Promise<{ ok: boolean; id: number }> {
+  const raw = await http.delete<unknown>(`${WORKFLOW_BASE}/${id}`);
+  const payload = unwrapPayload(raw);
+  return {
+    ok: normalizeBoolean(payload.ok ?? true),
+    id: Number(payload.id ?? id),
+  };
+}
+
 export async function WorkflowController_listRevisions(
   id: number,
   query: WorkflowRevisionListQuery = {},

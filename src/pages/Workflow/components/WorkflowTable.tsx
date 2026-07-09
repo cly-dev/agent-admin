@@ -1,6 +1,8 @@
 import {
   AppTable,
+  AppTableActions,
   AppTableBooleanStatusCell,
+  AppTableButton,
   AppTableCodeCell,
   AppTableMuted,
   AppTablePrimaryCell,
@@ -19,6 +21,7 @@ type WorkflowTableProps = {
   total: number;
   onPageChange: (page: number, pageSize: number) => void;
   onRowClick: (id: number) => void;
+  onDelete: (record: WorkflowListItem) => void;
 };
 
 function profileClassName(profile: string): string {
@@ -95,6 +98,7 @@ const WorkflowTable: React.FC<WorkflowTableProps> = ({
   total,
   onPageChange,
   onRowClick,
+  onDelete,
 }) => {
   const intl = useIntl();
 
@@ -184,6 +188,25 @@ const WorkflowTable: React.FC<WorkflowTableProps> = ({
           activeLabel={intl.formatMessage({ id: 'common.active' })}
           inactiveLabel={intl.formatMessage({ id: 'common.inactive' })}
         />
+      ),
+    },
+    {
+      title: intl.formatMessage({ id: 'workflow.column.actions' }),
+      key: 'actions',
+      width: 90,
+      align: 'center',
+      render: (_, record) => (
+        <AppTableActions>
+          <AppTableButton
+            variant="danger"
+            onClick={(event) => {
+              event?.stopPropagation?.();
+              onDelete(record);
+            }}
+          >
+            {intl.formatMessage({ id: 'common.delete' })}
+          </AppTableButton>
+        </AppTableActions>
       ),
     },
     {

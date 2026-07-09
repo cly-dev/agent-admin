@@ -35,7 +35,7 @@ export type CreatePageActionDto = {
   actionKey: string;
   name: string;
   description?: string;
-  hostToolId?: number;
+  hostToolId?: number | null;
   pageScope?: string | null;
   systemPrompt: string;
   allowCustomInstruction?: boolean;
@@ -51,7 +51,7 @@ export type CreatePageActionDto = {
 export type UpdatePageActionDto = {
   name?: string;
   description?: string | null;
-  hostToolId?: number;
+  hostToolId?: number | null;
   pageScope?: string | null;
   systemPrompt?: string;
   allowCustomInstruction?: boolean;

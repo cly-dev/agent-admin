@@ -24,6 +24,7 @@ type PageActionTableProps = {
   onEdit: (record: PageAction) => void;
   onToggleActive: (record: PageAction, nextActive: boolean) => void;
   onSortOrderBlur: (record: PageAction, nextSortOrder: number) => void;
+  onDelete: (record: PageAction) => void;
 };
 
 const PageActionTable: React.FC<PageActionTableProps> = ({
@@ -38,6 +39,7 @@ const PageActionTable: React.FC<PageActionTableProps> = ({
   onEdit,
   onToggleActive,
   onSortOrderBlur,
+  onDelete,
 }) => {
   const intl = useIntl();
 
@@ -143,7 +145,7 @@ const PageActionTable: React.FC<PageActionTableProps> = ({
     {
       title: intl.formatMessage({ id: 'pageAction.column.actions' }),
       key: 'actions',
-      width: 160,
+      width: 220,
       fixed: 'right',
       render: (_: unknown, record) => (
         <AppTableActions>
@@ -152,6 +154,9 @@ const PageActionTable: React.FC<PageActionTableProps> = ({
           </AppTableButton>
           <AppTableButton variant="edit" onClick={() => onEdit(record)}>
             {intl.formatMessage({ id: 'common.edit' })}
+          </AppTableButton>
+          <AppTableButton variant="danger" onClick={() => onDelete(record)}>
+            {intl.formatMessage({ id: 'common.delete' })}
           </AppTableButton>
         </AppTableActions>
       ),

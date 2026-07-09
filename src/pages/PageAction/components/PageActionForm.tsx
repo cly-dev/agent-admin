@@ -1,5 +1,5 @@
-import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
 import PageScopeSelect from '@/components/PageScopeSelect';
+import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
 import type { HostTool } from '@/types/host-tool';
 import type { WorkflowBindingValue } from '@/types/workflow';
 import {
@@ -460,7 +460,9 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
             editingActionKey={editingActionKey}
             projectId={projectId}
             currentPageScope={
-              typeof currentPageScope === 'string' ? currentPageScope : undefined
+              typeof currentPageScope === 'string'
+                ? currentPageScope
+                : undefined
             }
             onActionKeyBlur={onActionKeyBlur}
           />
@@ -491,7 +493,6 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
               hostTools={hostTools}
               hostToolsLoading={hostToolsLoading}
               onHostToolChange={onHostToolChange}
-              required
             />
           </FormPanel>
         ) : (

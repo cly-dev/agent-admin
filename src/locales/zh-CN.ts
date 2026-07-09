@@ -1157,6 +1157,8 @@ export default {
   'pageAction.created': 'PageAction 已创建',
   'pageAction.updated': 'PageAction 已更新',
   'pageAction.actionFailed': '操作失败',
+  'pageAction.deleted': 'PageAction 已删除',
+  'pageAction.deleteFailed': '删除 PageAction 失败',
   'pageAction.empty': '暂无 PageAction',
   'pageAction.empty.noProject.title': '请先选择项目',
   'pageAction.empty.noProject.desc':
@@ -1189,6 +1191,8 @@ export default {
   'pageAction.deactivate.title': '确认下线该能力？',
   'pageAction.deactivate.desc': '「{name}」将从 C 端 catalog 中隐藏。',
   'pageAction.deactivate.confirm': '下线',
+  'pageAction.delete.title': '确认删除该 PageAction？',
+  'pageAction.delete.desc': '删除后「{name}」将无法再被触发。',
   'pageAction.detail.title': 'PageAction 详情',
   'pageAction.detail.createSubtitle': '为项目 {name} 新建前端工具流',
   'pageAction.detail.createSubtitleFallback': '项目 ID：{appClientId}',
@@ -1215,18 +1219,18 @@ export default {
   'pageAction.form.systemPromptTooLong': 'systemPrompt 不能超过 {max} 字符',
   'pageAction.form.insertTemplate': '插入推荐模板',
   'pageAction.form.simpleCreateHint':
-    '请先选择已存在的 HostTool；如不存在，请前往 HostTool 管理页创建后再绑定。',
+    '可选绑定已有 HostTool；如需要，请前往 HostTool 管理页创建后再绑定。',
   'pageAction.form.advancedTitle': '高级：HostTool 绑定',
   'pageAction.form.advancedHint':
     'PageAction 只绑定已有 HostTool，不再支持内联创建工具。',
-  'pageAction.form.hostToolIdLabel': '绑定已有 HostTool',
+  'pageAction.form.hostToolIdLabel': '绑定已有 HostTool（可选）',
   'pageAction.form.hostToolBindSectionTitle': 'HostTool 绑定（可选）',
   'pageAction.form.hostToolBindSectionHint':
     '选择已有 HostTool 后自动带入页面与标识。填表类工具需在 argsSchema 中包含 string 字段（如 text）以支持增量填入。',
   'pageAction.form.hostToolBindHint':
-    '绑定后下方 PageAction 字段会自动填充，仍可手动调整',
+    '可选。绑定后下方 PageAction 字段会自动填充，仍可手动调整',
   'pageAction.form.hostToolRequiredHint':
-    '无 Workflow 的 PageAction 必须绑定已有 HostTool。',
+    '提示词模式建议绑定 HostTool 以支持 C 端填表；留空则仅返回正文。',
   'pageAction.form.hostToolCreateHint':
     '已绑定 HostTool，相关 PageAction 字段已自动填充，请确认 actionKey 与 systemPrompt 后继续保存。',
   'pageAction.form.hostToolApplied': '已根据所选 HostTool 填充 PageAction 配置',
@@ -1407,6 +1411,8 @@ export default {
   'workflow.saveFailed': '保存 Workflow 失败',
   'workflow.created': 'Workflow 已创建',
   'workflow.updated': 'Workflow 已更新',
+  'workflow.deleted': 'Workflow 已删除',
+  'workflow.deleteFailed': '删除 Workflow 失败',
   'workflow.selectProject': '请先选择项目',
   'workflow.column.name': '名称',
   'workflow.column.workflowKey': 'workflowKey',
@@ -1416,6 +1422,7 @@ export default {
   'workflow.column.refs': '引用',
   'workflow.column.refsValue': 'Skill {skills} · PageAction {pageActions}',
   'workflow.column.isActive': '启用',
+  'workflow.column.actions': '操作',
   'workflow.column.deliverable': 'deliverable',
   'workflow.column.goal': '业务目标',
   'workflow.profile.chat_skill': 'Chat Skill',
@@ -1451,6 +1458,8 @@ export default {
   'workflow.revision.readonlySave':
     '历史版本为只读预览，请返回当前版本后再保存',
   'workflow.list.revisionCount': '共 {count} 个历史快照',
+  'workflow.delete.title': '确认删除该 Workflow？',
+  'workflow.delete.desc': '删除后「{name}」的版本历史将不可恢复。',
   'workflow.form.createSubmit': '创建',
   'workflow.form.workflowKeyRequired': '请输入 workflowKey',
   'workflow.form.nameRequired': '请输入名称',

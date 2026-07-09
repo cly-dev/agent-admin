@@ -235,14 +235,6 @@ export function usePageActionForm() {
         );
         return;
       }
-      if (!values.hostToolId) {
-        message.error(
-          intl.formatMessage({
-            id: 'pageAction.form.promptModeHostToolRequired',
-          }),
-        );
-        return;
-      }
     } else if (!workflowBinding.workflowId) {
       message.error(
         intl.formatMessage({ id: 'pageAction.form.workflowModeRequired' }),
@@ -295,13 +287,13 @@ export function usePageActionForm() {
           ...workflowPayload,
         };
 
-        if (configMode === 'prompt') {
+        if (configMode === 'prompt' && values.hostToolId) {
           const boundTool = hostTools.find(
             (tool) => tool.id === values.hostToolId,
           );
           if (!boundTool) {
             message.error(
-              intl.formatMessage({ id: 'pageAction.form.hostToolRequired' }),
+              intl.formatMessage({ id: 'pageAction.error.hostToolNotFound' }),
             );
             return;
           }
@@ -334,17 +326,21 @@ export function usePageActionForm() {
         sortOrder: values.sortOrder,
         ...workflowPayload,
       };
-      if (configMode === 'prompt' && values.hostToolId) {
-        const boundTool = hostTools.find(
-          (tool) => tool.id === values.hostToolId,
-        );
-        if (!boundTool) {
-          message.error(
-            intl.formatMessage({ id: 'pageAction.form.hostToolRequired' }),
+      if (configMode === 'prompt') {
+        if (values.hostToolId) {
+          const boundTool = hostTools.find(
+            (tool) => tool.id === values.hostToolId,
           );
-          return;
+          if (!boundTool) {
+            message.error(
+              intl.formatMessage({ id: 'pageAction.error.hostToolNotFound' }),
+            );
+            return;
+          }
+          payload.hostToolId = values.hostToolId;
+        } else {
+          payload.hostToolId = null;
         }
-        payload.hostToolId = values.hostToolId;
       }
       const updated = await PageActionController_update(record.id, payload);
       setRecord(updated);

@@ -3,21 +3,22 @@ import { useProjectRoute } from '@/hooks/useProjectRoute';
 import {
   PageActionController_findByAppClient,
   PageActionController_findOne,
+  PageActionController_remove,
   PageActionController_update,
 } from '@/services/page-action';
 import type { PageAction } from '@/types/page-action';
-import { Modal, Form, message } from 'antd';
 import { history, useIntl } from '@umijs/max';
+import { Form, Modal, message } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  PAGE_ACTION_CREATE_PATH,
-  buildPageActionEditPath,
-} from './pageActionFormShared';
 import {
   normalizePageActionFilter,
   type PageActionFilterFormValues,
   type PageActionFilterValues,
 } from './pageActionFilter';
+import {
+  PAGE_ACTION_CREATE_PATH,
+  buildPageActionEditPath,
+} from './pageActionFormShared';
 
 export type { PageActionFormValues } from './pageActionFormShared';
 
@@ -156,7 +157,10 @@ export function usePageActionList() {
     setViewing(null);
   };
 
-  const handleToggleActive = async (record: PageAction, nextActive: boolean) => {
+  const handleToggleActive = async (
+    record: PageAction,
+    nextActive: boolean,
+  ) => {
     setToggleSubmittingId(record.id);
     try {
       await PageActionController_update(record.id, { isActive: nextActive });
@@ -173,7 +177,10 @@ export function usePageActionList() {
     }
   };
 
-  const handleSortOrderBlur = async (record: PageAction, nextSortOrder: number) => {
+  const handleSortOrderBlur = async (
+    record: PageAction,
+    nextSortOrder: number,
+  ) => {
     if (!Number.isFinite(nextSortOrder) || nextSortOrder === record.sortOrder) {
       return;
     }
@@ -205,6 +212,39 @@ export function usePageActionList() {
     });
   };
 
+  const confirmDelete = (record: PageAction) => {
+    Modal.confirm({
+      title: intl.formatMessage({ id: 'pageAction.delete.title' }),
+      content: intl.formatMessage(
+        { id: 'pageAction.delete.desc' },
+        { name: record.name },
+      ),
+      okText: intl.formatMessage({ id: 'common.delete' }),
+      okButtonProps: { danger: true },
+      cancelText: intl.formatMessage({ id: 'common.cancel' }),
+      onOk: async () => {
+        try {
+          await PageActionController_remove(record.id);
+          message.success(intl.formatMessage({ id: 'pageAction.deleted' }));
+          const nextPage = list.length <= 1 && page > 1 ? page - 1 : page;
+          void loadList(nextPage, pageSize, appliedFilters);
+        } catch (error: unknown) {
+          if (error instanceof Error && error.message.includes('not found')) {
+            message.success(intl.formatMessage({ id: 'pageAction.deleted' }));
+            const nextPage = list.length <= 1 && page > 1 ? page - 1 : page;
+            void loadList(nextPage, pageSize, appliedFilters);
+            return;
+          }
+          message.error(
+            error instanceof Error
+              ? error.message
+              : intl.formatMessage({ id: 'pageAction.deleteFailed' }),
+          );
+        }
+      },
+    });
+  };
+
   return {
     projectId,
     filterForm,
@@ -228,5 +268,6 @@ export function usePageActionList() {
     handleToggleActive,
     handleSortOrderBlur,
     confirmDeactivate,
+    confirmDelete,
   };
 }

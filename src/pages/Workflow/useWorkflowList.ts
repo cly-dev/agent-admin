@@ -1,9 +1,12 @@
 import { DEFAULT_PAGE_SIZE } from '@/constants/pagination';
 import { useProjectRoute } from '@/hooks/useProjectRoute';
-import { WorkflowController_findByAppClient } from '@/services/workflow';
+import {
+  WorkflowController_findByAppClient,
+  WorkflowController_remove,
+} from '@/services/workflow';
 import type { WorkflowListItem } from '@/types/workflow';
 import { history, useIntl } from '@umijs/max';
-import { Form, message } from 'antd';
+import { Form, Modal, message } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import {
   normalizeWorkflowFilter,
@@ -19,7 +22,9 @@ export function useWorkflowList() {
   const { projectId } = useProjectRoute();
   const [filterForm] = Form.useForm<WorkflowFilterFormValues>();
 
-  const [appliedFilters, setAppliedFilters] = useState<WorkflowFilterValues>({});
+  const [appliedFilters, setAppliedFilters] = useState<WorkflowFilterValues>(
+    {},
+  );
   const [list, setList] = useState<WorkflowListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -91,6 +96,39 @@ export function useWorkflowList() {
     history.push(`/workflow/assets/detail/${id}`);
   };
 
+  const confirmDelete = (record: WorkflowListItem) => {
+    Modal.confirm({
+      title: intl.formatMessage({ id: 'workflow.delete.title' }),
+      content: intl.formatMessage(
+        { id: 'workflow.delete.desc' },
+        { name: record.name },
+      ),
+      okText: intl.formatMessage({ id: 'common.delete' }),
+      okButtonProps: { danger: true },
+      cancelText: intl.formatMessage({ id: 'common.cancel' }),
+      onOk: async () => {
+        try {
+          await WorkflowController_remove(record.id);
+          message.success(intl.formatMessage({ id: 'workflow.deleted' }));
+          const nextPage = list.length <= 1 && page > 1 ? page - 1 : page;
+          void loadList(nextPage, pageSize, appliedFilters);
+        } catch (error: unknown) {
+          if (error instanceof Error && error.message.includes('not found')) {
+            message.success(intl.formatMessage({ id: 'workflow.deleted' }));
+            const nextPage = list.length <= 1 && page > 1 ? page - 1 : page;
+            void loadList(nextPage, pageSize, appliedFilters);
+            return;
+          }
+          message.error(
+            error instanceof Error
+              ? error.message
+              : intl.formatMessage({ id: 'workflow.deleteFailed' }),
+          );
+        }
+      },
+    });
+  };
+
   return {
     projectId,
     filterForm,
@@ -105,5 +143,6 @@ export function useWorkflowList() {
     onPageChange,
     openCreate,
     openDetail,
+    confirmDelete,
   };
 }

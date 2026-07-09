@@ -1191,6 +1191,8 @@ export default {
   'pageAction.created': 'PageAction created',
   'pageAction.updated': 'PageAction updated',
   'pageAction.actionFailed': 'Action failed',
+  'pageAction.deleted': 'PageAction deleted',
+  'pageAction.deleteFailed': 'Failed to delete PageAction',
   'pageAction.empty': 'No PageActions yet',
   'pageAction.empty.noProject.title': 'Select a project',
   'pageAction.empty.noProject.desc':
@@ -1224,6 +1226,9 @@ export default {
   'pageAction.deactivate.desc':
     '"{name}" will disappear from the client catalog.',
   'pageAction.deactivate.confirm': 'Deactivate',
+  'pageAction.delete.title': 'Delete this PageAction?',
+  'pageAction.delete.desc':
+    '"{name}" will no longer be available for invocation.',
   'pageAction.detail.title': 'PageAction detail',
   'pageAction.detail.createSubtitle': 'Create a frontend tool flow for {name}',
   'pageAction.detail.createSubtitleFallback': 'Project ID: {appClientId}',
@@ -1251,18 +1256,18 @@ export default {
     'systemPrompt must be at most {max} characters',
   'pageAction.form.insertTemplate': 'Insert recommended template',
   'pageAction.form.simpleCreateHint':
-    'Select an existing HostTool first. If it does not exist, create it in HostTool management and bind it here.',
+    'Optionally bind an existing HostTool. Create one in HostTool management if needed.',
   'pageAction.form.advancedTitle': 'Advanced: HostTool binding',
   'pageAction.form.advancedHint':
     'PageAction only binds existing HostTools; inline HostTool creation is no longer supported.',
-  'pageAction.form.hostToolIdLabel': 'Bind existing HostTool',
+  'pageAction.form.hostToolIdLabel': 'Bind existing HostTool (optional)',
   'pageAction.form.hostToolBindSectionTitle': 'HostTool binding (optional)',
   'pageAction.form.hostToolBindSectionHint':
     'Selecting a tool auto-fills page and identity fields. Fill tools need a string field in argsSchema (e.g. text) for incremental host_action append.',
   'pageAction.form.hostToolBindHint':
-    'Bound fields are applied to PageAction below and remain editable',
+    'Optional. Bound fields are applied below and remain editable',
   'pageAction.form.hostToolRequiredHint':
-    'PageActions without a Workflow must bind an existing HostTool.',
+    'Recommended for C-end form fill via host_action; leave empty to return text only.',
   'pageAction.form.hostToolCreateHint':
     'HostTool bound — PageAction fields were auto-filled. Review actionKey and systemPrompt before saving.',
   'pageAction.form.hostToolApplied':
@@ -1448,6 +1453,8 @@ export default {
   'workflow.saveFailed': 'Failed to save workflow',
   'workflow.created': 'Workflow created',
   'workflow.updated': 'Workflow updated',
+  'workflow.deleted': 'Workflow deleted',
+  'workflow.deleteFailed': 'Failed to delete workflow',
   'workflow.selectProject': 'Select a project first',
   'workflow.column.name': 'Name',
   'workflow.column.workflowKey': 'workflowKey',
@@ -1457,6 +1464,7 @@ export default {
   'workflow.column.refs': 'References',
   'workflow.column.refsValue': 'Skills {skills} · PageActions {pageActions}',
   'workflow.column.isActive': 'Active',
+  'workflow.column.actions': 'Actions',
   'workflow.column.deliverable': 'Deliverable',
   'workflow.column.goal': 'Goal',
   'workflow.profile.chat_skill': 'Chat skill',
@@ -1493,6 +1501,9 @@ export default {
   'workflow.revision.readonlySave':
     'Historical versions are read-only. Return to current before saving.',
   'workflow.list.revisionCount': '{count} revision snapshots',
+  'workflow.delete.title': 'Delete this workflow?',
+  'workflow.delete.desc':
+    'Version history for "{name}" will be removed and cannot be recovered.',
   'workflow.form.createSubmit': 'Create',
   'workflow.form.workflowKeyRequired': 'workflowKey is required',
   'workflow.form.nameRequired': 'Name is required',

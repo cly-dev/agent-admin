@@ -1,6 +1,6 @@
 import ContentEmpty from '@/components/ContentEmpty';
-import { useProjectRoute } from '@/hooks/useProjectRoute';
 import ListPageHeader from '@/components/ListPageHeader';
+import { useProjectRoute } from '@/hooks/useProjectRoute';
 import { PlusOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { Link, useIntl } from '@umijs/max';
@@ -35,6 +35,7 @@ const PageActionPage: React.FC = () => {
     handleToggleActive,
     handleSortOrderBlur,
     confirmDeactivate,
+    confirmDelete,
   } = usePageActionList();
   const { toPagePath } = useProjectRoute();
 
@@ -106,6 +107,7 @@ const PageActionPage: React.FC = () => {
                   onSortOrderBlur={(record, next) =>
                     void handleSortOrderBlur(record, next)
                   }
+                  onDelete={confirmDelete}
                 />
               )}
             </div>

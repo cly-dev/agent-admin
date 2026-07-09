@@ -1,6 +1,6 @@
 import ContentEmpty from '@/components/ContentEmpty';
-import { useProjectRoute } from '@/hooks/useProjectRoute';
 import ListPageHeader from '@/components/ListPageHeader';
+import { useProjectRoute } from '@/hooks/useProjectRoute';
 import { ApiOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { Link, useIntl } from '@umijs/max';
@@ -27,6 +27,7 @@ const WorkflowPage: React.FC = () => {
     onPageChange,
     openCreate,
     openDetail,
+    confirmDelete,
   } = useWorkflowList();
 
   const showEmptyList = Boolean(projectId) && !loading && list.length === 0;
@@ -40,7 +41,10 @@ const WorkflowPage: React.FC = () => {
             description={intl.formatMessage({ id: 'workflow.subtitle' })}
             meta={
               projectId && total > 0
-                ? intl.formatMessage({ id: 'workflow.list.headerMeta' }, { total })
+                ? intl.formatMessage(
+                    { id: 'workflow.list.headerMeta' },
+                    { total },
+                  )
                 : undefined
             }
             actions={
@@ -68,7 +72,9 @@ const WorkflowPage: React.FC = () => {
           <div className={styles.workflowPageBody}>
             {!projectId ? (
               <ContentEmpty
-                title={intl.formatMessage({ id: 'workflow.empty.noProject.title' })}
+                title={intl.formatMessage({
+                  id: 'workflow.empty.noProject.title',
+                })}
                 description={intl.formatMessage({
                   id: 'workflow.empty.noProject.desc',
                 })}
@@ -88,7 +94,9 @@ const WorkflowPage: React.FC = () => {
                 <div className={styles.workflowListContent}>
                   {showEmptyList ? (
                     <ContentEmpty
-                      title={intl.formatMessage({ id: 'workflow.list.emptyTitle' })}
+                      title={intl.formatMessage({
+                        id: 'workflow.list.emptyTitle',
+                      })}
                       description={intl.formatMessage({
                         id: 'workflow.list.emptyDesc',
                       })}
@@ -112,6 +120,7 @@ const WorkflowPage: React.FC = () => {
                       total={total}
                       onPageChange={onPageChange}
                       onRowClick={openDetail}
+                      onDelete={confirmDelete}
                     />
                   )}
                 </div>

@@ -151,6 +151,17 @@ export async function PageActionController_update(
   return normalizePageAction(raw);
 }
 
+export async function PageActionController_remove(
+  id: number,
+): Promise<{ ok: boolean; id: number }> {
+  const raw = await http.delete<unknown>(`${PAGE_ACTION_BASE}/${id}`);
+  const payload = unwrapPayload(raw);
+  return {
+    ok: normalizeBoolean(payload.ok ?? true),
+    id: Number(payload.id ?? id),
+  };
+}
+
 export async function PageActionController_findOne(
   id: number,
 ): Promise<PageAction> {
@@ -182,11 +193,7 @@ function normalizePageScopeOption(raw: unknown): PageScopeOption | null {
   return {
     scope,
     label:
-      typeof labelRaw === 'string'
-        ? labelRaw
-        : labelRaw === null
-          ? null
-          : null,
+      typeof labelRaw === 'string' ? labelRaw : labelRaw === null ? null : null,
     isActive: normalizeBoolean(item.isActive ?? item.is_active ?? true),
   };
 }

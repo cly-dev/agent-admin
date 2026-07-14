@@ -84,7 +84,10 @@ export function parseMentionHostToolIds(prompt: string): number[] {
 }
 
 /** 提交给后端的业务指引：将 mention markup 转为可读的 @工具名 */
-export function promptMarkupToPlainText(prompt: string): string {
+export function promptMarkupToPlainText(prompt?: string | null): string {
+  if (typeof prompt !== 'string' || !prompt) {
+    return '';
+  }
   return prompt.replace(
     UNIFIED_MENTION_MARKUP_REGEX,
     (_full, display: string) => {

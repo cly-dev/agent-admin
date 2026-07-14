@@ -1,9 +1,6 @@
 import { AppDetailPage } from '@/components/AppDetailHeader';
 import ContentEmpty from '@/components/ContentEmpty';
-import {
-  ApartmentOutlined,
-  FileTextOutlined,
-} from '@ant-design/icons';
+import { ApartmentOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
 import { Alert, Collapse, Form, Input, Select, Switch } from 'antd';
 import type { ReactNode } from 'react';
@@ -129,11 +126,14 @@ const SkillDetailPage: React.FC = () => {
     id: isCreateMode ? 'skill.detail.create' : 'skill.detail.save',
   });
 
-  const editorDisabled = !resolvedAppClientId || appToolsLoading || hostToolsLoading;
+  const editorDisabled =
+    !resolvedAppClientId || appToolsLoading || hostToolsLoading;
 
   const basicsCollapseItems = [
     {
       key: 'basics',
+      // Keep Form.Item mounted while collapsed so fields stay registered for save.
+      forceRender: true,
       label: intl.formatMessage({ id: 'skill.detail.basicInfo' }),
       children: (
         <div className={styles.skillDetailBasicsBody}>
@@ -167,7 +167,9 @@ const SkillDetailPage: React.FC = () => {
               <Form.Item
                 name="agentId"
                 label={intl.formatMessage({ id: 'skill.form.agentOptional' })}
-                extra={intl.formatMessage({ id: 'skill.form.agentOptionalHint' })}
+                extra={intl.formatMessage({
+                  id: 'skill.form.agentOptionalHint',
+                })}
               >
                 <Select
                   allowClear
@@ -264,6 +266,7 @@ const SkillDetailPage: React.FC = () => {
   const advancedCollapseItems = [
     {
       key: 'config',
+      forceRender: true,
       label: intl.formatMessage({ id: 'skill.detail.tab.config' }),
       children: (
         <div className={styles.skillDetailAdvancedBody}>

@@ -15,6 +15,7 @@ const LlmModelConfigPage: React.FC = () => {
     form,
     loading,
     submitting,
+    actionId,
     configs,
     editorOpen,
     editingConfig,
@@ -22,6 +23,8 @@ const LlmModelConfigPage: React.FC = () => {
     openEdit,
     closeEditor,
     handleSave,
+    handleActivate,
+    handleTestConnection,
   } = useLlmModelConfig();
 
   return (
@@ -75,9 +78,14 @@ const LlmModelConfigPage: React.FC = () => {
                 <div className={styles.cardGrid}>
                   {configs.map((config) => (
                     <LlmModelConfigCard
-                      key={config.kind}
+                      key={config.id}
                       config={config}
+                      actionPending={actionId === config.id}
                       onConfigure={openEdit}
+                      onActivate={(item) => void handleActivate(item)}
+                      onTestConnection={(item) =>
+                        void handleTestConnection(item)
+                      }
                     />
                   ))}
                   <button

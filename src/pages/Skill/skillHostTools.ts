@@ -110,9 +110,9 @@ export function hasCustomSkillHostToolConfig(
 }
 
 export function parseArgsTemplateJson(
-  value: string,
+  value?: string | null,
 ): Record<string, unknown> | null | undefined {
-  const trimmed = value.trim();
+  const trimmed = value?.trim();
   if (!trimmed) {
     return undefined;
   }

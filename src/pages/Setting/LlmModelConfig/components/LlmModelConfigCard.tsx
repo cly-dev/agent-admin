@@ -4,13 +4,19 @@ import type {
 } from '@/types/llm-model-config';
 import {
   ApiOutlined,
+  CheckCircleOutlined,
   CloudOutlined,
   DatabaseOutlined,
+  ExperimentOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
 import styles from '../index.module.scss';
-import { KIND_LABEL_IDS, formatBaseUrlHost } from '../llmModelConfigShared';
+import {
+  KIND_LABEL_IDS,
+  formatBaseUrlHost,
+  getContextLengthDisplay,
+} from '../llmModelConfigShared';
 
 const KIND_ICONS: Record<LlmModelConfigKind, React.ReactNode> = {
   chat: <ApiOutlined className="text-lg" />,
@@ -20,18 +26,25 @@ const KIND_ICONS: Record<LlmModelConfigKind, React.ReactNode> = {
 
 type LlmModelConfigCardProps = {
   config: LlmModelConfig;
+  actionPending?: boolean;
   onConfigure: (config: LlmModelConfig) => void;
+  onActivate: (config: LlmModelConfig) => void;
+  onTestConnection: (config: LlmModelConfig) => void;
 };
 
 const LlmModelConfigCard: React.FC<LlmModelConfigCardProps> = ({
   config,
+  actionPending = false,
   onConfigure,
+  onActivate,
+  onTestConnection,
 }) => {
   const intl = useIntl();
   const isDisabled = config.enabled === false;
   const statusLabelId = isDisabled
     ? 'setting.llmModel.status.disabled'
     : 'setting.llmModel.status.enabled';
+  const contextLength = getContextLengthDisplay(config);
 
   return (
     <article
@@ -68,6 +81,7 @@ const LlmModelConfigCard: React.FC<LlmModelConfigCardProps> = ({
                 <span className={styles.modelCardBadge}>
                   {intl.formatMessage({ id: KIND_LABEL_IDS[config.kind] })}
                 </span>
+                <span className={styles.modelCardBadge}>#{config.id}</span>
               </div>
             </div>
           </div>
@@ -88,6 +102,37 @@ const LlmModelConfigCard: React.FC<LlmModelConfigCardProps> = ({
             </dt>
             <dd title={config.baseUrl}>{formatBaseUrlHost(config.baseUrl)}</dd>
           </div>
+          {contextLength ? (
+            <div className={styles.modelCardFact}>
+              <dt>
+                {intl.formatMessage({
+                  id: 'setting.llmModel.field.contextLength',
+                })}
+              </dt>
+              <dd>{contextLength.toLocaleString()}</dd>
+            </div>
+          ) : config.kind === 'chat' ? (
+            <div className={styles.modelCardFact}>
+              <dt>
+                {intl.formatMessage({
+                  id: 'setting.llmModel.field.contextLength',
+                })}
+              </dt>
+              <dd className={styles.modelCardFactWarn}>
+                {intl.formatMessage({
+                  id: 'setting.llmModel.card.contextLengthMissing',
+                })}
+              </dd>
+            </div>
+          ) : null}
+          {config.maxTokens ? (
+            <div className={styles.modelCardFact}>
+              <dt>
+                {intl.formatMessage({ id: 'setting.llmModel.field.maxTokens' })}
+              </dt>
+              <dd>{config.maxTokens.toLocaleString()}</dd>
+            </div>
+          ) : null}
         </dl>
 
         <div className={styles.modelCardFooter}>
@@ -101,17 +146,45 @@ const LlmModelConfigCard: React.FC<LlmModelConfigCardProps> = ({
           ) : (
             <span className={styles.modelCardMetaLinePlaceholder} />
           )}
-          <button
-            type="button"
-            className={styles.modelCardActionConfigure}
-            onClick={(event) => {
-              event.stopPropagation();
-              onConfigure(config);
-            }}
-          >
-            <SettingOutlined />
-            {intl.formatMessage({ id: 'setting.llmModel.configure' })}
-          </button>
+          <div className={styles.modelCardActions}>
+            {isDisabled ? (
+              <button
+                type="button"
+                className={styles.modelCardActionSecondary}
+                disabled={actionPending}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onActivate(config);
+                }}
+              >
+                <CheckCircleOutlined />
+                {intl.formatMessage({ id: 'setting.llmModel.activate' })}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className={styles.modelCardActionSecondary}
+              disabled={actionPending}
+              onClick={(event) => {
+                event.stopPropagation();
+                onTestConnection(config);
+              }}
+            >
+              <ExperimentOutlined />
+              {intl.formatMessage({ id: 'setting.llmModel.test' })}
+            </button>
+            <button
+              type="button"
+              className={styles.modelCardActionConfigure}
+              onClick={(event) => {
+                event.stopPropagation();
+                onConfigure(config);
+              }}
+            >
+              <SettingOutlined />
+              {intl.formatMessage({ id: 'setting.llmModel.configure' })}
+            </button>
+          </div>
         </div>
       </div>
     </article>

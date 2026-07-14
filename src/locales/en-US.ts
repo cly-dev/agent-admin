@@ -645,27 +645,38 @@ export default {
     'Host Tool "{name}" is not bound to this skill',
 
   'setting.llmModel.subtitle':
-    'Manage chat and embedding models as cards (one config per kind).',
+    'Manage global chat and embedding models. Multiple rows per kind are allowed; only one can be enabled.',
   'setting.llmModel.summary': '{count} model(s) configured',
   'setting.llmModel.add': 'Add model',
   'setting.llmModel.addTitle': 'Add model configuration',
   'setting.llmModel.editTitle': 'Edit model configuration',
   'setting.llmModel.configure': 'Configure',
+  'setting.llmModel.activate': 'Activate',
+  'setting.llmModel.test': 'Test',
   'setting.llmModel.modalHint':
-    'Each kind allows one global configuration. Changes apply after save.',
-  'setting.llmModel.addCardDesc': 'Pick a kind and enter connection details',
+    'Multiple configs per kind are allowed. Enabling one disables the others. Set context length for chat.',
+  'setting.llmModel.addCardDesc':
+    'Create a config with connection and window settings',
   'setting.llmModel.allKindsConfigured':
-    'All kinds are configured. Click a card to edit.',
+    'You can add another config of the same kind and activate it later',
   'setting.llmModel.empty.title': 'No models configured',
   'setting.llmModel.empty.desc':
     'Add a chat or embedding model to get started.',
   'setting.llmModel.status.enabled': 'Enabled',
   'setting.llmModel.status.disabled': 'Disabled',
   'setting.llmModel.card.updatedAt': 'Updated {time}',
+  'setting.llmModel.card.contextLengthMissing': 'Missing (prompts may be cut)',
+  'setting.llmModel.section.connection': 'Connection',
+  'setting.llmModel.section.generation': 'Generation',
+  'setting.llmModel.section.context': 'Context window',
   'setting.llmModel.field.kind': 'Kind',
   'setting.llmModel.field.kindRequired': 'Please select a kind',
   'setting.llmModel.save': 'Save',
   'setting.llmModel.saved': 'LLM configuration saved',
+  'setting.llmModel.activated': 'Model activated',
+  'setting.llmModel.activateFailed': 'Failed to activate model',
+  'setting.llmModel.testOk': 'Connection OK ({ms} ms)',
+  'setting.llmModel.testFailed': 'Connection test failed',
   'setting.llmModel.loadFailed': 'Failed to load LLM configuration',
   'setting.llmModel.saveFailed': 'Failed to save LLM configuration',
   'setting.llmModel.parametersInvalid':
@@ -683,12 +694,22 @@ export default {
   'setting.llmModel.field.apiKey': 'API Key',
   'setting.llmModel.field.apiKeyHint': 'Leave blank to keep the existing key',
   'setting.llmModel.field.apiKeyPlaceholder': 'Only when changing the key',
-  'setting.llmModel.field.maxTokens': 'Max tokens',
+  'setting.llmModel.field.maxTokens': 'Output max tokens',
+  'setting.llmModel.field.maxTokensHint':
+    'Generation cap — do not put the full context window here',
   'setting.llmModel.field.temperature': 'Temperature',
   'setting.llmModel.field.stream': 'Stream',
   'setting.llmModel.field.enabled': 'Enabled',
-  'setting.llmModel.field.parameters': 'Extra parameters (JSON)',
-  'setting.llmModel.field.parametersHint': 'Optional JSON object',
+  'setting.llmModel.field.enabledHint':
+    'Enabling this disables other configs of the same kind',
+  'setting.llmModel.field.contextLength': 'Context length (tokens)',
+  'setting.llmModel.field.contextLengthHint':
+    'Stored as parameters.contextLength for prompt budget; e.g. 8192 / 16384 / 32768',
+  'setting.llmModel.field.contextLengthRequired':
+    'Context length is required for chat',
+  'setting.llmModel.field.parameters': 'Other parameters (JSON)',
+  'setting.llmModel.field.parametersHint':
+    'Optional; merged with context length — do not duplicate contextLength here',
 
   'setting.intentRecall.subtitle':
     'Configure intent matching and tool recall for agents.',

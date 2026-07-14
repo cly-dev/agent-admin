@@ -8,7 +8,9 @@ import { useIntl } from '@umijs/max';
 import { Form, Input, InputNumber, Modal, Switch } from 'antd';
 import type { FormInstance } from 'antd/es/form';
 import { useMemo } from 'react';
+import styles from '../index.module.scss';
 import {
+  DEFAULT_PROVIDER_BY_KIND,
   KIND_LABEL_IDS,
   type LlmModelConfigFormValues,
 } from '../llmModelConfigShared';
@@ -67,6 +69,22 @@ const LlmModelConfigModal: React.FC<LlmModelConfigModalProps> = ({
         layout="vertical"
         requiredMark={false}
         disabled={submitting}
+        onValuesChange={(changed) => {
+          if ('kind' in changed && typeof changed.kind === 'string') {
+            const nextKind = changed.kind as LlmModelConfigKind;
+            const currentProvider = form.getFieldValue('provider');
+            const defaults = Object.values(DEFAULT_PROVIDER_BY_KIND);
+            if (!currentProvider || defaults.includes(currentProvider)) {
+              form.setFieldValue(
+                'provider',
+                DEFAULT_PROVIDER_BY_KIND[nextKind],
+              );
+            }
+            if (nextKind === 'chat' && !form.getFieldValue('chatPath')) {
+              form.setFieldValue('chatPath', '/v1/chat/completions');
+            }
+          }
+        }}
       >
         <Form.Item
           name="kind"
@@ -83,137 +101,212 @@ const LlmModelConfigModal: React.FC<LlmModelConfigModalProps> = ({
           <AppQuerySelect options={kindOptions} disabled={isEdit} />
         </Form.Item>
 
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-          <Form.Item
-            name="provider"
-            label={intl.formatMessage({
-              id: 'setting.llmModel.field.provider',
-            })}
-          >
-            <Input
-              className="app-input"
-              placeholder={intl.formatMessage({
-                id: 'appQueryPanel.textPlaceholder',
-              })}
-            />
-          </Form.Item>
-          <Form.Item
-            name="model"
-            label={intl.formatMessage({ id: 'setting.llmModel.field.model' })}
-            rules={[
-              {
-                required: true,
-                message: intl.formatMessage({
-                  id: 'setting.llmModel.field.modelRequired',
-                }),
-              },
-            ]}
-          >
-            <Input
-              className="app-input"
-              placeholder={intl.formatMessage({
-                id: 'appQueryPanel.textPlaceholder',
-              })}
-            />
-          </Form.Item>
-          <Form.Item
-            name="baseUrl"
-            label={intl.formatMessage({ id: 'setting.llmModel.field.baseUrl' })}
-            className="sm:col-span-2"
-            rules={[
-              {
-                required: true,
-                message: intl.formatMessage({
-                  id: 'setting.llmModel.field.baseUrlRequired',
-                }),
-              },
-            ]}
-          >
-            <Input
-              className="app-input"
-              placeholder="https://api.example.com/v1"
-            />
-          </Form.Item>
-          {kind === 'chat' ? (
+        <section className={styles.formSection}>
+          <h4 className={styles.formSectionTitle}>
+            {intl.formatMessage({ id: 'setting.llmModel.section.connection' })}
+          </h4>
+          <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             <Form.Item
-              name="chatPath"
+              name="provider"
               label={intl.formatMessage({
-                id: 'setting.llmModel.field.chatPath',
+                id: 'setting.llmModel.field.provider',
               })}
             >
-              <Input className="app-input" placeholder="/chat/completions" />
+              <Input
+                className="app-input"
+                placeholder={DEFAULT_PROVIDER_BY_KIND[kind]}
+              />
             </Form.Item>
-          ) : null}
-          <Form.Item
-            name="apiKey"
-            label={intl.formatMessage({ id: 'setting.llmModel.field.apiKey' })}
-            extra={intl.formatMessage({
-              id: 'setting.llmModel.field.apiKeyHint',
-            })}
-            className={kind === 'chat' ? '' : 'sm:col-span-2'}
-          >
-            <Input.Password
-              className="app-input"
-              autoComplete="new-password"
-              placeholder={intl.formatMessage({
-                id: 'setting.llmModel.field.apiKeyPlaceholder',
-              })}
-            />
-          </Form.Item>
-          <Form.Item
-            name="maxTokens"
-            label={intl.formatMessage({
-              id: 'setting.llmModel.field.maxTokens',
-            })}
-          >
-            <InputNumber className="app-input w-full" min={1} precision={0} />
-          </Form.Item>
-          {kind === 'chat' ? (
             <Form.Item
-              name="temperature"
+              name="model"
+              label={intl.formatMessage({ id: 'setting.llmModel.field.model' })}
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({
+                    id: 'setting.llmModel.field.modelRequired',
+                  }),
+                },
+              ]}
+            >
+              <Input
+                className="app-input"
+                placeholder={
+                  kind === 'chat'
+                    ? '/data/models/Qwen3-32B-AWQ'
+                    : intl.formatMessage({
+                        id: 'appQueryPanel.textPlaceholder',
+                      })
+                }
+              />
+            </Form.Item>
+            <Form.Item
+              name="baseUrl"
               label={intl.formatMessage({
-                id: 'setting.llmModel.field.temperature',
+                id: 'setting.llmModel.field.baseUrl',
+              })}
+              className="sm:col-span-2"
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({
+                    id: 'setting.llmModel.field.baseUrlRequired',
+                  }),
+                },
+              ]}
+            >
+              <Input
+                className="app-input"
+                placeholder="http://172.30.30.153:8000"
+              />
+            </Form.Item>
+            {kind === 'chat' ? (
+              <Form.Item
+                name="chatPath"
+                label={intl.formatMessage({
+                  id: 'setting.llmModel.field.chatPath',
+                })}
+              >
+                <Input
+                  className="app-input"
+                  placeholder="/v1/chat/completions"
+                />
+              </Form.Item>
+            ) : null}
+            <Form.Item
+              name="apiKey"
+              label={intl.formatMessage({
+                id: 'setting.llmModel.field.apiKey',
+              })}
+              extra={intl.formatMessage({
+                id: 'setting.llmModel.field.apiKeyHint',
+              })}
+              className={kind === 'chat' ? '' : 'sm:col-span-2'}
+            >
+              <Input.Password
+                className="app-input"
+                autoComplete="new-password"
+                placeholder={intl.formatMessage({
+                  id: 'setting.llmModel.field.apiKeyPlaceholder',
+                })}
+              />
+            </Form.Item>
+          </div>
+        </section>
+
+        <section className={styles.formSection}>
+          <h4 className={styles.formSectionTitle}>
+            {intl.formatMessage({ id: 'setting.llmModel.section.generation' })}
+          </h4>
+          <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+            <Form.Item
+              name="maxTokens"
+              label={intl.formatMessage({
+                id: 'setting.llmModel.field.maxTokens',
+              })}
+              extra={intl.formatMessage({
+                id: 'setting.llmModel.field.maxTokensHint',
               })}
             >
               <InputNumber
                 className="app-input w-full"
-                min={0}
-                max={2}
-                step={0.1}
+                min={1}
+                precision={0}
+                placeholder="2000"
               />
             </Form.Item>
-          ) : null}
-          <Form.Item
-            name="stream"
-            label={intl.formatMessage({ id: 'setting.llmModel.field.stream' })}
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
-          <Form.Item
-            name="enabled"
-            label={intl.formatMessage({ id: 'setting.llmModel.field.enabled' })}
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
-        </div>
+            {kind === 'chat' ? (
+              <Form.Item
+                name="temperature"
+                label={intl.formatMessage({
+                  id: 'setting.llmModel.field.temperature',
+                })}
+              >
+                <InputNumber
+                  className="app-input w-full"
+                  min={0}
+                  max={2}
+                  step={0.1}
+                />
+              </Form.Item>
+            ) : null}
+            <Form.Item
+              name="stream"
+              label={intl.formatMessage({
+                id: 'setting.llmModel.field.stream',
+              })}
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+            <Form.Item
+              name="enabled"
+              label={intl.formatMessage({
+                id: 'setting.llmModel.field.enabled',
+              })}
+              extra={intl.formatMessage({
+                id: 'setting.llmModel.field.enabledHint',
+              })}
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+          </div>
+        </section>
 
-        <Form.Item
-          name="parametersJson"
-          label={intl.formatMessage({
-            id: 'setting.llmModel.field.parameters',
-          })}
-          extra={intl.formatMessage({
-            id: 'setting.llmModel.field.parametersHint',
-          })}
-        >
-          <Input.TextArea
-            className="app-input"
-            rows={4}
-            placeholder='{"dimension": 1536}'
-          />
-        </Form.Item>
+        <section className={styles.formSection}>
+          <h4 className={styles.formSectionTitle}>
+            {intl.formatMessage({ id: 'setting.llmModel.section.context' })}
+          </h4>
+          <Form.Item
+            name="contextLength"
+            label={intl.formatMessage({
+              id: 'setting.llmModel.field.contextLength',
+            })}
+            extra={intl.formatMessage({
+              id: 'setting.llmModel.field.contextLengthHint',
+            })}
+            rules={
+              kind === 'chat'
+                ? [
+                    {
+                      required: true,
+                      message: intl.formatMessage({
+                        id: 'setting.llmModel.field.contextLengthRequired',
+                      }),
+                    },
+                  ]
+                : undefined
+            }
+          >
+            <InputNumber
+              className="app-input w-full"
+              min={1024}
+              step={1024}
+              precision={0}
+              placeholder="32768"
+            />
+          </Form.Item>
+          <Form.Item
+            name="parametersJson"
+            label={intl.formatMessage({
+              id: 'setting.llmModel.field.parameters',
+            })}
+            extra={intl.formatMessage({
+              id: 'setting.llmModel.field.parametersHint',
+            })}
+          >
+            <Input.TextArea
+              className="app-input"
+              rows={4}
+              placeholder={
+                kind === 'transformers_embedding'
+                  ? '{"localModelPath":"/models/xxx","allowRemoteModels":false}'
+                  : '{"dimension":1536}'
+              }
+            />
+          </Form.Item>
+        </section>
       </Form>
     </Modal>
   );

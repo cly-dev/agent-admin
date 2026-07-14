@@ -5,14 +5,18 @@ import { Alert, Form, Input, Tag } from 'antd';
 import { useMemo } from 'react';
 import styles from '../index.module.scss';
 import type {
+  SkillHostToolTabKey,
+  SkillHostToolTabRow,
+} from '../skillHostTools';
+import type {
   SkillPromptHostToolOption,
   SkillPromptToolOption,
 } from '../skillPromptMention';
 import type {
-  SkillHostToolTabKey,
-  SkillHostToolTabRow,
-} from '../skillHostTools';
-import type { SkillExecutionMode, SkillFormValues, SkillToolRow } from '../useSkillDetail';
+  SkillExecutionMode,
+  SkillFormValues,
+  SkillToolRow,
+} from '../useSkillDetail';
 import SkillPromptMentionEditor from './SkillPromptMentionEditor';
 
 type SkillExecutionConfigPanelProps = {
@@ -124,6 +128,7 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
                 }),
               },
             ]}
+            getValueFromEvent={(value: string) => value ?? ''}
             className={styles.skillPromptFormItem}
           >
             <SkillPromptMentionEditor

@@ -1,11 +1,14 @@
 import {
   LLM_MODEL_CONFIG_KINDS,
+  type CreateLlmModelConfigDto,
   type IntentRecallConfig,
   type IntentRecallMode,
+  type LlmConnectionProbe,
+  type LlmConnectionTestResult,
   type LlmModelConfig,
   type LlmModelConfigKind,
   type UpdateIntentRecallConfigDto,
-  type UpsertLlmModelConfigDto,
+  type UpdateLlmModelConfigDto,
 } from '@/types/llm-model-config';
 import { http } from '@/utils/request';
 
@@ -73,6 +76,15 @@ function normalizeParameters(
   return undefined;
 }
 
+function isLlmConnectionProbe(value: string): value is LlmConnectionProbe {
+  return (
+    value === 'chat' ||
+    value === 'embedding_api' ||
+    value === 'embedding_local' ||
+    value === 'unsupported'
+  );
+}
+
 export function normalizeLlmModelConfig(raw: unknown): LlmModelConfig | null {
   const item =
     typeof raw === 'object' && raw !== null
@@ -80,6 +92,11 @@ export function normalizeLlmModelConfig(raw: unknown): LlmModelConfig | null {
       : unwrapPayload(raw);
   const kindRaw = typeof item.kind === 'string' ? item.kind : '';
   if (!isLlmModelConfigKind(kindRaw)) {
+    return null;
+  }
+
+  const id = normalizeNumber(item.id);
+  if (id === undefined || id <= 0) {
     return null;
   }
 
@@ -95,7 +112,7 @@ export function normalizeLlmModelConfig(raw: unknown): LlmModelConfig | null {
   }
 
   return {
-    id: normalizeNumber(item.id),
+    id,
     kind: kindRaw,
     provider: typeof item.provider === 'string' ? item.provider : undefined,
     model,
@@ -152,6 +169,36 @@ function normalizeLlmModelConfigList(raw: unknown): LlmModelConfig[] {
   return single ? [single] : [];
 }
 
+export function normalizeLlmConnectionTestResult(
+  raw: unknown,
+): LlmConnectionTestResult | null {
+  const item = unwrapPayload(raw);
+  const ok = normalizeBoolean(item.ok);
+  const configId = normalizeNumber(item.configId ?? item.config_id);
+  const kindRaw = typeof item.kind === 'string' ? item.kind : '';
+  const probeRaw = typeof item.probe === 'string' ? item.probe : '';
+  if (
+    ok === undefined ||
+    configId === undefined ||
+    !isLlmModelConfigKind(kindRaw) ||
+    !isLlmConnectionProbe(probeRaw)
+  ) {
+    return null;
+  }
+
+  return {
+    ok,
+    configId,
+    kind: kindRaw,
+    provider: typeof item.provider === 'string' ? item.provider : '',
+    model: typeof item.model === 'string' ? item.model : '',
+    probe: probeRaw,
+    durationMs: normalizeNumber(item.durationMs ?? item.duration_ms) ?? 0,
+    error: typeof item.error === 'string' ? item.error : undefined,
+    detail: normalizeParameters(item.detail),
+  };
+}
+
 function isIntentRecallMode(value: string): value is IntentRecallMode {
   return value === 'auto' || value === 'vector' || value === 'keyword';
 }
@@ -177,7 +224,7 @@ export function normalizeIntentRecallConfig(raw: unknown): IntentRecallConfig {
   };
 }
 
-/** 列出全部 LLM / Embedding 配置 */
+/** 列出全部 LLM / Embedding 配置（同 kind 可多条） */
 export async function LlmModelConfigController_findAll(): Promise<
   LlmModelConfig[]
 > {
@@ -185,31 +232,78 @@ export async function LlmModelConfigController_findAll(): Promise<
   return normalizeLlmModelConfigList(response);
 }
 
-/** 按 kind 查询配置 */
+/** 按 kind 查询配置列表（enabled 优先）；无数据抛 404 */
 export async function LlmModelConfigController_findByKind(
   kind: LlmModelConfigKind,
-): Promise<LlmModelConfig | null> {
+): Promise<LlmModelConfig[]> {
   const response = await http.get<unknown>(
     `${LLM_MODEL_CONFIG_BASE}/kind/${kind}`,
   );
-  return (
-    normalizeLlmModelConfig(unwrapPayload(response)) ??
-    normalizeLlmModelConfig(response)
-  );
+  return normalizeLlmModelConfigList(response);
 }
 
-/** 按 kind 创建或更新配置 */
-export async function LlmModelConfigController_upsert(
-  data: UpsertLlmModelConfigDto,
+/** 新建一条模型配置 */
+export async function LlmModelConfigController_create(
+  data: CreateLlmModelConfigDto,
 ): Promise<LlmModelConfig> {
-  const response = await http.put<unknown>(LLM_MODEL_CONFIG_BASE, data);
+  const response = await http.post<unknown>(LLM_MODEL_CONFIG_BASE, data);
   const config =
     normalizeLlmModelConfig(unwrapPayload(response)) ??
     normalizeLlmModelConfig(response);
   if (!config) {
-    return { ...data };
+    throw new Error('invalid llm model config response');
   }
   return config;
+}
+
+/** 按 id 更新模型配置 */
+export async function LlmModelConfigController_update(
+  id: number,
+  data: UpdateLlmModelConfigDto,
+): Promise<LlmModelConfig> {
+  const response = await http.patch<unknown>(
+    `${LLM_MODEL_CONFIG_BASE}/${id}`,
+    data,
+  );
+  const config =
+    normalizeLlmModelConfig(unwrapPayload(response)) ??
+    normalizeLlmModelConfig(response);
+  if (!config) {
+    throw new Error('invalid llm model config response');
+  }
+  return config;
+}
+
+/** 激活指定配置（同 kind 其它禁用） */
+export async function LlmModelConfigController_activate(
+  id: number,
+): Promise<LlmModelConfig> {
+  const response = await http.patch<unknown>(
+    `${LLM_MODEL_CONFIG_BASE}/${id}/activate`,
+  );
+  const config =
+    normalizeLlmModelConfig(unwrapPayload(response)) ??
+    normalizeLlmModelConfig(response);
+  if (!config) {
+    throw new Error('invalid llm model config response');
+  }
+  return config;
+}
+
+/** 连通性探测 */
+export async function LlmModelConfigController_testConnection(
+  id: number,
+): Promise<LlmConnectionTestResult> {
+  const response = await http.post<unknown>(
+    `${LLM_MODEL_CONFIG_BASE}/${id}/test-connection`,
+  );
+  const result =
+    normalizeLlmConnectionTestResult(unwrapPayload(response)) ??
+    normalizeLlmConnectionTestResult(response);
+  if (!result) {
+    throw new Error('invalid llm connection test response');
+  }
+  return result;
 }
 
 /** 获取意图召回配置 */

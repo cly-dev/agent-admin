@@ -536,8 +536,9 @@ export function useSkillDetail() {
   const hostToolNameOptions = useMemo(() => {
     const names = new Set<string>();
     for (const row of [...mutationHostToolRows, ...planHostToolRows]) {
-      if (row.name.trim()) {
-        names.add(row.name.trim());
+      const name = row.name?.trim();
+      if (name) {
+        names.add(name);
       }
     }
     return Array.from(names).sort((a, b) => a.localeCompare(b));
@@ -753,8 +754,8 @@ export function useSkillDetail() {
             : undefined;
 
         const payload: CreateSkillDto = {
-          name: values.name.trim(),
-          prompt: promptMarkupToPlainText(values.prompt).trim(),
+          name: (values.name ?? '').trim(),
+          prompt: promptMarkupToPlainText(values.prompt ?? '').trim(),
           capabilityKey: values.capabilityKey?.trim() || undefined,
           description: values.description?.trim() || undefined,
           config: toSkillDtoConfig(configParsed),
@@ -783,7 +784,11 @@ export function useSkillDetail() {
               )
             : await SkillController_createByAppClient(projectId, payload);
 
-        if (created.id && executionMode === 'prompt' && hostToolsPayload !== null) {
+        if (
+          created.id &&
+          executionMode === 'prompt' &&
+          hostToolsPayload !== null
+        ) {
           await HostToolController_replaceSkillHostTools(created.id, {
             tools: hostToolsPayload,
           });
@@ -798,8 +803,8 @@ export function useSkillDetail() {
       }
 
       const payload: UpdateSkillDto = {
-        name: values.name.trim(),
-        prompt: promptMarkupToPlainText(values.prompt).trim(),
+        name: (values.name ?? '').trim(),
+        prompt: promptMarkupToPlainText(values.prompt ?? '').trim(),
         capabilityKey: values.capabilityKey?.trim() ?? '',
         description: values.description?.trim() ?? '',
         config: toSkillDtoConfig(configParsed),

@@ -1,10 +1,15 @@
 import type { HostTool } from '@/types/host-tool';
 import type { Tool } from '@/types/tool';
-import type { WorkflowActionKind, WorkflowNodeDef } from '@/types/workflow';
+import type {
+  WorkflowActionKind,
+  WorkflowEdge,
+  WorkflowNodeDef,
+} from '@/types/workflow';
 import { useIntl } from '@umijs/max';
 import { Button, Drawer, Form, Input, Select } from 'antd';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { actionsGroupedByPhase } from '../workflowNodePhase';
+import DetectCluesPanel from './DetectCluesPanel';
 import WorkflowNodeInputFields, {
   formValuesFromNodeInput,
   nodeInputFromFormValues,
@@ -16,6 +21,8 @@ type WorkflowNodePropertyDrawerProps = {
   open: boolean;
   node: WorkflowNodeDef | null;
   profile: string;
+  nodes?: WorkflowNodeDef[];
+  edges?: WorkflowEdge[];
   tools: Tool[];
   hostTools: HostTool[];
   toolsLoading?: boolean;
@@ -23,6 +30,10 @@ type WorkflowNodePropertyDrawerProps = {
   onClose: () => void;
   onSave: (node: WorkflowNodeDef) => void;
   onDelete?: (nodeId: string) => void;
+  onGraphChange?: (next: {
+    nodes: WorkflowNodeDef[];
+    edges: WorkflowEdge[];
+  }) => void;
 };
 
 type FormValues = {
@@ -36,6 +47,8 @@ const WorkflowNodePropertyDrawer: React.FC<WorkflowNodePropertyDrawerProps> = ({
   open,
   node,
   profile,
+  nodes = [],
+  edges = [],
   tools,
   hostTools,
   toolsLoading = false,
@@ -43,11 +56,20 @@ const WorkflowNodePropertyDrawer: React.FC<WorkflowNodePropertyDrawerProps> = ({
   onClose,
   onSave,
   onDelete,
+  onGraphChange,
 }) => {
   const intl = useIntl();
   const [form] = Form.useForm<FormValues>();
   const action = Form.useWatch('action', form);
   const phaseGroups = actionsGroupedByPhase(profile);
+
+  const hasDetectAlready = useMemo(
+    () =>
+      nodes.some(
+        (item) => item.action === 'detect_clues' && item.id !== node?.id,
+      ),
+    [node?.id, nodes],
+  );
 
   const actionSelectOptions = phaseGroups.map((group) => ({
     label: intl.formatMessage({ id: `workflow.phase.${group.phase}` }),
@@ -57,6 +79,7 @@ const WorkflowNodePropertyDrawer: React.FC<WorkflowNodePropertyDrawerProps> = ({
         id: `workflow.action.${actionKind}`,
         defaultMessage: actionKind,
       }),
+      disabled: actionKind === 'detect_clues' && hasDetectAlready,
     })),
   }));
 
@@ -91,7 +114,7 @@ const WorkflowNodePropertyDrawer: React.FC<WorkflowNodePropertyDrawerProps> = ({
     <Drawer
       title={intl.formatMessage({ id: 'workflow.flowCanvas.nodeDrawerTitle' })}
       open={open}
-      width={420}
+      width={action === 'detect_clues' ? 480 : 420}
       destroyOnHidden
       onClose={onClose}
       footer={
@@ -186,6 +209,15 @@ const WorkflowNodePropertyDrawer: React.FC<WorkflowNodePropertyDrawerProps> = ({
             hostTools={hostTools}
             toolsLoading={toolsLoading}
             disabled={disabled}
+          />
+        ) : null}
+        {action === 'detect_clues' && node && onGraphChange ? (
+          <DetectCluesPanel
+            detectId={node.id}
+            nodes={nodes}
+            edges={edges}
+            disabled={disabled}
+            onChange={onGraphChange}
           />
         ) : null}
       </Form>

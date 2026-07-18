@@ -22,6 +22,13 @@ export interface UseWorkflowFlowGraphOptions {
   onCellsChanged?: () => void;
   onNodeSelect?: (nodeId: string | null) => void;
   onNodeDblClick?: (nodeId: string) => void;
+  onNodeContextMenu?: (
+    nodeId: string,
+    clientX: number,
+    clientY: number,
+  ) => void;
+  onEdgeSelect?: (edgeId: string | null) => void;
+  onEdgeDblClick?: (edgeId: string) => void;
   setPlusButtonPositions: (
     positions: { id: string; left: number; top: number }[],
   ) => void;
@@ -44,6 +51,9 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
     onCellsChanged,
     onNodeSelect,
     onNodeDblClick,
+    onNodeContextMenu,
+    onEdgeSelect,
+    onEdgeDblClick,
     setPlusButtonPositions,
     nodeIdsWithNoOutputRef,
     setOverlayTransform,
@@ -57,11 +67,17 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
     onCellsChanged,
     onNodeSelect,
     onNodeDblClick,
+    onNodeContextMenu,
+    onEdgeSelect,
+    onEdgeDblClick,
   });
   callbacksRef.current = {
     onCellsChanged,
     onNodeSelect,
     onNodeDblClick,
+    onNodeContextMenu,
+    onEdgeSelect,
+    onEdgeDblClick,
   };
 
   useEffect(() => {
@@ -138,13 +154,14 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
           ) {
             return false;
           }
-          const occupied: boolean = graph.getEdges().some((edge: Edge) => {
-            if (edge.getTargetCellId() !== targetCell.id) {
-              return false;
-            }
-            return (edge.getTargetPortId() ?? 'in') === (targetPort ?? 'in');
+          // 允许多入边汇合；禁止同 from→to 重复
+          const duplicate = graph.getEdges().some((edge: Edge) => {
+            return (
+              edge.getSourceCellId() === sourceCell.id &&
+              edge.getTargetCellId() === targetCell.id
+            );
           });
-          return !occupied;
+          return !duplicate;
         },
       },
       interacting: {
@@ -173,6 +190,17 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
       graph
         .getNodes()
         .filter((node: Node) => {
+          const data = (node.getData() ?? {}) as {
+            workflowAction?: string;
+            operation?: string;
+          };
+          // 判定分流本身不挂 +；新增分支走属性面板（与 Workflow 状态识别一致）
+          if (
+            data.workflowAction === 'detect_clues' ||
+            data.operation === 'judge'
+          ) {
+            return false;
+          }
           const hasOut = graph
             .getEdges()
             .some((edge: Edge) => edge.getSourceCellId() === node.id);
@@ -246,6 +274,7 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
     };
 
     graph.on('node:click', ({ node }: { node: Node }) => {
+      callbacksRef.current.onEdgeSelect?.(null);
       callbacksRef.current.onNodeSelect?.(node.id);
     });
 
@@ -253,8 +282,72 @@ export function useWorkflowFlowGraph(options: UseWorkflowFlowGraphOptions): {
       callbacksRef.current.onNodeDblClick?.(node.id);
     });
 
+    graph.on(
+      'node:contextmenu',
+      ({
+        node,
+        e,
+      }: {
+        node: Node;
+        e: { preventDefault?: () => void; clientX?: number; clientY?: number };
+      }) => {
+        e.preventDefault?.();
+        callbacksRef.current.onNodeContextMenu?.(
+          node.id,
+          e.clientX ?? 0,
+          e.clientY ?? 0,
+        );
+      },
+    );
+
+    graph.on('edge:click', ({ edge }: { edge: Edge }) => {
+      callbacksRef.current.onNodeSelect?.(null);
+      callbacksRef.current.onEdgeSelect?.(edge.id);
+    });
+
+    graph.on('edge:dblclick', ({ edge }: { edge: Edge }) => {
+      callbacksRef.current.onEdgeDblClick?.(edge.id);
+    });
+
+    graph.on('edge:connected', ({ edge }: { edge: Edge }) => {
+      if (!edge.getData() || !(edge.getData() as { kind?: string }).kind) {
+        const source = graph.getCellById(edge.getSourceCellId());
+        const sourceData = source?.isNode()
+          ? ((source.getData() ?? {}) as WorkflowFlowNodeData)
+          : null;
+        const kind =
+          sourceData?.workflowAction === 'detect_clues' ? 'clue' : 'always';
+        const data = {
+          workflowEdgeId: edge.id,
+          kind,
+          clue:
+            kind === 'clue'
+              ? { key: '', description: '' }
+              : undefined,
+        };
+        edge.setData(data);
+        const stroke = '#94a3b8';
+        edge.setAttrs({
+          line: {
+            stroke,
+            strokeWidth: 1.5,
+            targetMarker: {
+              name: 'classic',
+              size: 7,
+              fill: stroke,
+              stroke,
+            },
+          },
+        });
+        if (kind === 'clue') {
+          edge.setLabels([]);
+        }
+      }
+    });
+
     graph.on('blank:click', () => {
       callbacksRef.current.onNodeSelect?.(null);
+      callbacksRef.current.onEdgeSelect?.(null);
     });
 
     graph.on('cell:added', handleStructureChanged);

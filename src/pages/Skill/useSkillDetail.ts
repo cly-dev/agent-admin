@@ -23,8 +23,8 @@ import type {
   UpdateSkillDto,
 } from '@/types/skill';
 import type { Tool } from '@/types/tool';
-import type { WorkflowBindingValue } from '@/types/workflow';
-import { formatApiErrorMessage } from '@/utils/api-error';
+import type { FlowBindingValue } from '@/types/flow';
+import { formatApiErrorMessage, isApiRequestError } from '@/utils/api-error';
 import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -46,12 +46,24 @@ import {
   type SkillWorkflowState,
 } from './skillWorkflow';
 
-function emptyWorkflowBinding(): WorkflowBindingValue {
+function emptyFlowBinding(): FlowBindingValue {
   return {
-    workflowId: null,
-    workflowVersion: null,
-    workflowOverrides: null,
+    flowId: null,
+    flowVersion: null,
   };
+}
+
+function formatSkillSaveError(
+  error: unknown,
+  fallback: string,
+  legacyRemovedMessage: string,
+): string {
+  if (isApiRequestError(error)) {
+    if (error.businessError?.code === 'LEGACY_WORKFLOW_BINDING_REMOVED') {
+      return legacyRemovedMessage;
+    }
+  }
+  return formatApiErrorMessage(error, fallback);
 }
 
 export type SkillExecutionMode = 'prompt' | 'workflow';
@@ -134,10 +146,10 @@ function toSkillDtoConfig(
 }
 
 function resolveExecutionMode(
-  skill?: Pick<SkillDetail, 'workflowId' | 'config'> | null,
+  skill?: Pick<SkillDetail, 'workflowId' | 'flowId' | 'config'> | null,
   workflow?: SkillWorkflowState,
 ): SkillExecutionMode {
-  if (skill?.workflowId) {
+  if (skill?.flowId || skill?.workflowId) {
     return 'workflow';
   }
   if (workflow && workflow.steps.length > 0) {
@@ -149,16 +161,12 @@ function resolveExecutionMode(
   return 'prompt';
 }
 
-function toWorkflowBinding(
-  skill?: Pick<
-    SkillDetail,
-    'workflowId' | 'workflowVersion' | 'workflowOverrides'
-  > | null,
-): WorkflowBindingValue {
+function toFlowBinding(
+  skill?: Pick<SkillDetail, 'flowId' | 'flowVersion'> | null,
+): FlowBindingValue {
   return {
-    workflowId: skill?.workflowId ?? null,
-    workflowVersion: skill?.workflowVersion ?? null,
-    workflowOverrides: skill?.workflowOverrides ?? null,
+    flowId: skill?.flowId ?? null,
+    flowVersion: skill?.flowVersion ?? null,
   };
 }
 
@@ -247,8 +255,9 @@ export function useSkillDetail() {
   const [hostToolsDirty, setHostToolsDirty] = useState(false);
   const [hostToolsLoading, setHostToolsLoading] = useState(false);
   const [workflow, setWorkflow] = useState<SkillWorkflowState>({ steps: [] });
-  const [workflowBinding, setWorkflowBinding] =
-    useState<WorkflowBindingValue>(emptyWorkflowBinding);
+  const [flowBinding, setFlowBinding] =
+    useState<FlowBindingValue>(emptyFlowBinding);
+  const [legacyWorkflowId, setLegacyWorkflowId] = useState<number | null>(null);
   const [hasLegacyWorkflow, setHasLegacyWorkflow] = useState(false);
   const [useRawConfigOnly, setUseRawConfigOnly] = useState(false);
   const [executionMode, setExecutionMode] =
@@ -404,9 +413,13 @@ export function useSkillDetail() {
       setSkill(detail);
       const workflowState = parseWorkflowFromConfig(detail.config);
       setWorkflow(workflowState);
-      setWorkflowBinding(toWorkflowBinding(detail));
+      setFlowBinding(toFlowBinding(detail));
+      setLegacyWorkflowId(detail.workflowId ?? null);
       setHasLegacyWorkflow(
-        !detail.workflowId && hasWorkflowConfig(detail.config),
+        Boolean(detail.workflowId && !detail.flowId) ||
+          (!detail.workflowId &&
+            !detail.flowId &&
+            hasWorkflowConfig(detail.config)),
       );
       setExecutionMode(resolveExecutionMode(detail, workflowState));
       setUseCustomHostToolBinding((detail.skillHostTools ?? []).length > 0);
@@ -461,7 +474,8 @@ export function useSkillDetail() {
       setPlanHostToolRows([]);
       setHostToolsDirty(false);
       setWorkflow({ steps: [] });
-      setWorkflowBinding(emptyWorkflowBinding());
+      setFlowBinding(emptyFlowBinding());
+      setLegacyWorkflowId(null);
       setHasLegacyWorkflow(false);
       setExecutionMode('prompt');
       setUseCustomHostToolBinding(false);
@@ -575,7 +589,7 @@ export function useSkillDetail() {
       setExecutionMode(mode);
       if (mode === 'prompt') {
         setWorkflow({ steps: [] });
-        setWorkflowBinding(emptyWorkflowBinding());
+        setFlowBinding(emptyFlowBinding());
         setUseRawConfigOnly(false);
         return;
       }
@@ -672,9 +686,9 @@ export function useSkillDetail() {
     history.push('/agent/skill');
   };
 
-  const handleWorkflowBindingChange = useCallback(
-    (next: WorkflowBindingValue) => {
-      setWorkflowBinding(next);
+  const handleFlowBindingChange = useCallback(
+    (next: FlowBindingValue) => {
+      setFlowBinding(next);
     },
     [],
   );
@@ -719,7 +733,7 @@ export function useSkillDetail() {
       return;
     }
 
-    if (executionMode === 'workflow' && !workflowBinding.workflowId) {
+    if (executionMode === 'workflow' && !flowBinding.flowId) {
       message.error(
         intl.formatMessage({ id: 'skill.workflow.bindingRequired' }),
       );
@@ -764,11 +778,15 @@ export function useSkillDetail() {
           tools,
           ...(executionMode === 'workflow'
             ? {
-                workflowId: workflowBinding.workflowId,
-                workflowVersion: workflowBinding.workflowVersion,
-                workflowOverrides: workflowBinding.workflowOverrides,
+                flowId: flowBinding.flowId,
+                flowVersion: flowBinding.flowVersion,
+                workflowId: null,
+                workflowVersion: null,
+                workflowOverrides: null,
               }
             : {
+                flowId: null,
+                flowVersion: null,
                 workflowId: null,
                 workflowVersion: null,
                 workflowOverrides: null,
@@ -812,11 +830,15 @@ export function useSkillDetail() {
         isActive: values.isActive,
         ...(executionMode === 'workflow'
           ? {
-              workflowId: workflowBinding.workflowId,
-              workflowVersion: workflowBinding.workflowVersion,
-              workflowOverrides: workflowBinding.workflowOverrides,
+              flowId: flowBinding.flowId,
+              flowVersion: flowBinding.flowVersion,
+              workflowId: null,
+              workflowVersion: null,
+              workflowOverrides: null,
             }
           : {
+              flowId: null,
+              flowVersion: null,
               workflowId: null,
               workflowVersion: null,
               workflowOverrides: null,
@@ -866,9 +888,13 @@ export function useSkillDetail() {
       setSkill(nextSkill);
       const nextWorkflow = parseWorkflowFromConfig(nextSkill.config);
       setWorkflow(nextWorkflow);
-      setWorkflowBinding(toWorkflowBinding(nextSkill));
+      setFlowBinding(toFlowBinding(nextSkill));
+      setLegacyWorkflowId(nextSkill.workflowId ?? null);
       setHasLegacyWorkflow(
-        !nextSkill.workflowId && hasWorkflowConfig(nextSkill.config),
+        Boolean(nextSkill.workflowId && !nextSkill.flowId) ||
+          (!nextSkill.workflowId &&
+            !nextSkill.flowId &&
+            hasWorkflowConfig(nextSkill.config)),
       );
       setExecutionMode(resolveExecutionMode(nextSkill, nextWorkflow));
       setUseCustomHostToolBinding((nextSkill.skillHostTools ?? []).length > 0);
@@ -892,9 +918,10 @@ export function useSkillDetail() {
         return;
       }
       message.error(
-        formatApiErrorMessage(
+        formatSkillSaveError(
           error,
           intl.formatMessage({ id: 'skill.actionFailed' }),
+          intl.formatMessage({ id: 'flow.error.legacyWorkflowRemoved' }),
         ),
       );
     } finally {
@@ -940,7 +967,8 @@ export function useSkillDetail() {
     promptToolOptions,
     promptHostToolOptions,
     workflow,
-    workflowBinding,
+    flowBinding,
+    legacyWorkflowId,
     hasLegacyWorkflow,
     useRawConfigOnly,
     hostToolNameOptions,
@@ -954,7 +982,7 @@ export function useSkillDetail() {
     handleToolSelectionChange,
     handleUseCustomHostToolBindingChange,
     handleWorkflowChange,
-    handleWorkflowBindingChange,
+    handleFlowBindingChange,
     handleWorkflowBindingsSynced,
     handleConfigJsonChange,
     toggleToolRequired,

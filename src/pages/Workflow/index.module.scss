@@ -952,3 +952,615 @@ $workflow-neutral-grid: rgb(15 23 42 / 0.045);
   font-size: 11px;
   color: var(--color-on-surface-variant);
 }
+
+/* ── Flow UX: profile cards / intent timeline / confirm ── */
+
+.flowProfileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.flowProfileCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.flowProfileCardActive {
+  border-color: var(--color-primary);
+  background: color-mix(
+    in srgb,
+    var(--color-primary) 6%,
+    var(--color-surface-container-lowest)
+  );
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--color-primary) 24%, transparent);
+}
+
+.flowProfileCardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.flowProfileCardDesc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-on-surface-variant);
+}
+
+.flowProfileCardBind {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.flowIntentMain {
+  margin-top: 8px;
+}
+
+.flowIntentEmpty {
+  margin: 0;
+  padding: 16px 0;
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+}
+
+.flowIntentTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.flowIntentStepList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flowIntentStep {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+}
+
+.flowIntentStepIndex {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flowIntentStepBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.flowIntentStepHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.flowIntentStepId {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.flowIntentEntryBadge {
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary);
+}
+
+.flowIntentOp {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-on-surface-variant);
+}
+
+.flowIntentObjective {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-on-surface-variant);
+}
+
+.flowIntentEdges {
+  padding-top: 4px;
+}
+
+.flowIntentEdgesTitle {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.flowIntentEdgeList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+  line-height: 1.6;
+}
+
+.flowConfirmSummary {
+  padding: 4px 0 12px;
+}
+
+.flowIntentEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flowIntentEditorHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-on-surface-variant);
+}
+
+.flowIntentEditorLayout {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .flowIntentEditorLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.flowIntentStepRail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flowIntentAddRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.flowIntentAddBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.flowIntentEditorList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flowIntentEditorList > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.flowIntentEditorItem {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+  text-align: left;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.flowIntentEditorItemActive {
+  border-color: var(--color-primary);
+  background: color-mix(
+    in srgb,
+    var(--color-primary) 6%,
+    var(--color-surface-container-lowest)
+  );
+}
+
+.flowIntentEditorItemBody {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.flowIntentEditorItemTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.flowIntentEditorItemActions {
+  display: inline-flex;
+  gap: 2px;
+
+  button {
+    border: none;
+    background: transparent;
+    color: var(--color-on-surface-variant);
+    cursor: pointer;
+    padding: 4px;
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.flowIntentProps {
+  min-width: 0;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+  padding: 14px 16px;
+}
+
+.flowIntentPropsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flowIntentToolbar {
+  margin-bottom: 4px;
+}
+
+.flowIntentToolbarMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.flowIntentToolbarName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.flowIntentProfilePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+
+.flowIntentToolbarHint {
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.flowIntentFieldHint {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--color-on-surface-variant);
+}
+
+.flowIntentEditorItemDanger {
+  border-color: #cf1322 !important;
+  background: color-mix(in srgb, #cf1322 6%, var(--color-surface-container-lowest));
+}
+
+.flowIntentImagesBlock {
+  padding: 10px 12px;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+}
+
+.flowPageContextGlobal {
+  margin-bottom: 12px;
+  background: transparent;
+}
+
+.flowPageContextGlobalBody {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--color-on-surface) 72%, transparent);
+}
+
+.flowStepContextHint {
+  margin-bottom: 12px;
+}
+
+.flowReadEvidenceHint {
+  margin-bottom: 12px;
+}
+
+.flowReadEvidenceList {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+
+  li + li {
+    margin-top: 4px;
+  }
+}
+
+.flowReadScenarioGuide {
+  margin-top: 12px;
+  background: transparent;
+}
+
+.flowReadScenarioList {
+  margin: 0;
+}
+
+.flowReadScenarioItem {
+  & + & {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid $workflow-neutral-border;
+  }
+
+  dt {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-on-surface);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-on-surface) 65%, transparent);
+  }
+}
+
+.flowChannelGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.flowChannelCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid $workflow-neutral-border;
+  border-radius: var(--radius-ui);
+  background: var(--color-surface-container-lowest);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.flowChannelCardActive {
+  border-color: var(--color-primary);
+  background: color-mix(
+    in srgb,
+    var(--color-primary) 6%,
+    var(--color-surface-container-lowest)
+  );
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--color-primary) 24%, transparent);
+}
+
+.flowChannelCardTitle {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.flowChannelCardDesc {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-on-surface-variant);
+}
+
+.flowIntentRawJson {
+  margin: 0;
+  max-height: 280px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: var(--radius-ui);
+  border: 1px solid $workflow-neutral-border;
+  background: rgb(0 0 0 / 0.02);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Flow composer (single-page create) ── */
+
+.flowPageCanvas {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.flowPanel {
+  padding: 20px 22px 22px;
+  border: 1px solid var(--color-border-subtle);
+  border-left: 3px solid var(--color-primary);
+  border-radius: calc(var(--radius-ui) + 2px);
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-container-lowest) 0%,
+    rgb(var(--color-primary-rgb, 59 130 246) / 0.03) 100%
+  );
+}
+
+.flowPanelPublish {
+  border-left-color: var(--color-tertiary, #0d9488);
+}
+
+.flowPanelHeader {
+  margin-bottom: 18px;
+}
+
+.flowPanelEyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.flowPanelTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.35;
+  color: var(--color-on-surface);
+}
+
+.flowPanelDesc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+}
+
+.flowProfileMutateHint {
+  padding: 10px 12px;
+  border-radius: var(--radius-ui);
+  border: 1px solid rgb(var(--color-primary-rgb, 59 130 246) / 0.18);
+  background: rgb(var(--color-primary-rgb, 59 130 246) / 0.06);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+}
+
+.flowComposerSection {
+  padding: 20px 22px 22px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: calc(var(--radius-ui) + 2px);
+  background: var(--color-surface-container-low);
+}
+
+.flowComposerHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px 20px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.flowComposerTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.flowComposerDesc {
+  margin: 6px 0 0;
+  max-width: 42rem;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+}
+
+.flowComposerMode {
+  flex-shrink: 0;
+
+  :global(.ant-segmented-item-selected) {
+    font-weight: 600;
+  }
+}
+
+.flowComposerBody {
+  min-width: 0;
+}
+

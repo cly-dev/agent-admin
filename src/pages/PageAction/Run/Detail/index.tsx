@@ -158,6 +158,110 @@ const PageActionRunDetailPage: React.FC = () => {
                     ))}
                   </ul>
                 ) : null}
+                {run.workflowRun?.routing ? (
+                  <div className="mt-3 space-y-1 text-xs text-on-surface/70">
+                    <div className="font-semibold">
+                      {intl.formatMessage({
+                        id: 'pageActionRun.detail.routingTitle',
+                      })}
+                    </div>
+                    {run.workflowRun.routing.matchedClueKeys?.length ? (
+                      <div>
+                        matchedClueKeys:{' '}
+                        {run.workflowRun.routing.matchedClueKeys.join(', ')}
+                      </div>
+                    ) : null}
+                    {run.workflowRun.routing.enabledEdgeIds?.length ? (
+                      <div>
+                        enabledEdgeIds:{' '}
+                        {run.workflowRun.routing.enabledEdgeIds.join(', ')}
+                      </div>
+                    ) : null}
+                    {run.workflowRun.routing.pendingNodeIds?.length ? (
+                      <div>
+                        pendingNodeIds:{' '}
+                        {run.workflowRun.routing.pendingNodeIds.join(', ')}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+                {run.workflowRun?.nodeOutputs
+                  ? Object.entries(run.workflowRun.nodeOutputs).map(
+                      ([nodeId, output]) => {
+                        if (
+                          typeof output !== 'object' ||
+                          output === null ||
+                          !('clues' in output)
+                        ) {
+                          return null;
+                        }
+                        const clues = (output as { clues?: unknown }).clues;
+                        if (!Array.isArray(clues) || clues.length === 0) {
+                          return null;
+                        }
+                        return (
+                          <div key={nodeId} className="mt-3 space-y-2">
+                            <div className="text-xs font-semibold text-on-surface/70">
+                              {intl.formatMessage(
+                                { id: 'pageActionRun.detail.detectCluesTitle' },
+                                { nodeId },
+                              )}
+                            </div>
+                            <ul className="m-0 list-none space-y-1.5 p-0">
+                              {clues.map((raw, index) => {
+                                if (
+                                  typeof raw !== 'object' ||
+                                  raw === null
+                                ) {
+                                  return null;
+                                }
+                                const clue = raw as Record<string, unknown>;
+                                return (
+                                  <li
+                                    key={`${nodeId}_${index}`}
+                                    className="rounded border border-black/5 bg-white/50 px-2 py-1.5 text-xs"
+                                  >
+                                    <div className="font-semibold">
+                                      {String(clue.key ?? '—')}{' '}
+                                      <Tag
+                                        color={
+                                          clue.matched ? 'success' : 'default'
+                                        }
+                                      >
+                                        {clue.matched
+                                          ? intl.formatMessage({
+                                              id: 'pageActionRun.detail.clueMatched',
+                                            })
+                                          : intl.formatMessage({
+                                              id: 'pageActionRun.detail.clueMissed',
+                                            })}
+                                      </Tag>
+                                    </div>
+                                    {clue.value != null && clue.value !== '' ? (
+                                      <div>
+                                        value: {String(clue.value)}
+                                      </div>
+                                    ) : null}
+                                    {typeof clue.reason === 'string' &&
+                                    clue.reason ? (
+                                      <div className="text-on-surface/55">
+                                        {clue.reason}
+                                      </div>
+                                    ) : null}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                            <p className="m-0 text-[11px] text-on-surface/45">
+                              {intl.formatMessage({
+                                id: 'pageActionRun.detail.detectValueHint',
+                              })}
+                            </p>
+                          </div>
+                        );
+                      },
+                    )
+                  : null}
                 {run.workflowRun ? (
                   <ChatJsonViewer value={run.workflowRun} collapsed={2} />
                 ) : null}

@@ -54,8 +54,43 @@ export function emptyPresetConfig(): WorkflowPresetConfig {
     summarizeMode: 'final',
     presentMode: 'brief',
     confirmKind: 'mutation',
+    explainBeforeConfirm: false,
+    summarizeAfter: false,
     objectives: {},
   };
+}
+
+/** Flow 产品三卡（指南约定） */
+export const FLOW_PRODUCT_PRESET_KINDS: WorkflowPresetKind[] = [
+  'page_auto_fill',
+  'fetch_and_answer',
+  'mutation_submit',
+];
+
+/** @deprecated 使用 flowBindEntry.filterFlowProductCatalog */
+export function filterFlowProductCatalogLegacy(
+  catalog: WorkflowPresetCatalogEntry[],
+): WorkflowPresetCatalogEntry[] {
+  const allowed = new Set(FLOW_PRODUCT_PRESET_KINDS);
+  return catalog.filter((item) => allowed.has(item.kind));
+}
+
+/** Flow 创建/重建：只提交 catalog 工具字段（read / write / host） */
+export function buildFlowPresetConfigPayload(
+  config: WorkflowPresetConfig,
+  _preset: WorkflowPresetKind,
+): WorkflowPresetConfig {
+  const payload: WorkflowPresetConfig = {};
+  if (config.hostToolId) {
+    payload.hostToolId = config.hostToolId;
+  }
+  if (config.readToolId) {
+    payload.readToolId = config.readToolId;
+  }
+  if (config.writeToolId) {
+    payload.writeToolId = config.writeToolId;
+  }
+  return payload;
 }
 
 export function catalogEntryForPreset(
@@ -154,6 +189,13 @@ export function filterWriteToolCandidates(tools: Tool[]): Tool[] {
   return writeTools.length > 0 ? writeTools : tools;
 }
 
+/** mutate 预读：排除写 Tool（L2/L3） */
+export function filterReadToolCandidates(tools: Tool[]): Tool[] {
+  return tools.filter(
+    (tool) => tool.riskLevel !== 'L2' && tool.riskLevel !== 'L3',
+  );
+}
+
 export function objectiveKeysForCatalogEntry(
   entry: WorkflowPresetCatalogEntry,
 ): Array<keyof WorkflowPresetObjectiveConfig> {
@@ -165,6 +207,11 @@ export function objectiveKeysForCatalogEntry(
     present_mutation: 'present',
     write_data: 'write',
     summarize: 'summarize',
+    // Flow Intent operations (expandedOperations)
+    read: 'fetch',
+    'deliver(fill)': 'push',
+    'deliver(speak)': 'summarize',
+    mutate: 'write',
   };
   const keys: Array<keyof WorkflowPresetObjectiveConfig> = [];
   for (const action of entry.expandedActions) {
@@ -173,6 +220,10 @@ export function objectiveKeysForCatalogEntry(
     if (key && !keys.includes(key)) {
       keys.push(key);
     }
+  }
+  // Fallback to known preset objective map when catalog only has ops we can't map
+  if (keys.length === 0 && entry.kind in PRESET_OBJECTIVE_KEYS) {
+    return [...PRESET_OBJECTIVE_KEYS[entry.kind]];
   }
   return keys;
 }

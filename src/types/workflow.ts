@@ -1,6 +1,11 @@
 export type WorkflowProfile = 'chat_skill' | 'page_action' | 'shared';
 
-export type WorkflowDeliverable = 'answer' | 'analysis' | 'mutation';
+export type WorkflowDeliverable =
+  | 'answer'
+  | 'analysis'
+  | 'list'
+  | 'detail'
+  | 'mutation';
 
 export type WorkflowPresetKind =
   | 'page_auto_fill'
@@ -30,6 +35,10 @@ export type WorkflowPresetConfig = {
   presentMode?: 'brief' | 'detailed';
   confirmKind?: 'mutation' | 'generic';
   materializePageContext?: boolean;
+  /** Flow 产品：变更确认前说明（高级，默认关） */
+  explainBeforeConfirm?: boolean;
+  /** Flow 产品：写后口头说明（高级，默认关） */
+  summarizeAfter?: boolean;
   objectives?: WorkflowPresetObjectiveConfig;
 };
 
@@ -45,13 +54,50 @@ export type WorkflowPresetCatalogEntry = {
 
 export type WorkflowActionKind =
   | 'load_page_context'
+  | 'detect_clues'
   | 'fetch_data'
+  | 'summarize_images'
   | 'generate_and_push'
   | 'summarize'
   | 'compose_mutation'
   | 'present_mutation'
   | 'write_data'
   | 'await_user_confirm';
+
+export type SummarizeImagesFrom = 'upstream' | 'page_context' | 'all';
+export type SummarizeImagesOnFailure = 'degrade' | 'fail';
+
+/** Workflow 节点 input：action === 'summarize_images' */
+export type SummarizeImagesNodeInput = {
+  from?: SummarizeImagesFrom;
+  maxCells?: number;
+  cellPx?: number;
+  hint?: string;
+  onFailure?: SummarizeImagesOnFailure;
+  cacheTtlSec?: number;
+};
+
+export type WorkflowEdgeKind = 'always' | 'clue' | 'default';
+
+export type WorkflowEdgeClue = {
+  key: string;
+  description: string;
+};
+
+export type WorkflowEdge = {
+  id: string;
+  from: string;
+  to: string;
+  kind?: WorkflowEdgeKind;
+  clue?: WorkflowEdgeClue;
+};
+
+/** B 端写入 / 服务端落库文档形态 */
+export type WorkflowNodesDocument = {
+  nodes: WorkflowNodeDef[];
+  edges: WorkflowEdge[];
+  entryNodeId?: string;
+};
 
 export type WorkflowNodeDef = {
   id: string;
@@ -97,6 +143,8 @@ export type Workflow = {
   profile: WorkflowProfile | string;
   deliverable: WorkflowDeliverable | string;
   nodes: WorkflowNodeDef[];
+  edges: WorkflowEdge[];
+  entryNodeId?: string;
   version: number;
   constraints: string[];
   isActive: boolean;
@@ -113,7 +161,13 @@ export type Workflow = {
 
 export type WorkflowListItem = Omit<
   Workflow,
-  'nodes' | 'workflowTools' | 'workflowHostTools' | 'constraints' | 'goal'
+  | 'nodes'
+  | 'edges'
+  | 'entryNodeId'
+  | 'workflowTools'
+  | 'workflowHostTools'
+  | 'constraints'
+  | 'goal'
 > & {
   nodeCount: number;
 };
@@ -124,6 +178,8 @@ export type WorkflowRevision = {
   version: number;
   deliverable: string;
   nodes: WorkflowNodeDef[];
+  edges: WorkflowEdge[];
+  entryNodeId?: string;
   constraints: string[];
   changeNote: string | null;
   createdAt: string;
@@ -166,7 +222,8 @@ export type CreateWorkflowDto = {
   deliverable?: WorkflowDeliverable;
   preset?: WorkflowPresetKind;
   presetConfig?: WorkflowPresetConfig;
-  nodes?: WorkflowNodeDef[];
+  /** 手配须传 { nodes, edges, entryNodeId? }；Preset 路径勿传 */
+  nodes?: WorkflowNodesDocument;
   constraints?: string[];
   isActive?: boolean;
   sortOrder?: number;
@@ -182,7 +239,8 @@ export type UpdateWorkflowDto = {
   deliverable?: WorkflowDeliverable;
   preset?: WorkflowPresetKind;
   presetConfig?: WorkflowPresetConfig;
-  nodes?: WorkflowNodeDef[];
+  /** 手配须传 { nodes, edges, entryNodeId? }；Preset 路径勿传 */
+  nodes?: WorkflowNodesDocument;
   constraints?: string[];
   isActive?: boolean;
   sortOrder?: number;

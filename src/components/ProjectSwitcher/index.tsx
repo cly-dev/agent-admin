@@ -11,6 +11,7 @@ const PAGE_MENU_IDS: Record<AppPageKey, string> = {
   project: 'menu.project',
   agent: 'menu.agent',
   tool: 'menu.tool',
+  flow: 'menu.flow',
   workflow: 'menu.workflow',
   audit: 'menu.audit',
   chat: 'menu.chat',

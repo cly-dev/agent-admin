@@ -30,9 +30,12 @@ export interface CreateSkillDto {
   isActive?: boolean;
   /** 初始关联工具（须为本 App 下已启用的 Tool） */
   tools?: SkillToolBindingItemDto[];
+  /** @deprecated Prefer flowId */
   workflowId?: number | null;
   workflowVersion?: number | null;
   workflowOverrides?: WorkflowOverrides | null;
+  flowId?: number | null;
+  flowVersion?: number | null;
 }
 
 export interface UpdateSkillDto {
@@ -53,9 +56,12 @@ export interface UpdateSkillDto {
   riskLevel?: SkillRiskLevel;
   /** 是否启用 */
   isActive?: boolean;
+  /** @deprecated Prefer flowId */
   workflowId?: number | null;
   workflowVersion?: number | null;
   workflowOverrides?: WorkflowOverrides | null;
+  flowId?: number | null;
+  flowVersion?: number | null;
 }
 
 export type SkillRiskLevel = 'L1' | 'L2' | 'L3';
@@ -143,7 +149,11 @@ export interface Skill {
   workflowId?: number | null;
   workflowVersion?: number | null;
   workflowOverrides?: WorkflowOverrides | null;
+  /** Flow SSOT binding (preferred over workflowId) */
+  flowId?: number | null;
+  flowVersion?: number | null;
   workflowName?: string;
+  flowName?: string;
   toolCount?: number;
   hostToolCount?: number;
   createdAt?: string;

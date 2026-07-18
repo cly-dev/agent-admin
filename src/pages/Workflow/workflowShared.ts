@@ -25,7 +25,9 @@ export type WorkflowNodeValidationIssue = {
     | 'name_required'
     | 'objective_required'
     | 'tool_id_required'
-    | 'host_tool_id_required';
+    | 'host_tool_id_required'
+    | 'missing_tool_ids'
+    | 'missing_host_tool_ids';
 };
 
 export const WORKFLOW_PROFILE_OPTIONS: WorkflowProfile[] = [
@@ -37,12 +39,16 @@ export const WORKFLOW_PROFILE_OPTIONS: WorkflowProfile[] = [
 export const WORKFLOW_DELIVERABLE_OPTIONS: WorkflowDeliverable[] = [
   'answer',
   'analysis',
+  'list',
+  'detail',
   'mutation',
 ];
 
 export const PAGE_ACTION_ACTIONS: WorkflowActionKind[] = [
   'load_page_context',
+  'detect_clues',
   'fetch_data',
+  'summarize_images',
   'generate_and_push',
   'summarize',
 ];
@@ -72,8 +78,17 @@ export function compatibleProfilesForEntry(
     : ['page_action', 'shared'];
 }
 
+const ACTION_CREATE_LABEL: Partial<Record<WorkflowActionKind, string>> = {
+  summarize_images: '图片识别',
+  detect_clues: '状态识别',
+  load_page_context: '加载页上下文',
+  fetch_data: '获取数据',
+  generate_and_push: '生成并推送',
+  summarize: '说明总结',
+};
+
 function defaultLabelForAction(action: WorkflowActionKind): string {
-  return action.replace(/_/g, ' ');
+  return ACTION_CREATE_LABEL[action] ?? action.replace(/_/g, ' ');
 }
 
 export function defaultInputForAction(
@@ -82,8 +97,18 @@ export function defaultInputForAction(
   switch (action) {
     case 'load_page_context':
       return { materialize: true };
+    case 'detect_clues':
+      return {};
     case 'fetch_data':
       return { completeWhen: 'first_success' };
+    case 'summarize_images':
+      return {
+        from: 'upstream',
+        maxCells: 4,
+        cellPx: 512,
+        onFailure: 'degrade',
+        cacheTtlSec: 86400,
+      };
     case 'generate_and_push':
       return { stream: true };
     case 'summarize':
@@ -141,15 +166,6 @@ export function normalizeWorkflowNode(raw: unknown): WorkflowNodeDef | null {
   };
 }
 
-export function parseWorkflowNodes(raw: unknown): WorkflowNodeDef[] {
-  if (!Array.isArray(raw)) {
-    return [];
-  }
-  return raw
-    .map((item) => normalizeWorkflowNode(item))
-    .filter((item): item is WorkflowNodeDef => item !== null);
-}
-
 export function stringifyWorkflowOverrides(
   value: Record<string, { objective?: string }> | null | undefined,
 ): string {
@@ -165,10 +181,58 @@ const TOOL_ACTIONS: WorkflowActionKind[] = [
   'write_data',
 ];
 
+function coercePositiveIntIds(value: unknown): number[] {
+  if (Array.isArray(value)) {
+    const ids: number[] = [];
+    const seen = new Set<number>();
+    for (const item of value) {
+      const id = typeof item === 'number' ? item : Number(item);
+      if (!Number.isFinite(id) || id <= 0 || seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+      ids.push(id);
+    }
+    return ids;
+  }
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return [value];
+  }
+  return [];
+}
+
+/** fetch_data：优先 toolIds，遗留 toolId 视为单元素 */
+export function resolveNodeToolIds(
+  input: Record<string, unknown> | null | undefined,
+): number[] {
+  const fromArray = coercePositiveIntIds(input?.toolIds);
+  if (fromArray.length > 0) {
+    return fromArray;
+  }
+  return coercePositiveIntIds(input?.toolId);
+}
+
+/** generate_and_push：优先 hostToolIds，遗留 hostToolId 视为单元素 */
+export function resolveNodeHostToolIds(
+  input: Record<string, unknown> | null | undefined,
+): number[] {
+  const fromArray = coercePositiveIntIds(input?.hostToolIds);
+  if (fromArray.length > 0) {
+    return fromArray;
+  }
+  return coercePositiveIntIds(input?.hostToolId);
+}
+
 export function extractToolIdsFromNodes(nodes: WorkflowNodeDef[]): number[] {
   const ids = new Set<number>();
   for (const node of nodes) {
     if (!TOOL_ACTIONS.includes(node.action)) {
+      continue;
+    }
+    if (node.action === 'fetch_data') {
+      for (const id of resolveNodeToolIds(node.input)) {
+        ids.add(id);
+      }
       continue;
     }
     const toolId = node.input?.toolId;
@@ -187,9 +251,8 @@ export function extractHostToolIdsFromNodes(
     if (node.action !== 'generate_and_push') {
       continue;
     }
-    const hostToolId = node.input?.hostToolId;
-    if (typeof hostToolId === 'number' && hostToolId > 0) {
-      ids.add(hostToolId);
+    for (const id of resolveNodeHostToolIds(node.input)) {
+      ids.add(id);
     }
   }
   return [...ids];
@@ -199,8 +262,8 @@ export function findPushNodeHostToolId(
   nodes: WorkflowNodeDef[],
 ): number | null {
   const pushNode = nodes.find((node) => node.action === 'generate_and_push');
-  const hostToolId = pushNode?.input?.hostToolId;
-  return typeof hostToolId === 'number' && hostToolId > 0 ? hostToolId : null;
+  const ids = resolveNodeHostToolIds(pushNode?.input);
+  return ids[0] ?? null;
 }
 
 export function hasGenerateAndPushNode(nodes: WorkflowNodeDef[]): boolean {
@@ -309,16 +372,22 @@ export function validateWorkflowNodes(
     if (!node.objective?.trim()) {
       issues.push({ nodeId: node.id, code: 'objective_required' });
     }
-    const toolId = node.input?.toolId;
-    const hostToolId = node.input?.hostToolId;
-    if (TOOL_ACTIONS.includes(node.action)) {
+    if (node.action === 'fetch_data') {
+      if (resolveNodeToolIds(node.input).length === 0) {
+        issues.push({ nodeId: node.id, code: 'missing_tool_ids' });
+      }
+    } else if (
+      node.action === 'compose_mutation' ||
+      node.action === 'write_data'
+    ) {
+      const toolId = node.input?.toolId;
       if (typeof toolId !== 'number' || toolId <= 0) {
         issues.push({ nodeId: node.id, code: 'tool_id_required' });
       }
     }
     if (node.action === 'generate_and_push') {
-      if (typeof hostToolId !== 'number' || hostToolId <= 0) {
-        issues.push({ nodeId: node.id, code: 'host_tool_id_required' });
+      if (resolveNodeHostToolIds(node.input).length === 0) {
+        issues.push({ nodeId: node.id, code: 'missing_host_tool_ids' });
       }
     }
   }

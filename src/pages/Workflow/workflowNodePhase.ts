@@ -20,7 +20,9 @@ export const WORKFLOW_ACTION_PHASE: Record<
   WorkflowNodePhase
 > = {
   load_page_context: 'prepare_acquire',
+  detect_clues: 'prepare_acquire',
   fetch_data: 'prepare_acquire',
+  summarize_images: 'prepare_acquire',
   generate_and_push: 'generate_process',
   compose_mutation: 'generate_process',
   summarize: 'deliver_present',
@@ -46,7 +48,9 @@ export const WORKFLOW_ACTION_SHORT_LABEL_FALLBACK: Record<
   string
 > = {
   load_page_context: '加载上下文',
+  detect_clues: '状态识别',
   fetch_data: '获取数据',
+  summarize_images: '图片识别',
   generate_and_push: '生成推送',
   summarize: '说明总结',
   compose_mutation: '组装变更',

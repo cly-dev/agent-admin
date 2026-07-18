@@ -20,10 +20,14 @@ export type PageAction = {
   sortOrder: number;
   config: Record<string, unknown> | null;
   sourceSkillId: number | null;
+  /** @deprecated Prefer flowId */
   workflowId: number | null;
   workflowVersion: number | null;
   workflowOverrides: WorkflowOverrides | null;
   workflowName?: string;
+  flowId: number | null;
+  flowVersion: number | null;
+  flowName?: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -43,9 +47,12 @@ export type CreatePageActionDto = {
   sortOrder?: number;
   config?: Record<string, unknown>;
   sourceSkillId?: number | null;
+  /** @deprecated Prefer flowId */
   workflowId?: number | null;
   workflowVersion?: number | null;
   workflowOverrides?: WorkflowOverrides | null;
+  flowId?: number | null;
+  flowVersion?: number | null;
 };
 
 export type UpdatePageActionDto = {
@@ -58,9 +65,12 @@ export type UpdatePageActionDto = {
   isActive?: boolean;
   sortOrder?: number;
   config?: Record<string, unknown> | null;
+  /** @deprecated Prefer flowId */
   workflowId?: number | null;
   workflowVersion?: number | null;
   workflowOverrides?: WorkflowOverrides | null;
+  flowId?: number | null;
+  flowVersion?: number | null;
 };
 
 export type PageActionListQuery = {

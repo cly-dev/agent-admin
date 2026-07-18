@@ -16,11 +16,14 @@ export interface WorkflowFlowPlusOverlayProps {
   overlayTransform: { scale: number; tx: number; ty: number };
   plusDropdownNodeId: string | null;
   phaseGroups: WorkflowActionPhaseGroup[];
+  /** 状态识别节点：+ 只产出分支，不拉业务动作菜单 */
+  detectNodeIds?: Set<string>;
   getActionLabel: (action: WorkflowActionKind) => string;
   getPhaseLabel: (phase: WorkflowActionPhaseGroup['phase']) => string;
   disabled?: boolean;
   onOpenChange: (nodeId: string | null) => void;
   onAddNodeAfter: (fromNodeId: string, action: WorkflowActionKind) => void;
+  onAddDetectBranch?: (detectId: string) => void;
 }
 
 function buildGroupedMenuItems(
@@ -60,11 +63,13 @@ export function WorkflowFlowPlusOverlay({
   overlayTransform,
   plusDropdownNodeId,
   phaseGroups,
+  detectNodeIds,
   getActionLabel,
   getPhaseLabel,
   disabled = false,
   onOpenChange,
   onAddNodeAfter,
+  onAddDetectBranch,
 }: WorkflowFlowPlusOverlayProps) {
   if (disabled) {
     return null;
@@ -80,6 +85,27 @@ export function WorkflowFlowPlusOverlay({
       aria-hidden
     >
       {positions.map(({ id, left, top }) => {
+        const isDetect = detectNodeIds?.has(id);
+
+        if (isDetect) {
+          return (
+            <button
+              key={id}
+              type="button"
+              className="pointer-events-auto absolute flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-orange-300 bg-white text-orange-600 shadow hover:border-orange-400 hover:bg-orange-50"
+              style={{ left, top }}
+              title="新增状态分支"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenChange(null);
+                onAddDetectBranch?.(id);
+              }}
+            >
+              <PlusOutlined className="text-sm" />
+            </button>
+          );
+        }
+
         const menuItems = buildGroupedMenuItems(
           phaseGroups,
           getActionLabel,

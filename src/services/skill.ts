@@ -223,11 +223,21 @@ export function normalizeSkill(raw: unknown): Skill {
     workflowOverrides: normalizeWorkflowOverrides(
       item.workflowOverrides ?? item.workflow_overrides,
     ),
+    flowId: normalizeNullableNumber(item.flowId ?? item.flow_id),
+    flowVersion: normalizeNullableNumber(
+      item.flowVersion ?? item.flow_version,
+    ),
     workflowName:
       typeof item.workflowName === 'string'
         ? item.workflowName
         : typeof item.workflow_name === 'string'
           ? item.workflow_name
+          : undefined,
+    flowName:
+      typeof item.flowName === 'string'
+        ? item.flowName
+        : typeof item.flow_name === 'string'
+          ? item.flow_name
           : undefined,
     toolCount:
       typeof toolCountRaw === 'number' && Number.isFinite(toolCountRaw)

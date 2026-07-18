@@ -24,12 +24,33 @@ export interface ToolCategoryRef {
   label: string;
 }
 
+/** 结构化字段投影（coreFields / listMetaFields / optionalFields） */
+export type ToolProfileField = {
+  path: string;
+  label?: string;
+  description?: string;
+  keywords?: string[];
+  enumLabels?: Record<string, string>;
+};
+
 /** 大模型响应摘要：coreFields 可为字段路径字符串或结构化对象 */
-export type ToolCoreField = string | Record<string, unknown>;
+export type ToolCoreField = string | ToolProfileField;
+
+export type ToolDecisionRole = 'read-list' | 'read-detail';
+
+export type ToolArrayLimits = {
+  maxItems?: number;
+  maxDepth?: number;
+};
 
 export interface ToolResponseProfile {
+  entityType?: string;
+  decisionRole?: ToolDecisionRole | string;
+  listPath?: string;
   coreFields?: ToolCoreField[];
+  listMetaFields?: ToolProfileField[];
   optionalFields?: ToolCoreField[];
+  arrayLimits?: ToolArrayLimits;
   [key: string]: unknown;
 }
 

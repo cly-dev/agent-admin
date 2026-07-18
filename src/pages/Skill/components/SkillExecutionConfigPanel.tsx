@@ -1,5 +1,5 @@
-import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
-import type { WorkflowBindingValue } from '@/types/workflow';
+import FlowBindingPanel from '@/pages/Flow/components/FlowBindingPanel';
+import type { FlowBindingValue } from '@/types/flow';
 import { useIntl } from '@umijs/max';
 import { Alert, Form, Input, Tag } from 'antd';
 import { useMemo } from 'react';
@@ -32,12 +32,13 @@ type SkillExecutionConfigPanelProps = {
   selectedToolIds?: number[];
   mutationHostToolRows?: SkillHostToolTabRow[];
   planHostToolRows?: SkillHostToolTabRow[];
-  workflowBinding?: WorkflowBindingValue;
+  flowBinding?: FlowBindingValue;
+  legacyWorkflowId?: number | null;
   hasLegacyWorkflow?: boolean;
   useRawConfigOnly?: boolean;
   saving?: boolean;
   promptDisabled?: boolean;
-  onWorkflowBindingChange?: (value: WorkflowBindingValue) => void;
+  onFlowBindingChange?: (value: FlowBindingValue) => void;
   onToolSelectionChange?: (toolIds: number[]) => void;
   onToolRequiredChange?: (toolId: number, isRequired: boolean) => void;
   onHostToolRowChange?: (
@@ -67,12 +68,13 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
   selectedToolIds = [],
   mutationHostToolRows = [],
   planHostToolRows = [],
-  workflowBinding,
+  flowBinding,
+  legacyWorkflowId = null,
   hasLegacyWorkflow = false,
   useRawConfigOnly = false,
   saving = false,
   promptDisabled = false,
-  onWorkflowBindingChange,
+  onFlowBindingChange,
   onToolSelectionChange,
   onToolRequiredChange,
   onHostToolRowChange,
@@ -188,7 +190,7 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
               disabled={promptDisabled}
             />
           </Form.Item>
-          {hasLegacyWorkflow && !workflowBinding?.workflowId ? (
+          {hasLegacyWorkflow && !flowBinding?.flowId ? (
             <Alert
               type="warning"
               showIcon
@@ -198,14 +200,14 @@ const SkillExecutionConfigPanel: React.FC<SkillExecutionConfigPanelProps> = ({
               })}
             />
           ) : null}
-          {workflowBinding && onWorkflowBindingChange ? (
-            <WorkflowBindingPanel
+          {flowBinding && onFlowBindingChange ? (
+            <FlowBindingPanel
               projectId={projectId}
               entry="skill"
-              value={workflowBinding}
+              value={flowBinding}
+              legacyWorkflowId={legacyWorkflowId}
               disabled={saving || promptDisabled}
-              onChange={onWorkflowBindingChange}
-              skillBindingMode="workflow_only"
+              onChange={onFlowBindingChange}
             />
           ) : null}
         </div>

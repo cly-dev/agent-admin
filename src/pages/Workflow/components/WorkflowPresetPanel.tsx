@@ -4,21 +4,16 @@ import type {
   WorkflowPresetCatalogEntry,
   WorkflowPresetConfig,
   WorkflowPresetObjectiveConfig,
+  WorkflowProfile,
 } from '@/types/workflow';
 import { useIntl } from '@umijs/max';
-import { Alert, Collapse, Input, Select, Switch } from 'antd';
+import { Alert, Collapse, Input, Select, Switch, Tooltip } from 'antd';
 import {
-  buildPresetConfigPayload,
   catalogEntryForPreset,
-  defaultPresetForProfile,
-  emptyPresetConfig,
   filterWriteToolCandidates,
-  inferDeliverableForPreset,
   isMutationPreset,
   isPageContextMutationPreset,
   objectiveKeysForCatalogEntry,
-  validatePresetForm,
-  type WorkflowConfigMode,
   type WorkflowPresetFormState,
 } from '../workflowPreset';
 import {
@@ -26,6 +21,7 @@ import {
   buildToolSelectOptions,
   workflowAssetSelectProps,
 } from './workflowAssetSelectOptions';
+import type { FlowBindEntry } from '@/pages/Flow/flowBindEntry';
 import styles from '../index.module.scss';
 
 type WorkflowPresetPanelProps = {
@@ -37,7 +33,15 @@ type WorkflowPresetPanelProps = {
   hostTools: HostTool[];
   toolsLoading?: boolean;
   disabled?: boolean;
+  /** all = 选场景+表单；select = 仅卡片；config = 仅动态表单 */
+  section?: 'all' | 'select' | 'config';
+  /** flow：产品三卡（仅工具字段）；workflow：完整旧表单 */
+  productMode?: 'flow' | 'workflow';
+  /** Flow 创建入口：PageAction 时 catalog 已过滤 mutation_submit */
+  bindEntry?: FlowBindEntry | null;
   onChange: (value: WorkflowPresetFormState) => void;
+  /** 改用高级 Intent 入口（仅 select/all） */
+  onSwitchToIntent?: () => void;
 };
 
 const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
@@ -49,15 +53,26 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
   hostTools,
   toolsLoading = false,
   disabled = false,
+  section = 'all',
+  productMode = 'workflow',
+  bindEntry: _bindEntry = null,
   onChange,
+  onSwitchToIntent,
 }) => {
   const intl = useIntl();
+  const isFlowProduct = productMode === 'flow';
   const entry = catalogEntryForPreset(catalog, value.preset);
   const objectiveKeys = entry ? objectiveKeysForCatalogEntry(entry) : [];
-  const visibleObjectiveKeys = objectiveKeys.filter(
-    (key) => key !== 'fetch' || value.config.readToolId,
+  const visibleObjectiveKeys = isFlowProduct
+    ? []
+    : objectiveKeys.filter(
+        (key) => key !== 'fetch' || value.config.readToolId,
+      );
+  const writeToolOptions = buildToolSelectOptions(
+    filterWriteToolCandidates(tools),
   );
-  const writeToolOptions = buildToolSelectOptions(filterWriteToolCandidates(tools));
+  const showSelect = section === 'all' || section === 'select';
+  const showConfig = section === 'all' || section === 'config';
 
   const patchConfig = (patch: Partial<WorkflowPresetConfig>) => {
     onChange({
@@ -66,7 +81,10 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
     });
   };
 
-  const patchObjective = (key: keyof WorkflowPresetObjectiveConfig, text: string) => {
+  const patchObjective = (
+    key: keyof WorkflowPresetObjectiveConfig,
+    text: string,
+  ) => {
     onChange({
       ...value,
       config: {
@@ -103,43 +121,79 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
       defaultMessage: '',
     });
 
+  const isPresetCompatible = (item: WorkflowPresetCatalogEntry) => {
+    // Catalog is already filtered by profile; empty profiles = treat as compatible.
+    if (!item.profiles?.length) {
+      return true;
+    }
+    return item.profiles.includes(profile as WorkflowProfile);
+  };
+
   return (
     <div className={styles.workflowPresetPanel}>
-      <p className={styles.workflowPresetHint}>
-        {intl.formatMessage({ id: 'workflow.preset.hint' })}
-      </p>
+      {showSelect ? (
+        <>
+          <p className={styles.workflowPresetHint}>
+            {intl.formatMessage({ id: 'workflow.preset.hint' })}
+          </p>
 
-      <div className={styles.workflowPresetGrid}>
-        {catalog.map((item) => {
-          const active = value.preset === item.kind;
-          return (
-            <button
-              key={item.kind}
-              type="button"
-              disabled={disabled || catalogLoading}
-              className={`${styles.workflowPresetCard} ${active ? styles.workflowPresetCardActive : ''}`.trim()}
-              onClick={() =>
-                onChange({
-                  preset: item.kind,
-                  config: value.config,
-                })
+          <div className={styles.workflowPresetGrid}>
+            {catalog.map((item) => {
+              const active = value.preset === item.kind;
+              const compatible = isPresetCompatible(item);
+              const card = (
+                <button
+                  type="button"
+                  disabled={disabled || catalogLoading || !compatible}
+                  className={`${styles.workflowPresetCard} ${active ? styles.workflowPresetCardActive : ''}`.trim()}
+                  onClick={() =>
+                    onChange({
+                      preset: item.kind,
+                      config: value.config,
+                    })
+                  }
+                >
+                  <span className={styles.workflowPresetCardTitle}>
+                    {resolvePresetLabel(item.kind, item.label)}
+                  </span>
+                  <span className={styles.workflowPresetCardDesc}>
+                    {resolvePresetDescription(item.kind, item.description)}
+                  </span>
+                  <span className={styles.workflowPresetCardPipeline}>
+                    {item.expandedActions.join(' → ')}
+                  </span>
+                </button>
+              );
+              if (!compatible) {
+                return (
+                  <Tooltip
+                    key={item.kind}
+                    title={intl.formatMessage({
+                      id: 'workflow.preset.incompatibleProfile',
+                    })}
+                  >
+                    <span className="block">{card}</span>
+                  </Tooltip>
+                );
               }
-            >
-              <span className={styles.workflowPresetCardTitle}>
-                {resolvePresetLabel(item.kind, item.label)}
-              </span>
-              <span className={styles.workflowPresetCardDesc}>
-                {resolvePresetDescription(item.kind, item.description)}
-              </span>
-              <span className={styles.workflowPresetCardPipeline}>
-                {item.expandedActions.join(' → ')}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              return <span key={item.kind}>{card}</span>;
+            })}
+          </div>
 
-      {entry ? (
+          {onSwitchToIntent ? (
+            <button
+              type="button"
+              className="mt-3 text-sm font-semibold text-primary disabled:opacity-50"
+              disabled={disabled}
+              onClick={onSwitchToIntent}
+            >
+              {intl.formatMessage({ id: 'flow.wizard.useIntent' })}
+            </button>
+          ) : null}
+        </>
+      ) : null}
+
+      {showConfig && entry ? (
         <div className={styles.workflowPresetForm}>
           {isPageContextMutationPreset(value.preset) ? (
             <Alert
@@ -153,11 +207,13 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
           ) : null}
           {isMutationPreset(value.preset) ? (
             <Alert
-              type="warning"
+              type={isFlowProduct ? 'info' : 'warning'}
               showIcon
               className={styles.workflowPresetScenarioAlert}
               message={intl.formatMessage({
-                id: 'workflow.preset.mutationNoDuplicateConfirm',
+                id: isFlowProduct
+                  ? 'flow.intent.mutateExpandHint'
+                  : 'workflow.preset.mutationNoDuplicateConfirm',
               })}
             />
           ) : null}
@@ -180,7 +236,8 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                   options={buildHostToolSelectOptions(hostTools)}
                   onChange={(hostToolId) =>
                     patchConfig({
-                      hostToolId: typeof hostToolId === 'number' ? hostToolId : undefined,
+                      hostToolId:
+                        typeof hostToolId === 'number' ? hostToolId : undefined,
                     })
                   }
                 />
@@ -206,7 +263,8 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                   options={buildToolSelectOptions(tools)}
                   onChange={(readToolId) =>
                     patchConfig({
-                      readToolId: typeof readToolId === 'number' ? readToolId : undefined,
+                      readToolId:
+                        typeof readToolId === 'number' ? readToolId : undefined,
                     })
                   }
                 />
@@ -231,7 +289,10 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                   options={writeToolOptions}
                   onChange={(writeToolId) =>
                     patchConfig({
-                      writeToolId: typeof writeToolId === 'number' ? writeToolId : undefined,
+                      writeToolId:
+                        typeof writeToolId === 'number'
+                          ? writeToolId
+                          : undefined,
                     })
                   }
                 />
@@ -239,6 +300,7 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
             ) : null}
           </div>
 
+          {!isFlowProduct ? (
           <Collapse
             bordered={false}
             className="bg-transparent"
@@ -248,15 +310,53 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                 label: intl.formatMessage({ id: 'workflow.preset.advanced' }),
                 children: (
                   <div className={styles.workflowPresetAdvanced}>
+                    {entry.optionalConfig.includes('explainBeforeConfirm') ? (
+                      <div className={styles.workflowPresetSwitchRow}>
+                        <span>
+                          {intl.formatMessage({
+                            id: 'workflow.preset.explainBeforeConfirm',
+                          })}
+                        </span>
+                        <Switch
+                          disabled={disabled}
+                          checked={value.config.explainBeforeConfirm === true}
+                          onChange={(checked) =>
+                            patchConfig({ explainBeforeConfirm: checked })
+                          }
+                        />
+                      </div>
+                    ) : null}
+
+                    {entry.optionalConfig.includes('summarizeAfter') ? (
+                      <div className={styles.workflowPresetSwitchRow}>
+                        <span>
+                          {intl.formatMessage({
+                            id: 'workflow.preset.summarizeAfter',
+                          })}
+                        </span>
+                        <Switch
+                          disabled={disabled}
+                          checked={value.config.summarizeAfter === true}
+                          onChange={(checked) =>
+                            patchConfig({ summarizeAfter: checked })
+                          }
+                        />
+                      </div>
+                    ) : null}
+
                     {entry.optionalConfig.includes('fetchCompleteWhen') ? (
                       <div className={styles.workflowPresetField}>
                         <label className={styles.workflowFieldLabel}>
-                          {intl.formatMessage({ id: 'workflow.nodeInput.completeWhen' })}
+                          {intl.formatMessage({
+                            id: 'workflow.nodeInput.completeWhen',
+                          })}
                         </label>
                         <Select
                           className="app-input w-full"
                           disabled={disabled}
-                          value={value.config.fetchCompleteWhen ?? 'first_success'}
+                          value={
+                            value.config.fetchCompleteWhen ?? 'first_success'
+                          }
                           options={[
                             {
                               value: 'first_success',
@@ -271,7 +371,9 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                               }),
                             },
                           ]}
-                          onChange={(next) => patchConfig({ fetchCompleteWhen: next })}
+                          onChange={(next) =>
+                            patchConfig({ fetchCompleteWhen: next })
+                          }
                         />
                       </div>
                     ) : null}
@@ -279,19 +381,25 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                     {entry.optionalConfig.includes('summarizeMode') ? (
                       <div className={styles.workflowPresetField}>
                         <label className={styles.workflowFieldLabel}>
-                          {intl.formatMessage({ id: 'workflow.nodeInput.summarizeMode' })}
+                          {intl.formatMessage({
+                            id: 'workflow.nodeInput.summarizeMode',
+                          })}
                         </label>
                         <Select
                           className="app-input w-full"
                           disabled={disabled}
                           value={value.config.summarizeMode ?? 'final'}
-                          options={['brief', 'detailed', 'final'].map((mode) => ({
-                            value: mode,
-                            label: intl.formatMessage({
-                              id: `workflow.nodeInput.summarizeMode.${mode}`,
+                          options={['brief', 'detailed', 'final'].map(
+                            (mode) => ({
+                              value: mode,
+                              label: intl.formatMessage({
+                                id: `workflow.nodeInput.summarizeMode.${mode}`,
+                              }),
                             }),
-                          }))}
-                          onChange={(next) => patchConfig({ summarizeMode: next })}
+                          )}
+                          onChange={(next) =>
+                            patchConfig({ summarizeMode: next })
+                          }
                         />
                       </div>
                     ) : null}
@@ -299,7 +407,9 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                     {entry.optionalConfig.includes('presentMode') ? (
                       <div className={styles.workflowPresetField}>
                         <label className={styles.workflowFieldLabel}>
-                          {intl.formatMessage({ id: 'workflow.nodeInput.presentMode' })}
+                          {intl.formatMessage({
+                            id: 'workflow.nodeInput.presentMode',
+                          })}
                         </label>
                         <Select
                           className="app-input w-full"
@@ -311,30 +421,44 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                               id: `workflow.nodeInput.presentMode.${mode}`,
                             }),
                           }))}
-                          onChange={(next) => patchConfig({ presentMode: next })}
+                          onChange={(next) =>
+                            patchConfig({ presentMode: next })
+                          }
                         />
                       </div>
                     ) : null}
 
                     {entry.optionalConfig.includes('pushStream') ? (
                       <div className={styles.workflowPresetSwitchRow}>
-                        <span>{intl.formatMessage({ id: 'workflow.nodeInput.stream' })}</span>
+                        <span>
+                          {intl.formatMessage({
+                            id: 'workflow.nodeInput.stream',
+                          })}
+                        </span>
                         <Switch
                           disabled={disabled}
                           checked={value.config.pushStream !== false}
-                          onChange={(checked) => patchConfig({ pushStream: checked })}
+                          onChange={(checked) =>
+                            patchConfig({ pushStream: checked })
+                          }
                         />
                       </div>
                     ) : null}
 
-                    {entry.optionalConfig.includes('materializePageContext') ? (
+                    {entry.optionalConfig.includes(
+                      'materializePageContext',
+                    ) ? (
                       <div className={styles.workflowPresetSwitchRow}>
                         <span>
-                          {intl.formatMessage({ id: 'workflow.nodeInput.materialize' })}
+                          {intl.formatMessage({
+                            id: 'workflow.nodeInput.materialize',
+                          })}
                         </span>
                         <Switch
                           disabled={disabled}
-                          checked={value.config.materializePageContext !== false}
+                          checked={
+                            value.config.materializePageContext !== false
+                          }
                           onChange={(checked) =>
                             patchConfig({ materializePageContext: checked })
                           }
@@ -345,7 +469,9 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                     {entry.optionalConfig.includes('confirmKind') ? (
                       <div className={styles.workflowPresetField}>
                         <label className={styles.workflowFieldLabel}>
-                          {intl.formatMessage({ id: 'workflow.nodeInput.confirmKind' })}
+                          {intl.formatMessage({
+                            id: 'workflow.nodeInput.confirmKind',
+                          })}
                         </label>
                         <Select
                           className="app-input w-full"
@@ -365,7 +491,9 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                               }),
                             },
                           ]}
-                          onChange={(next) => patchConfig({ confirmKind: next })}
+                          onChange={(next) =>
+                            patchConfig({ confirmKind: next })
+                          }
                         />
                       </div>
                     ) : null}
@@ -373,10 +501,15 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                     {visibleObjectiveKeys.length > 0 ? (
                       <div className={styles.workflowPresetObjectives}>
                         <p className={styles.workflowPresetObjectivesHint}>
-                          {intl.formatMessage({ id: 'workflow.preset.objectivesHint' })}
+                          {intl.formatMessage({
+                            id: 'workflow.preset.objectivesHint',
+                          })}
                         </p>
                         {visibleObjectiveKeys.map((key) => (
-                          <div key={key} className={styles.workflowPresetField}>
+                          <div
+                            key={key}
+                            className={styles.workflowPresetField}
+                          >
                             <label className={styles.workflowFieldLabel}>
                               {intl.formatMessage({
                                 id: `workflow.preset.objective.${key}`,
@@ -387,7 +520,9 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
                               disabled={disabled}
                               autoSize={{ minRows: 1, maxRows: 3 }}
                               value={value.config.objectives?.[key] ?? ''}
-                              onChange={(event) => patchObjective(key, event.target.value)}
+                              onChange={(event) =>
+                                patchObjective(key, event.target.value)
+                              }
                             />
                           </div>
                         ))}
@@ -398,15 +533,22 @@ const WorkflowPresetPanel: React.FC<WorkflowPresetPanelProps> = ({
               },
             ]}
           />
+          ) : null}
         </div>
-      ) : (
+      ) : null}
+
+      {showConfig && !entry ? (
         <p className={styles.workflowPresetEmpty}>
           {intl.formatMessage(
             { id: 'workflow.preset.emptyForProfile' },
-            { profile: intl.formatMessage({ id: `workflow.profile.${profile}` }) },
+            {
+              profile: intl.formatMessage({
+                id: `workflow.profile.${profile}`,
+              }),
+            },
           )}
         </p>
-      )}
+      ) : null}
     </div>
   );
 };

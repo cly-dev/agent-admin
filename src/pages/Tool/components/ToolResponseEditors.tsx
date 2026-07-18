@@ -4,6 +4,7 @@ import { Button, Empty, Form, Input, Select, Switch, Tree } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import type { DataNode } from 'antd/es/tree';
 import ResponseProfileFieldList from './ResponseProfileFieldList';
+import ToolResponseProfileMeta from './ToolResponseProfileMeta';
 import type { ToolCoreFieldRow, ToolOutputSchemaField } from '../useTools';
 import { normalizeOutputFieldPath } from '../useTools';
 import styles from '../index.module.scss';
@@ -64,6 +65,8 @@ const ToolResponseEditors: React.FC<Props> = ({
   const coreRows = (Form.useWatch('responseCoreFields', form) as ToolCoreFieldRow[] | undefined) ?? [];
   const optionalRows =
     (Form.useWatch('responseOptionalFields', form) as ToolCoreFieldRow[] | undefined) ?? [];
+  const listMetaRows =
+    (Form.useWatch('responseListMetaFields', form) as ToolCoreFieldRow[] | undefined) ?? [];
   const corePaths = useMemo(
     () => coreRows.map((row) => row.path.trim()).filter(Boolean),
     [coreRows],
@@ -71,6 +74,10 @@ const ToolResponseEditors: React.FC<Props> = ({
   const optionalPaths = useMemo(
     () => optionalRows.map((row) => row.path.trim()).filter(Boolean),
     [optionalRows],
+  );
+  const listMetaPaths = useMemo(
+    () => listMetaRows.map((row) => row.path.trim()).filter(Boolean),
+    [listMetaRows],
   );
   const outputRows = outputSchemaFields;
   const [selectedOutputId, setSelectedOutputId] = useState<string | null>(outputRows[0]?.id ?? null);
@@ -342,6 +349,10 @@ const ToolResponseEditors: React.FC<Props> = ({
         <p className={styles.toolDetailFieldHint}>
           {intl.formatMessage({ id: 'tool.detail.responseProfileDesc' })}
         </p>
+        <ToolResponseProfileMeta
+          disabled={disabled}
+          outputSchemaFields={outputSchemaFields}
+        />
         <div className={styles.toolResponseProfileGroups}>
           <ResponseProfileFieldList
             listName="responseCoreFields"
@@ -352,7 +363,7 @@ const ToolResponseEditors: React.FC<Props> = ({
             noCandidatesText={intl.formatMessage({ id: 'tool.response.profileField.noCandidates' })}
             disabled={disabled}
             outputSchemaFields={outputSchemaFields}
-            siblingPaths={optionalPaths}
+            siblingPaths={[...optionalPaths, ...listMetaPaths]}
           />
           <ResponseProfileFieldList
             listName="responseOptionalFields"
@@ -366,7 +377,7 @@ const ToolResponseEditors: React.FC<Props> = ({
             showKeywords
             disabled={disabled}
             outputSchemaFields={outputSchemaFields}
-            siblingPaths={corePaths}
+            siblingPaths={[...corePaths, ...listMetaPaths]}
           />
         </div>
       </div>

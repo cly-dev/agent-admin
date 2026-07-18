@@ -14,7 +14,7 @@ import type {
   PageAction,
   UpdatePageActionDto,
 } from '@/types/page-action';
-import type { WorkflowBindingValue } from '@/types/workflow';
+import type { FlowBindingValue } from '@/types/flow';
 import { formatApiErrorMessage, isApiRequestError } from '@/utils/api-error';
 import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
@@ -32,6 +32,10 @@ import {
   inferPageScopeFromActionKey,
 } from './pageActionShared';
 
+function emptyFlowBinding(): FlowBindingValue {
+  return { flowId: null, flowVersion: null };
+}
+
 function formatPageActionSaveError(
   error: unknown,
   fallback: string,
@@ -39,6 +43,9 @@ function formatPageActionSaveError(
 ): string {
   if (isApiRequestError(error)) {
     const code = error.businessError?.code;
+    if (code === 'LEGACY_WORKFLOW_BINDING_REMOVED') {
+      return messages.LEGACY_WORKFLOW_BINDING_REMOVED ?? messages[code] ?? fallback;
+    }
     if (code && messages[code]) {
       return messages[code];
     }
@@ -62,11 +69,9 @@ export function usePageActionForm() {
   const [submitting, setSubmitting] = useState(false);
   const [hostTools, setHostTools] = useState<HostTool[]>([]);
   const [hostToolsLoading, setHostToolsLoading] = useState(false);
-  const [workflowBinding, setWorkflowBinding] = useState<WorkflowBindingValue>({
-    workflowId: null,
-    workflowVersion: null,
-    workflowOverrides: null,
-  });
+  const [flowBinding, setFlowBinding] =
+    useState<FlowBindingValue>(emptyFlowBinding);
+  const [legacyWorkflowId, setLegacyWorkflowId] = useState<number | null>(null);
   const [workflowPushState, setWorkflowPushState] =
     useState<PageActionWorkflowPushState>({
       hasPushNode: false,
@@ -99,11 +104,8 @@ export function usePageActionForm() {
     form.setFieldsValue(getDefaultPageActionFormValues());
     setRecord(null);
     setLoading(false);
-    setWorkflowBinding({
-      workflowId: null,
-      workflowVersion: null,
-      workflowOverrides: null,
-    });
+    setFlowBinding(emptyFlowBinding());
+    setLegacyWorkflowId(null);
     setWorkflowPushState({ hasPushNode: false, pushHostToolId: null });
     setConfigMode('prompt');
   }, [form]);
@@ -124,7 +126,7 @@ export function usePageActionForm() {
         actionKey: detail.actionKey,
         name: detail.name,
         description: detail.description ?? undefined,
-        hostToolId: detail.workflowId
+        hostToolId: detail.flowId || detail.workflowId
           ? undefined
           : (detail.hostToolId ?? undefined),
         pageScope: detail.pageScope ?? undefined,
@@ -133,12 +135,12 @@ export function usePageActionForm() {
         isActive: detail.isActive,
         sortOrder: detail.sortOrder,
       });
-      setWorkflowBinding({
-        workflowId: detail.workflowId,
-        workflowVersion: detail.workflowVersion,
-        workflowOverrides: detail.workflowOverrides,
+      setFlowBinding({
+        flowId: detail.flowId,
+        flowVersion: detail.flowVersion,
       });
-      setConfigMode(detail.workflowId ? 'workflow' : 'prompt');
+      setLegacyWorkflowId(detail.workflowId);
+      setConfigMode(detail.flowId || detail.workflowId ? 'workflow' : 'prompt');
     } catch (error: unknown) {
       message.error(
         error instanceof Error
@@ -185,11 +187,8 @@ export function usePageActionForm() {
   const handleConfigModeChange = (mode: PageActionConfigMode) => {
     setConfigMode(mode);
     if (mode === 'prompt') {
-      setWorkflowBinding({
-        workflowId: null,
-        workflowVersion: null,
-        workflowOverrides: null,
-      });
+      setFlowBinding(emptyFlowBinding());
+      setLegacyWorkflowId(null);
       setWorkflowPushState({ hasPushNode: false, pushHostToolId: null });
       return;
     }
@@ -235,7 +234,7 @@ export function usePageActionForm() {
         );
         return;
       }
-    } else if (!workflowBinding.workflowId) {
+    } else if (!flowBinding.flowId) {
       message.error(
         intl.formatMessage({ id: 'pageAction.form.workflowModeRequired' }),
       );
@@ -262,11 +261,15 @@ export function usePageActionForm() {
       const workflowPayload =
         configMode === 'workflow'
           ? {
-              workflowId: workflowBinding.workflowId,
-              workflowVersion: workflowBinding.workflowVersion,
-              workflowOverrides: workflowBinding.workflowOverrides,
+              flowId: flowBinding.flowId,
+              flowVersion: flowBinding.flowVersion,
+              workflowId: null,
+              workflowVersion: null,
+              workflowOverrides: null,
             }
           : {
+              flowId: null,
+              flowVersion: null,
               workflowId: null,
               workflowVersion: null,
               workflowOverrides: null,
@@ -358,6 +361,9 @@ export function usePageActionForm() {
             HOST_TOOL_NOT_FOUND: intl.formatMessage({
               id: 'pageAction.error.hostToolNotFound',
             }),
+            LEGACY_WORKFLOW_BINDING_REMOVED: intl.formatMessage({
+              id: 'flow.error.legacyWorkflowRemoved',
+            }),
           },
         ),
       );
@@ -378,8 +384,9 @@ export function usePageActionForm() {
     hostTools,
     hostToolsLoading,
     submitting,
-    workflowBinding,
-    setWorkflowBinding,
+    flowBinding,
+    setFlowBinding,
+    legacyWorkflowId,
     configMode,
     handleConfigModeChange,
     workflowPushState,

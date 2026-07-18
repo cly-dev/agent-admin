@@ -66,6 +66,25 @@ export type WorkflowRunNode = {
   status: WorkflowRunNodeStatus | string;
 };
 
+export type DetectClueResult = {
+  key: string;
+  matched: boolean;
+  confidence?: number;
+  value?: string | null;
+  reason?: string;
+};
+
+export type DetectCluesNodeOutput = {
+  clues?: DetectClueResult[];
+  matchedClueKeys?: string[];
+};
+
+export type WorkflowRunRouting = {
+  matchedClueKeys?: string[];
+  enabledEdgeIds?: string[];
+  pendingNodeIds?: string[];
+};
+
 export type WorkflowRunSnapshot = {
   workflowId?: number;
   version?: number;
@@ -73,6 +92,9 @@ export type WorkflowRunSnapshot = {
   status?: string;
   compiledFrom?: string;
   nodes?: WorkflowRunNode[];
+  /** detect_clues 等节点输出，key = nodeId */
+  nodeOutputs?: Record<string, unknown>;
+  routing?: WorkflowRunRouting;
 };
 
 export type PageActionRunListItem = {

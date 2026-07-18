@@ -51,6 +51,7 @@ import {
   outputSchemaToFields,
   profileFieldsToRows,
   rowsToProfileFields,
+  rowsToListMetaFields,
   type ToolOutputSchemaField,
 } from '../useTools';
 
@@ -177,6 +178,25 @@ export function useToolDetail() {
         responseOptionalFields: profileFieldsToRows(
           detail.responseProfile?.optionalFields,
         ),
+        responseListMetaFields: profileFieldsToRows(
+          detail.responseProfile?.listMetaFields,
+        ),
+        responseEntityType:
+          typeof detail.responseProfile?.entityType === 'string'
+            ? detail.responseProfile.entityType
+            : undefined,
+        responseDecisionRole:
+          typeof detail.responseProfile?.decisionRole === 'string'
+            ? detail.responseProfile.decisionRole
+            : undefined,
+        responseListPath:
+          typeof detail.responseProfile?.listPath === 'string'
+            ? detail.responseProfile.listPath
+            : undefined,
+        responseArrayLimitsMaxItems:
+          typeof detail.responseProfile?.arrayLimits?.maxItems === 'number'
+            ? detail.responseProfile.arrayLimits.maxItems
+            : undefined,
         agentMetadata,
       });
       setTestParams(buildTestParamsFromToolParameters(parameters));
@@ -219,6 +239,7 @@ export function useToolDetail() {
           outputSchemaFields: [],
           responseCoreFields: [],
           responseOptionalFields: [],
+          responseListMetaFields: [],
           agentMetadata: null,
         });
         setTestParams(createEmptyApiTestParams());
@@ -326,6 +347,9 @@ export function useToolDetail() {
           includeKeywords: true,
         },
       );
+      const nextListMetaFields = rowsToListMetaFields(
+        values.responseListMetaFields ?? [],
+      );
       const baseProfile =
         tool?.responseProfile && typeof tool.responseProfile === 'object'
           ? { ...tool.responseProfile }
@@ -341,6 +365,44 @@ export function useToolDetail() {
         baseProfile.optionalFields = nextOptionalFields;
       } else {
         delete (baseProfile as Record<string, unknown>).optionalFields;
+      }
+
+      if (nextListMetaFields && nextListMetaFields.length > 0) {
+        baseProfile.listMetaFields = nextListMetaFields;
+      } else {
+        delete (baseProfile as Record<string, unknown>).listMetaFields;
+      }
+
+      const entityType = values.responseEntityType?.trim();
+      if (entityType) {
+        baseProfile.entityType = entityType;
+      } else {
+        delete (baseProfile as Record<string, unknown>).entityType;
+      }
+
+      const decisionRole = values.responseDecisionRole;
+      if (decisionRole) {
+        baseProfile.decisionRole = decisionRole;
+      } else {
+        delete (baseProfile as Record<string, unknown>).decisionRole;
+      }
+
+      const listPath = values.responseListPath?.trim();
+      if (listPath) {
+        baseProfile.listPath = listPath;
+      } else {
+        delete (baseProfile as Record<string, unknown>).listPath;
+      }
+
+      if (
+        typeof values.responseArrayLimitsMaxItems === 'number' &&
+        values.responseArrayLimitsMaxItems > 0
+      ) {
+        baseProfile.arrayLimits = {
+          maxItems: values.responseArrayLimitsMaxItems,
+        };
+      } else {
+        delete (baseProfile as Record<string, unknown>).arrayLimits;
       }
 
       responseProfile = Object.keys(baseProfile).length

@@ -42,6 +42,8 @@ const WorkflowDetailPage: React.FC = () => {
     catalogLoading,
     setNodes,
     displayNodes,
+    displayEdges,
+    displayEntryNodeId,
     toolRows,
     hostToolRows,
     tools,
@@ -334,6 +336,8 @@ const WorkflowDetailPage: React.FC = () => {
                   <WorkflowFlowCanvas
                     profile={profile ?? 'shared'}
                     nodes={displayNodes}
+                    edges={displayEdges}
+                    entryNodeId={displayEntryNodeId}
                     tools={tools}
                     hostTools={hostTools}
                     toolsLoading={toolsLoading}

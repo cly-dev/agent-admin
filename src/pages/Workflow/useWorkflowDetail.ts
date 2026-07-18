@@ -19,6 +19,7 @@ import type {
   UpdateWorkflowDto,
   Workflow,
   WorkflowDeliverable,
+  WorkflowEdge,
   WorkflowNodeDef,
   WorkflowPresetCatalogEntry,
   WorkflowProfile,
@@ -28,8 +29,13 @@ import type {
 import { history, useIntl, useLocation, useParams } from '@umijs/max';
 import { Form, message } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
+import type { WorkflowGraphChange } from './components/WorkflowFlowCanvas';
 import { WORKFLOW_LIST_PATH } from './useWorkflowList';
 import { formatWorkflowSaveError } from './workflowApiError';
+import {
+  toWorkflowNodesDocument,
+  validateWorkflowGraph,
+} from './workflowGraph';
 import {
   buildPresetConfigPayload,
   defaultPresetForProfile,
@@ -69,17 +75,29 @@ function trimFormString(value: unknown): string {
 async function hydrateWorkflowAfterSave(
   updated: Workflow,
   fallbackNodes: WorkflowNodeDef[],
+  fallbackEdges: WorkflowEdge[],
 ): Promise<Workflow> {
   if (updated.nodes.length > 0) {
-    return updated;
+    return {
+      ...updated,
+      edges: updated.edges?.length ? updated.edges : fallbackEdges,
+    };
   }
   try {
     const detail = await WorkflowController_findOne(updated.id);
     return detail.nodes.length > 0
       ? detail
-      : { ...detail, nodes: fallbackNodes };
+      : {
+          ...detail,
+          nodes: fallbackNodes,
+          edges: fallbackEdges,
+        };
   } catch {
-    return { ...updated, nodes: fallbackNodes };
+    return {
+      ...updated,
+      nodes: fallbackNodes,
+      edges: fallbackEdges,
+    };
   }
 }
 
@@ -112,6 +130,8 @@ export function useWorkflowDetail() {
   >([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [nodes, setNodes] = useState<WorkflowNodeDef[]>([]);
+  const [edges, setEdges] = useState<WorkflowEdge[]>([]);
+  const [entryNodeId, setEntryNodeId] = useState<string | undefined>();
   const [toolRows, setToolRows] = useState<WorkflowToolRow[]>([]);
   const [hostToolRows, setHostToolRows] = useState<WorkflowHostToolRow[]>([]);
   const [tools, setTools] = useState<Tool[]>([]);
@@ -134,6 +154,12 @@ export function useWorkflowDetail() {
   const displayNodes = isViewingHistory
     ? (revisionSnapshot?.nodes ?? [])
     : nodes;
+  const displayEdges = isViewingHistory
+    ? (revisionSnapshot?.edges ?? [])
+    : edges;
+  const displayEntryNodeId = isViewingHistory
+    ? revisionSnapshot?.entryNodeId
+    : entryNodeId;
 
   const loadRevisionSummaries = useCallback(async (id: number) => {
     const list = await WorkflowController_listRevisions(id, {
@@ -247,6 +273,8 @@ export function useWorkflowDetail() {
       const detail = await WorkflowController_findOne(workflowId);
       setWorkflow(detail);
       setNodes(detail.nodes);
+      setEdges(detail.edges ?? []);
+      setEntryNodeId(detail.entryNodeId ?? detail.nodes[0]?.id);
       setConfigMode('nodes');
       const synced = syncBindingRowsFromNodes(
         detail.nodes,
@@ -301,6 +329,8 @@ export function useWorkflowDetail() {
     setWorkflow(null);
     setConfigMode('preset');
     setNodes([]);
+    setEdges([]);
+    setEntryNodeId(undefined);
     setToolRows([]);
     setHostToolRows([]);
     setRevisionSummaries([]);
@@ -352,14 +382,16 @@ export function useWorkflowDetail() {
     void loadPresetCatalog(profile);
   }, [configMode, isEditMode, loadPresetCatalog, profile]);
 
-  const handleNodesChange = useCallback(
-    (nextNodes: WorkflowNodeDef[]) => {
-      setNodes(nextNodes);
+  const handleGraphChange = useCallback(
+    (next: WorkflowGraphChange) => {
+      setNodes(next.nodes);
+      setEdges(next.edges);
+      setEntryNodeId(next.entryNodeId ?? next.nodes[0]?.id);
       if (isEditMode) {
         setConfigMode('nodes');
       }
       const synced = syncBindingRowsFromNodes(
-        nextNodes,
+        next.nodes,
         toolRows,
         hostToolRows,
       );
@@ -396,7 +428,10 @@ export function useWorkflowDetail() {
     (mode: WorkflowConfigMode) => {
       setConfigMode(mode);
       if (mode === 'nodes' && nodes.length === 0) {
-        setNodes([createEmptyWorkflowNode('load_page_context')]);
+        const first = createEmptyWorkflowNode('load_page_context');
+        setNodes([first]);
+        setEdges([]);
+        setEntryNodeId(first.id);
       }
     },
     [nodes.length],
@@ -497,11 +532,23 @@ export function useWorkflowDetail() {
           changeNote: values.changeNote?.trim() || undefined,
         };
         const updated = await WorkflowController_update(workflow.id, payload);
-        const savedWorkflow = await hydrateWorkflowAfterSave(updated, nodes);
+        const savedWorkflow = await hydrateWorkflowAfterSave(
+          updated,
+          nodes,
+          edges,
+        );
         const savedNodes =
           savedWorkflow.nodes.length > 0 ? savedWorkflow.nodes : nodes;
-        setWorkflow({ ...savedWorkflow, nodes: savedNodes });
+        const savedEdges =
+          savedWorkflow.edges?.length > 0 ? savedWorkflow.edges : edges;
+        setWorkflow({
+          ...savedWorkflow,
+          nodes: savedNodes,
+          edges: savedEdges,
+        });
         setNodes(savedNodes);
+        setEdges(savedEdges);
+        setEntryNodeId(savedWorkflow.entryNodeId ?? savedNodes[0]?.id);
         setConfigMode('nodes');
         const synced = syncBindingRowsFromNodes(
           savedNodes,
@@ -542,6 +589,23 @@ export function useWorkflowDetail() {
         return;
       }
 
+      const nodesDocument = toWorkflowNodesDocument(nodes, edges, entryNodeId);
+      const graphIssues = validateWorkflowGraph(
+        nodesDocument.nodes,
+        nodesDocument.edges,
+        nodesDocument.entryNodeId,
+      );
+      if (graphIssues.length > 0) {
+        const first = graphIssues[0];
+        message.error(
+          intl.formatMessage(
+            { id: `workflow.graphValidation.${first.code}` },
+            { path: first.path ?? '' },
+          ),
+        );
+        return;
+      }
+
       const optionalBindings = buildOptionalBindingsPayload(
         toolRows,
         hostToolRows,
@@ -557,7 +621,7 @@ export function useWorkflowDetail() {
           goal: values.goal?.trim() || null,
           profile: values.profile,
           deliverable: values.deliverable,
-          nodes,
+          nodes: nodesDocument,
           isActive: values.isActive,
           sortOrder: values.sortOrder,
           ...optionalBindings,
@@ -578,18 +642,30 @@ export function useWorkflowDetail() {
         description: values.description?.trim() || null,
         goal: values.goal?.trim() || null,
         deliverable: values.deliverable,
-        nodes,
+        nodes: nodesDocument,
         isActive: values.isActive,
         sortOrder: values.sortOrder,
         ...optionalBindings,
         changeNote: values.changeNote?.trim() || undefined,
       };
       const updated = await WorkflowController_update(workflow.id, payload);
-      const savedWorkflow = await hydrateWorkflowAfterSave(updated, nodes);
+      const savedWorkflow = await hydrateWorkflowAfterSave(
+        updated,
+        nodes,
+        edges,
+      );
       const savedNodes =
         savedWorkflow.nodes.length > 0 ? savedWorkflow.nodes : nodes;
-      setWorkflow({ ...savedWorkflow, nodes: savedNodes });
+      const savedEdges =
+        savedWorkflow.edges?.length > 0 ? savedWorkflow.edges : edges;
+      setWorkflow({
+        ...savedWorkflow,
+        nodes: savedNodes,
+        edges: savedEdges,
+      });
       setNodes(savedNodes);
+      setEdges(savedEdges);
+      setEntryNodeId(savedWorkflow.entryNodeId ?? savedNodes[0]?.id);
       const synced = syncBindingRowsFromNodes(
         savedNodes,
         savedWorkflow.workflowTools.map((item) => ({
@@ -635,7 +711,11 @@ export function useWorkflowDetail() {
     presetCatalog,
     catalogLoading,
     nodes,
-    setNodes: handleNodesChange,
+    setNodes: handleGraphChange,
+    edges,
+    entryNodeId,
+    displayEdges,
+    displayEntryNodeId,
     toolRows,
     hostToolRows,
     tools,

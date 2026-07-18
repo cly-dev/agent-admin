@@ -18,8 +18,9 @@ const PageActionFormPage: React.FC = () => {
     hostTools,
     hostToolsLoading,
     submitting,
-    workflowBinding,
-    setWorkflowBinding,
+    flowBinding,
+    setFlowBinding,
+    legacyWorkflowId,
     configMode,
     handleConfigModeChange,
     workflowPushState,
@@ -112,8 +113,9 @@ const PageActionFormPage: React.FC = () => {
         projectId={projectId}
         configMode={configMode}
         onConfigModeChange={handleConfigModeChange}
-        workflowBinding={workflowBinding}
-        onWorkflowBindingChange={setWorkflowBinding}
+        flowBinding={flowBinding}
+        legacyWorkflowId={legacyWorkflowId}
+        onFlowBindingChange={setFlowBinding}
         onPushHostToolResolved={handlePushHostToolResolved}
         workflowPushState={workflowPushState}
         hostTools={hostTools}

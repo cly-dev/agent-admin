@@ -28,7 +28,10 @@ function createProfileFieldRow(
 }
 
 type Props = {
-  listName: 'responseCoreFields' | 'responseOptionalFields';
+  listName:
+    | 'responseCoreFields'
+    | 'responseOptionalFields'
+    | 'responseListMetaFields';
   title: string;
   description?: string;
   emptyText: string;

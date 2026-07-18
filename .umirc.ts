@@ -184,6 +184,38 @@ export default defineConfig({
       ],
     },
     {
+      name: 'flow',
+      path: '/flow',
+      icon: 'ApartmentOutlined',
+      routes: [
+        {
+          path: '/flow',
+          redirect: '/flow/assets',
+          hideInMenu: true,
+        },
+        {
+          name: 'flowAssets',
+          path: '/flow/assets',
+          component: './Flow',
+        },
+        {
+          path: '/flow/assets/detail/create',
+          component: './Flow/Detail',
+          hideInMenu: true,
+        },
+        {
+          path: '/flow/assets/detail/:id',
+          component: './Flow/Detail',
+          hideInMenu: true,
+        },
+        {
+          name: 'migrate',
+          path: '/flow/migrate',
+          component: './Flow/Migrate',
+        },
+      ],
+    },
+    {
       name: 'workflow',
       path: '/workflow',
       icon: 'PartitionOutlined',
@@ -202,6 +234,7 @@ export default defineConfig({
           name: 'workflowAssets',
           path: '/workflow/assets',
           component: './Workflow',
+          hideInMenu: true,
         },
         {
           path: '/workflow/assets/detail/create',

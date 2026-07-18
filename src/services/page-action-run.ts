@@ -85,6 +85,9 @@ export function normalizePageActionRunListItem(raw: unknown): PageActionRunListI
     generation: Number(item.generation ?? id),
     dslOutcome: normalizeNullableString(item.dslOutcome ?? item.dsl_outcome),
     errorCode: normalizeNullableString(item.errorCode ?? item.error_code),
+    errorMessage: normalizeNullableString(
+      item.errorMessage ?? item.error_message,
+    ),
     streamId: normalizeNullableString(item.streamId ?? item.stream_id),
     clientActionId: normalizeNullableString(
       item.clientActionId ?? item.client_action_id,
@@ -140,6 +143,41 @@ function normalizeWorkflowRun(raw: unknown): WorkflowRunSnapshot | null {
           ? item.compiled_from
           : undefined,
     nodes,
+    nodeOutputs:
+      typeof item.nodeOutputs === 'object' &&
+      item.nodeOutputs !== null &&
+      !Array.isArray(item.nodeOutputs)
+        ? (item.nodeOutputs as Record<string, unknown>)
+        : typeof item.workflowNodeOutputs === 'object' &&
+            item.workflowNodeOutputs !== null &&
+            !Array.isArray(item.workflowNodeOutputs)
+          ? (item.workflowNodeOutputs as Record<string, unknown>)
+          : undefined,
+    routing:
+      typeof item.routing === 'object' &&
+      item.routing !== null &&
+      !Array.isArray(item.routing)
+        ? (() => {
+            const routing = item.routing as Record<string, unknown>;
+            return {
+              matchedClueKeys: Array.isArray(routing.matchedClueKeys)
+                ? routing.matchedClueKeys.map(String)
+                : Array.isArray(routing.matched_clue_keys)
+                  ? routing.matched_clue_keys.map(String)
+                  : undefined,
+              enabledEdgeIds: Array.isArray(routing.enabledEdgeIds)
+                ? routing.enabledEdgeIds.map(String)
+                : Array.isArray(routing.enabled_edge_ids)
+                  ? routing.enabled_edge_ids.map(String)
+                  : undefined,
+              pendingNodeIds: Array.isArray(routing.pendingNodeIds)
+                ? routing.pendingNodeIds.map(String)
+                : Array.isArray(routing.pending_node_ids)
+                  ? routing.pending_node_ids.map(String)
+                  : undefined,
+            };
+          })()
+        : undefined,
   };
 }
 

@@ -13,6 +13,27 @@ export type FlowCanvasOrientation = "horizontal" | "vertical";
 
 const elk = new ELK();
 
+const LAYOUT_TOKEN_KEY = "__flowLayoutToken";
+
+function bumpLayoutToken(graph: Graph): number {
+  const next =
+    (Number((graph as Graph & { [LAYOUT_TOKEN_KEY]?: number })[LAYOUT_TOKEN_KEY]) ||
+      0) + 1;
+  (graph as Graph & { [LAYOUT_TOKEN_KEY]: number })[LAYOUT_TOKEN_KEY] = next;
+  return next;
+}
+
+function readLayoutToken(graph: Graph): number {
+  return (
+    Number((graph as Graph & { [LAYOUT_TOKEN_KEY]?: number })[LAYOUT_TOKEN_KEY]) ||
+    0
+  );
+}
+
+export function invalidateCanvasLayout(graph: Graph): void {
+  bumpLayoutToken(graph);
+}
+
 export function formatCanvasInternal(
   graph: Graph,
   withMessage: boolean,
@@ -29,6 +50,9 @@ export function formatCanvasInternal(
     onSettled?.();
     return;
   }
+
+  // 作废进行中的旧布局，避免 clear/add 后旧回调写回已销毁节点导致重影
+  const layoutToken = bumpLayoutToken(graph);
 
   const children = allNodes.map((node) => {
     const box = node.getBBox();
@@ -63,16 +87,31 @@ export function formatCanvasInternal(
   void elk
     .layout(elkGraph as unknown as ELK.ElkNode)
     .then((result) => {
+      if (readLayoutToken(graph) !== layoutToken) {
+        onSettled?.();
+        return;
+      }
+
+      const liveNodes = graph.getNodes();
+      const liveIds = new Set(liveNodes.map((node) => node.id));
+
       (result.children ?? []).forEach((c) => {
-        const node = graph.getCellById(c.id as string) as Node | null;
-        if (!node) return;
+        const id = c.id as string;
+        if (!liveIds.has(id)) {
+          return;
+        }
+        const node = graph.getCellById(id) as Node | null;
+        if (!node?.isNode()) {
+          return;
+        }
         const x = typeof c.x === "number" ? c.x : 0;
         const y = typeof c.y === "number" ? c.y : 0;
         node.position(x, y);
       });
 
       // 根据画布方向设置节点端口位置（上下 or 左右），并写入 layoutOrientation
-      allNodes.forEach((node) => {
+      // 只用当前仍在图上的节点，勿用布局开始时的快照（可能已 dispose）
+      liveNodes.forEach((node) => {
         const data = (node.getData() ?? {}) as FlowNodeData;
         const nextData: FlowNodeData = {
           ...data,
@@ -152,7 +191,7 @@ export function formatCanvasInternal(
 
       if (withMessage) {
         message.success(
-          `已格式化：${allNodes.length} 个节点，${allEdges.length} 条连线重算`,
+          `已格式化：${liveNodes.length} 个节点，${currentEdges.length} 条连线重算`,
         );
       }
       onSettled?.();

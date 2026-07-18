@@ -20,8 +20,11 @@ export default {
   'menu.toolCategory': 'Tool Categories',
   'menu.workflow': 'Workflow',
   'menu.workflow.frontendToolFlow': 'Frontend tool flow',
-  'menu.workflow.workflowAssets': 'Workflow assets',
+  'menu.workflow.workflowAssets': 'Workflow assets (legacy canvas)',
   'menu.workflow.pageActionRun': 'Run history',
+  'menu.flow': 'Flow',
+  'menu.flow.flowAssets': 'Flow assets',
+  'menu.flow.migrate': 'Migrate legacy',
   'menu.frontendToolFlow': 'Frontend tool flow',
   'menu.integration': 'Integrations',
   'menu.audit': 'Audit',
@@ -603,12 +606,12 @@ export default {
   'skill.form.configMode.prompt.panelTitle': 'Business prompt',
   'skill.form.configMode.prompt.panelHint':
     'Keep intent and tool rules within the first ~1200 characters; @ mention bound tools.',
-  'skill.form.configMode.workflow.title': 'Workflow orchestration',
+  'skill.form.configMode.workflow.title': 'Flow orchestration',
   'skill.form.configMode.workflow.desc':
-    'Bind a Workflow asset; runtime checks node tools against user role permissions.',
-  'skill.form.configMode.workflow.panelTitle': 'Workflow orchestration',
+    'Bind a Flow asset; runtime checks follow Flow Intent/IR and user role permissions.',
+  'skill.form.configMode.workflow.panelTitle': 'Flow orchestration',
   'skill.form.configMode.workflow.panelHint':
-    'Select a Workflow and add a fallback prompt; tool access follows Workflow nodes and user roles.',
+    'Select a Flow and add a fallback prompt; tool access follows Flow bindings and user roles.',
   'skill.workflow.hint':
     'Configure config.workflow and deliverable for Plan-mode step orchestration.',
   'skill.workflow.deliverable': 'Deliverable type',
@@ -631,9 +634,9 @@ export default {
   'skill.workflow.rawConfigOverride':
     'Config JSON advanced mode is active; workflow tab changes will not apply on save.',
   'skill.workflow.legacyMigration':
-    'Legacy config.workflow detected. Create a Workflow asset and bind workflowId; inline steps are no longer the runtime SSOT.',
+    'Still bound to a legacy Workflow (no flowId). Migrate to a Flow, then bind flowId.',
   'skill.workflow.bindingRequired':
-    'Select a Workflow asset when using workflow execution mode.',
+    'Select a Flow asset when using orchestration mode.',
   'skill.workflow.validation.objectiveRequired':
     'Workflow step objective is required',
   'skill.workflow.validation.duplicateId': 'Workflow step ids must be unique',
@@ -1369,6 +1372,12 @@ export default {
   'pageActionRun.detail.compiledFrom': 'Compiled from',
   'pageActionRun.detail.workflowStatus': 'Workflow status',
   'pageActionRun.detail.currentNodeId': 'Current node',
+  'pageActionRun.detail.routingTitle': 'State routing',
+  'pageActionRun.detail.detectCluesTitle': 'State detection results ({nodeId})',
+  'pageActionRun.detail.clueMatched': 'Matched',
+  'pageActionRun.detail.clueMissed': 'Missed',
+  'pageActionRun.detail.detectValueHint':
+    'value is optional context; routing is driven by matched. Page fetch_data may still fill missing args by matching key.',
   'pageActionRun.detail.alert.awaitingApproval':
     'Waiting for the user to confirm the write on the client app; no data is written until confirmed.',
   'pageActionRun.detail.alert.approvalRejected':
@@ -1401,14 +1410,14 @@ export default {
   'pageAction.form.configMode.prompt.panelTitle': 'Prompt & HostTool',
   'pageAction.form.configMode.prompt.panelHint':
     'The prompt steers generation; the HostTool defines which input receives the stream.',
-  'pageAction.form.configMode.workflow.title': 'Bind Workflow',
+  'pageAction.form.configMode.workflow.title': 'Bind Flow',
   'pageAction.form.configMode.workflow.desc':
-    'Pick a workflow version and overrides; the push node syncs the HostTool automatically.',
-  'pageAction.form.configMode.workflow.panelTitle': 'Workflow orchestration',
+    'Pick a project Flow; execution is driven by Flow Intent/IR. hostToolId is optional.',
+  'pageAction.form.configMode.workflow.panelTitle': 'Flow orchestration',
   'pageAction.form.configMode.workflow.panelHint':
-    'Execution is defined by workflow nodes; push node HostTool can be previewed below when present.',
+    'Execution is defined by the bound Flow; migrate if only a legacy workflowId remains.',
   'pageAction.form.configMode.workflow.alert':
-    'Workflow drives multi-step execution; hostToolId is optional and derived from the push node at runtime.',
+    'Flow drives multi-step execution; bind flowId (do not write workflowId).',
   'pageAction.form.workflowPushPreview.label': 'Push node HostTool',
   'pageAction.form.workflowPushPreview.badge': 'Derived at runtime',
   'pageAction.form.workflowPushPreview.fallback': 'HostTool #{hostToolId}',
@@ -1422,7 +1431,7 @@ export default {
   'pageAction.error.hostToolRequired': 'Select or create a HostTool first',
   'pageAction.error.hostToolNotFound':
     'HostTool does not exist or was removed. Select another one.',
-  'pageAction.form.workflowModeRequired': 'Select a workflow to bind',
+  'pageAction.form.workflowModeRequired': 'Select a Flow to bind',
   'pageAgentRun.title': 'PageAgent run history',
   'pageAgentRun.subtitle':
     'Audit C-side PageAgent LLM proxy calls: model, user, status, duration, and token usage.',
@@ -1454,6 +1463,390 @@ export default {
   'pageAgentRun.detail.requestMeta': 'Request summary',
   'pageAgentRun.detail.tokensValue':
     'Total {total} · prompt {prompt} / completion {completion}',
+  'flow.title': 'Flow assets',
+  'flow.subtitle':
+    'Preset / Intent orchestration SSOT, referenced by Skills and PageActions via flowId.',
+  'flow.link.migrate': 'Migrate legacy',
+  'flow.list.headerMeta': '{total} total',
+  'flow.list.emptyTitle': 'No Flow assets yet',
+  'flow.list.emptyDesc':
+    'Create a Flow with the Preset wizard, or migrate from a legacy Workflow.',
+  'flow.list.refSkill': 'Skill {count}',
+  'flow.list.refPage': 'Page {count}',
+  'flow.list.noKey': 'No key',
+  'flow.add': 'New Flow',
+  'flow.loadFailed': 'Failed to load Flows',
+  'flow.saveFailed': 'Failed to save Flow',
+  'flow.created': 'Flow created',
+  'flow.updated': 'Flow updated',
+  'flow.deleted': 'Flow deleted',
+  'flow.deleteFailed': 'Failed to delete Flow',
+  'flow.delete.title': 'Delete Flow?',
+  'flow.delete.desc':
+    'This cannot be undone. Deletion fails if Skills or PageActions still reference it.',
+  'flow.column.name': 'Name',
+  'flow.column.profile': 'Profile',
+  'flow.column.version': 'Version',
+  'flow.column.irNodes': 'IR nodes',
+  'flow.column.refs': 'References',
+  'flow.column.isActive': 'Active',
+  'flow.filter.keywordPlaceholder': 'Name / flowKey',
+  'flow.filter.profile': 'Profile',
+  'flow.filter.profilePlaceholder': 'All profiles',
+  'flow.filter.isActive': 'Status',
+  'flow.empty.noProject.title': 'No project selected',
+  'flow.empty.noProject.desc': 'Select an AppClient project in the header.',
+  'flow.detail.createTitle': 'Create Flow',
+  'flow.detail.editTitle': 'Edit {name}',
+  'flow.detail.projectHint': 'Project: {name}',
+  'flow.detail.basics': 'Basic info',
+  'flow.detail.bindings': 'Tool bindings',
+  'flow.detail.bindingsHint': 'Derived from Intent; read-only.',
+  'flow.detail.meta': 'Metadata',
+  'flow.form.flowKey': 'flowKey',
+  'flow.form.flowKeyRequired': 'flowKey is required',
+  'flow.form.name': 'Name',
+  'flow.form.nameRequired': 'Name is required',
+  'flow.form.profile': 'Profile',
+  'flow.form.deliverable': 'Deliverable',
+  'flow.form.deliverableHint':
+    'You can change this anytime. If left empty with a Preset, it is inferred on save.',
+  'flow.form.description': 'Description',
+  'flow.form.goal': 'Goal',
+  'flow.form.isActive': 'Active',
+  'flow.form.sortOrder': 'Sort order',
+  'flow.form.changeNote': 'Change note',
+  'flow.form.changeNotePlaceholder': 'Describe this change (optional)',
+  'flow.configMode.preset': 'Scenario Preset',
+  'flow.configMode.intent': 'Canvas editor',
+  'flow.panel.identity': 'Identity',
+  'flow.panel.identityDesc':
+    'Profile controls binding targets and whether mutation-confirm steps are allowed.',
+  'flow.panel.publish': 'Publish',
+  'flow.panel.publishTitle': 'Publish settings',
+  'flow.panel.publishDesc': 'You can change sort order and active state from the list later.',
+  'flow.composer.title': 'Orchestration',
+  'flow.composer.desc':
+    'Start from a scenario Preset, or configure Intent steps directly.',
+  'flow.profile.mutateHint':
+    'Page action profile cannot add mutation-confirm steps. Choose Chat Skill or Shared if you need a write-confirm chain.',
+  'flow.preset.required': 'Select a Preset and complete its config',
+  'flow.preset.rebuildHint':
+    'Saving Preset / config changes recompiles Intent and IR.',
+  'flow.intent.editorHint': 'Submit Intent JSON (mutually exclusive with Preset)',
+  'flow.intent.invalidJson': 'Intent must be a valid JSON object',
+  'flow.ir.title': 'Compiled IR (read-only)',
+  'flow.ir.readonlyHint':
+    'IR is compiled by the server, collapsed by default, and not editable here.',
+  'flow.meta.version': 'Current version',
+  'flow.meta.refs': 'References',
+  'flow.meta.refsValue': 'Skills {skills} · PageActions {pageActions}',
+  'flow.revision.select': 'View revision',
+  'flow.revision.readonlyBanner': 'Viewing revision v{version} (read-only)',
+  'flow.revision.backToCurrent': 'Back to current',
+  'flow.revision.loadFailed': 'Failed to load revision snapshot',
+  'flow.binding.legacyWarning':
+    'Still bound to a legacy Workflow (no flowId). Migrate first, then bind a Flow.',
+  'flow.binding.goMigrate': 'Go migrate',
+  'flow.binding.flow': 'Flow',
+  'flow.binding.create': 'Create Flow',
+  'flow.binding.flowPlaceholder': 'Select a project Flow',
+  'flow.binding.version': 'Pin version (optional)',
+  'flow.binding.versionPlaceholder': 'Follow latest',
+  'flow.binding.versionHint': 'Leave empty to always use the latest published version.',
+  'flow.binding.openDetail': 'Open Flow detail',
+  'flow.binding.selectedMeta':
+    'Current v{version} · Skills {skills} · PageActions {pageActions}',
+  'flow.migrate.title': 'Legacy Workflow → Flow',
+  'flow.migrate.subtitle':
+    'Migrate recognizable Workflows into Flows, optionally rebinding references.',
+  'flow.migrate.backToFlows': 'Back to Flows',
+  'flow.migrate.emptyTitle': 'No migration candidates',
+  'flow.migrate.emptyDesc':
+    'No auto-migratable legacy Workflows in this project.',
+  'flow.migrate.column.name': 'Workflow',
+  'flow.migrate.column.profile': 'Profile',
+  'flow.migrate.column.refs': 'References',
+  'flow.migrate.preview': 'Preview',
+  'flow.migrate.drawerTitle': 'Migration preview',
+  'flow.migrate.lossy': 'This migration may be lossy',
+  'flow.migrate.warnings': 'Warnings',
+  'flow.migrate.matchedPattern': 'Matched pattern',
+  'flow.migrate.rebindSummary': 'Will rebind',
+  'flow.migrate.rebindValue': 'Skills {skills} · PageActions {pageActions}',
+  'flow.migrate.rebindBindings': 'Rebind references to the new Flow',
+  'flow.migrate.deactivateSource': 'Deactivate source Workflow after migrate',
+  'flow.migrate.flowKeyTaken': 'flowKey is taken; choose another',
+  'flow.migrate.intentPreview': 'Intent preview',
+  'flow.migrate.confirm': 'Run migration',
+  'flow.migrate.success': 'Migrated to Flow #{id}',
+  'flow.error.stillBound':
+    'Still referenced by Skills or PageActions; cannot delete',
+  'flow.error.pendingApprovals': 'Pending approvals block this action',
+  'flow.error.activeRuns':
+    'Active PageAction runs remain; wait or cancel them before deleting',
+  'flow.error.presetIntentConflict':
+    'Cannot submit Preset and Intent together',
+  'flow.error.intentRequired': 'Select a Preset or provide Intent',
+  'flow.error.toolNotFound':
+    'Selected HTTP Tool is not under this app; pick again',
+  'flow.error.hostToolNotFound':
+    'Selected HostTool is not under this app; pick again',
+  'flow.error.revisionNotFound': 'Revision not found',
+  'flow.error.legacyWorkflowRemoved':
+    'workflowId bindings are no longer accepted; use flowId (migrate legacy first if needed)',
+  'flow.wizard.next': 'Next',
+  'flow.wizard.prev': 'Back',
+  'flow.wizard.submit': 'Create Flow',
+  'flow.wizard.step.basics': 'Basics',
+  'flow.wizard.step.preset': 'Preset',
+  'flow.wizard.step.config': 'Config',
+  'flow.wizard.step.confirm': 'Confirm',
+  'flow.wizard.useIntent': 'Use advanced Intent editor',
+  'flow.wizard.backToPreset': 'Back to Preset wizard',
+  'flow.wizard.intentModeHint':
+    'Configure Intent with the step editor (submit intent, no Preset)',
+  'flow.wizard.presetClearedOnProfile':
+    'Selected Preset is incompatible with the new profile; cleared — pick again',
+  'flow.wizard.mode': 'Config mode',
+  'flow.wizard.operations': 'Expanded steps',
+  'flow.profile.card.page_action.title': 'Page action',
+  'flow.profile.card.page_action.desc':
+    'For PageActions; no mutation confirm chain',
+  'flow.profile.card.page_action.bind': 'Binds PageAction',
+  'flow.profile.card.chat_skill.title': 'Chat Skill',
+  'flow.profile.card.chat_skill.desc':
+    'For chat Skills; may include mutation confirm',
+  'flow.profile.card.chat_skill.bind': 'Binds Skill',
+  'flow.profile.card.shared.title': 'Shared',
+  'flow.profile.card.shared.desc': 'Usable by Skills and PageActions',
+  'flow.profile.card.shared.bind': 'Binds both',
+  'flow.intent.mainTitle': 'Intent (source of truth)',
+  'flow.intent.empty': 'No Intent steps yet',
+  'flow.intent.emptyEditor': 'Add a business step above',
+  'flow.intent.selectStep': 'Select a step on the left to configure',
+  'flow.intent.entry': 'Entry',
+  'flow.intent.edges': 'Edges',
+  'flow.intent.editorHint':
+    'Configure Intent as business steps (read / judge / deliver / mutate)',
+  'flow.intent.editorStructuredHint':
+    'List order is execution order; always edges are generated automatically. pageContext is injected by the C-side — do not add a load-page-context step.',
+  'flow.intent.linearModeHint': 'Linear mode · entry = first step',
+  'flow.intent.idLockedHint': 'Step id is locked after creation (edges reference it)',
+  'flow.intent.mutateBlocked':
+    'Page action cannot add mutation confirm; switch to Chat Skill or Shared profile',
+  'flow.intent.canvas.addStep': 'Add step',
+  'flow.intent.canvas.addFirst': 'Add first step',
+  'flow.intent.canvas.empty': 'Start orchestrating Intent on the canvas',
+  'flow.intent.canvas.hint':
+    'Double-click a node to edit. For judge: add branches in the node first, then use + on each tip.',
+  'flow.intent.canvas.modeHint': 'Canvas mode · topology is execution order',
+  'flow.intent.pageContext.globalTitle': 'How page context works',
+  'flow.intent.pageContext.globalBody':
+    'The client sends pageContext on every invoke; it is available for the whole Flow. Configure image recognition or HTTP reads in a “Fetch data” (read) step.',
+  'flow.intent.stepHint.judge':
+    'Branch using evidence from prior steps (context, fetched data, image results). Do not fetch or OCR in this step.',
+  'flow.intent.stepHint.deliver':
+    'Use page context plus prior outputs to speak or fill the page. No OCR here—add “Fetch data” first if you need image evidence.',
+  'flow.intent.stepHint.mutate':
+    'Compose a mutation draft from page context and prior evidence; Chat requires user confirm before write. No OCR here—for image comments, add “Fetch data (OCR only)” upstream: no Tool + image recognition on.',
+  'flow.intent.readEvidence.title': 'Evidence entry point',
+  'flow.intent.readEvidence.line1':
+    'Fetch HTTP data, recognize images, or both.',
+  'flow.intent.readEvidence.line2':
+    'No Tool, OCR only → read images from page_context; with Tool → call read APIs; OCR defaults to upstream fetch results.',
+  'flow.intent.readEvidence.line3':
+    'Comments/lists with images: ensure the client pageContext includes image URLs.',
+  'flow.intent.readScenarios.title': 'Scenario quick reference',
+  'flow.intent.readScenarios.pageText.title': 'Page text only',
+  'flow.intent.readScenarios.pageText.config':
+    'Skip read, or read with no Tool and OCR off (often go straight to deliver/mutate)',
+  'flow.intent.readScenarios.pageImage.title': 'OCR in-page images',
+  'flow.intent.readScenarios.pageImage.config':
+    'read: no Tool + OCR on + from: page_context',
+  'flow.intent.readScenarios.listApi.title': 'List API + images',
+  'flow.intent.readScenarios.listApi.config':
+    'read: Tool + OCR + from: all',
+  'flow.intent.readScenarios.autoReply.title': 'Auto-reply with images',
+  'flow.intent.readScenarios.autoReply.config': 'read (OCR) → mutate',
+  'flow.intent.drawerTitle': 'Edit {operation} step',
+  'flow.intent.add.read': 'Fetch data',
+  'flow.intent.add.judge': 'Judge branch',
+  'flow.intent.add.deliver': 'Deliver',
+  'flow.intent.add.mutate': 'Mutation confirm',
+  'flow.intent.list.fill': 'Fill page',
+  'flow.intent.list.speak': 'Speak',
+  'flow.intent.operation.read': 'Fetch data (read)',
+  'flow.intent.operation.judge': 'Judge branch',
+  'flow.intent.operation.deliver': 'Deliver',
+  'flow.intent.operation.mutate': 'Mutation confirm',
+  'flow.intent.channel.speak': 'speak',
+  'flow.intent.channel.fill': 'fill',
+  'flow.intent.channel.speak.title': 'Speak / answer',
+  'flow.intent.channel.speak.desc': 'Talk to the user or chat summary',
+  'flow.intent.channel.fill.title': 'Fill page',
+  'flow.intent.channel.fill.desc': 'Push content via HostTool',
+  'flow.intent.field.id': 'Step id',
+  'flow.intent.field.name': 'Display name',
+  'flow.intent.field.namePlaceholder': 'e.g. Fetch data',
+  'flow.intent.field.objective': 'Objective',
+  'flow.intent.field.operation': 'operation',
+  'flow.intent.field.readToolIds': 'Read tools',
+  'flow.intent.field.readToolIdsOptional': 'Optional pre-read tools',
+  'flow.intent.field.fillHostToolIds': 'Fill HostTools',
+  'flow.intent.field.writeToolId': 'Write tool',
+  'flow.intent.field.channel': 'Channel',
+  'flow.intent.field.policyHint': 'Judge notes',
+  'flow.intent.field.policyHintPlaceholder': 'When judging, note that…',
+  'flow.intent.judgeFanoutHint':
+    'Add branches below first — tips appear on the canvas; then use + on each tip.',
+  'flow.intent.field.completeWhen': 'Fetch complete when',
+  'flow.intent.completeWhen.first_success': 'First success',
+  'flow.intent.completeWhen.fetch_all_pages': 'Fetch all pages',
+  'flow.intent.field.imagesFrom': 'Image source (from)',
+  'flow.intent.field.imagesMaxCells': 'Grid cells (maxCells, 1–6)',
+  'flow.intent.field.imagesCellPx': 'Cell size px (cellPx, 128–1024)',
+  'flow.intent.mutateReadToolsHint':
+    'Bind read Tools only for pre-fetch evidence—do not select PUT/write Tools.',
+  'flow.intent.field.images': 'Image evidence (on read)',
+  'flow.intent.field.imagesEnabled': 'Enable image recognition',
+  'flow.intent.field.imagesFrom': 'Image source',
+  'flow.intent.field.imagesHint': 'Vision hint',
+  'flow.intent.field.imagesOnFailure': 'On failure',
+  'flow.intent.imagesPageContextHint':
+    'Images come from C-side pageContext or upstream fetch results; no load-page-context step needed.',
+  'flow.intent.imagesFrom.page_context': 'Page context',
+  'flow.intent.imagesFrom.upstream': 'Upstream fetch',
+  'flow.intent.imagesFrom.all': 'All',
+  'flow.intent.onFailure.degrade': 'Degrade and continue',
+  'flow.intent.onFailure.fail': 'Fail',
+  'flow.intent.imagesAdvanced': 'Advanced: grid & cache',
+  'flow.intent.judgeLinearWarning':
+    'Linear mode has no state-edge editor yet; avoid judge or wait for branch mode.',
+  'flow.intent.mutateExpandHint':
+    'The system expands this into: compose params → approval → execution',
+  'flow.intent.field.summarizeMode': 'Summarize tone',
+  'flow.intent.summarizeMode.brief': 'Brief',
+  'flow.intent.summarizeMode.detailed': 'Detailed',
+  'flow.intent.summarizeMode.draft': 'Draft',
+  'flow.intent.summarizeMode.final': 'Final',
+  'flow.intent.field.stream': 'Streaming',
+  'flow.intent.field.presentMode': 'Present before confirm',
+  'flow.intent.presentMode.brief': 'Brief',
+  'flow.intent.presentMode.detailed': 'Detailed',
+  'flow.intent.field.confirmKind': 'Confirm kind',
+  'flow.intent.confirmKind.mutation': 'Mutation',
+  'flow.intent.confirmKind.generic': 'Generic',
+  'flow.intent.field.summarizeAfter': 'Summarize after write',
+  'flow.intent.rawJsonTitle': 'Raw Intent (read-only)',
+  'flow.intent.rawJsonHint': 'For debugging; edit via the form above',
+  'flow.intent.validation.empty': 'Add at least one step',
+  'flow.intent.validation.duplicateId': 'Duplicate step id',
+  'flow.intent.validation.duplicateEdgeId': 'Duplicate edge id',
+  'flow.intent.validation.entryRequired': 'Set an entry step',
+  'flow.intent.validation.mutateForbidden':
+    'Page actions cannot configure mutation confirm',
+  'flow.intent.validation.readRequired':
+    'Select a read tool or enable image recognition',
+  'flow.intent.validation.channelRequired': 'Select a deliver channel',
+  'flow.intent.validation.fillHostRequired':
+    'Fill channel requires Host tool(s)',
+  'flow.intent.validation.writeToolRequired': 'Select a write tool',
+  'flow.intent.validation.branchNotFromJudge':
+    'State/default edges must start from a judge step',
+  'flow.intent.validation.judgeMissingDefault':
+    'When state branches exist, add exactly one default edge',
+  'flow.intent.validation.judgeDefaultWithoutState':
+    'Add at least one state branch, or remove the default edge',
+  'flow.intent.validation.stateRequired':
+    'Fill both state name and description',
+  'flow.intent.validation.judgeNeedsBranches':
+    'Judge needs at least one “When…” and exactly one “Otherwise”',
+  'flow.intent.validation.judgeAlwaysForbidden':
+    'Judge outgoing edges must be “When…” or “Otherwise”, not “Then”',
+  'flow.intent.validation.selfLoop': 'Cannot connect a step to itself',
+  'flow.intent.field.explainBeforeConfirm': 'Explain before confirm',
+  'flow.intent.canvas.setEntry': 'Set as entry',
+  'flow.intent.canvas.entrySet': 'Entry step updated',
+  'flow.edge.drawerTitle': 'Edge properties',
+  'flow.edge.path': '{from} → {to}',
+  'flow.edge.kind': 'Edge kind',
+  'flow.edge.kind.always': 'Then',
+  'flow.edge.kind.state': 'When…',
+  'flow.edge.kind.default': 'Otherwise',
+  'flow.edge.alwaysOnlyHint': 'Non-judge steps only support “Then” edges.',
+  'flow.edge.judgeHint':
+    'From judge, pull multiple “When…” branches and one “Otherwise” fallback.',
+  'flow.edge.defaultHint': 'Taken only when no state branch matches.',
+  'flow.edge.judgePickTitle': 'Choose branch kind',
+  'flow.edge.judgePickHint':
+    'Edges from a judge step must be a state branch or the fallback.',
+  'flow.edge.duplicateDefault':
+    'Each judge can have only one “Otherwise” edge',
+  'flow.edge.stateLabel': 'State name',
+  'flow.edge.stateLabelRequired': 'Enter a state name',
+  'flow.edge.stateLabelHint':
+    'e.g. “Can answer”. A technical key is allocated on save. Leave empty to keep the existing key.',
+  'flow.edge.stateLabelPlaceholder': 'Can answer',
+  'flow.edge.stateDescription': 'Judge description',
+  'flow.edge.stateDescriptionRequired': 'Enter a judge description',
+  'flow.edge.stateDescriptionHint': 'Required — shown to the model.',
+  'flow.edge.stateDescriptionPlaceholder':
+    'Enough information to answer directly',
+  'flow.edge.currentKey': 'Current key: {key}',
+  'flow.edge.stateKeyFailed': 'Failed to allocate branch keys; try again',
+  'flow.judgeBranch.listTitle': 'Branches',
+  'flow.judgeBranch.sectionLead':
+    'Add branches first; tips appear on the canvas. Then use + on each tip.',
+  'flow.judgeBranch.add': 'Add branch',
+  'flow.judgeBranch.addTitle': 'New branch',
+  'flow.judgeBranch.editTitle': 'Edit branch',
+  'flow.judgeBranch.empty': 'No branches yet',
+  'flow.judgeBranch.canvasPlusHint':
+    'Each branch adds a tip on the canvas. Use + on the tip to pick speak / mutate / etc.',
+  'flow.judgeBranch.duplicateKey': 'Branch names must be unique',
+  'flow.judgeBranch.keyUnset': 'Untitled',
+  'flow.judgeBranch.needsKey': 'Required',
+  'flow.judgeBranch.descUnset': 'No description',
+  'flow.judgeBranch.tipPending': 'Awaiting step',
+  'flow.judgeBranch.wiredTo': 'Wired → {name}',
+  'flow.judgeBranch.targetMissing': 'Missing target',
+  'flow.judgeBranch.deleteConfirm':
+    'Delete this branch? The tip placeholder will be removed too.',
+  'flow.judgeBranch.delete': 'Delete branch',
+  'flow.judgeBranch.key': 'Branch name',
+  'flow.judgeBranch.keyRequired': 'Enter a branch name',
+  'flow.judgeBranch.keyExtra':
+    'e.g. “Can answer”. A technical key is allocated on save.',
+  'flow.judgeBranch.description': 'Judge description',
+  'flow.judgeBranch.descriptionRequired': 'Enter a judge description',
+  'flow.judgeBranch.descriptionPlaceholder':
+    'Enough information to answer directly',
+  'flow.judgeBranch.policyHint': 'Judge notes',
+  'flow.judgeBranch.policyHintExtra': 'Optional overall judging notes.',
+  'flow.judgeBranch.policyHintPlaceholder': 'When judging, note that…',
+  'flow.judgeBranch.mergeTitle': 'Otherwise',
+  'flow.judgeBranch.mergeHint': 'Taken when no branch matches.',
+  'flow.judgeBranch.mergeNeedBranches':
+    'Add at least one branch to auto-create the fallback.',
+  'flow.judgeBranch.mergeBranchHint':
+    'Use + on the “Otherwise” tip on the canvas to attach steps.',
+  'flow.judgeBranch.mergeCreateBranch': 'Create fallback branch',
+  'workflow.preset.explainBeforeConfirm': 'Explain before confirm',
+  'workflow.preset.summarizeAfter': 'Summarize after write',
+  'flow.intent.invalidJson': 'Intent configuration is invalid',
+  'flow.detail.rebuildPresetConfirmTitle': 'Rebuild with Preset?',
+  'flow.detail.rebuildPresetConfirmDesc':
+    'This replaces the current Intent and bumps the version. Confirm you understand the overwrite.',
+  'flow.detail.rebuildPreset': 'Rebuild with Preset',
+  'flow.detail.editIntent': 'Edit Intent',
+  'flow.detail.saveMeta': 'Save basics',
+  'flow.bindGuide.title': 'Flow created. Next, bind flowId on an entry:',
+  'flow.bindGuide.pageAction': 'Bind PageAction',
+  'flow.bindGuide.skill': 'Bind Skill',
+  'flow.delete.stillBoundTitle': 'Unbind references first',
+  'flow.delete.stillBoundDesc':
+    '"{name}" is still referenced by Skills {skills} · PageActions {pageActions}. Unbind before deleting.',
   'workflow.title': 'Workflow assets',
   'workflow.subtitle':
     'Reusable linear workflow definitions referenced by Skills and PageActions.',
@@ -1540,10 +1933,35 @@ export default {
   'workflow.nodes.input': 'input (JSON)',
   'workflow.flowCanvas.autoLayout': 'Auto layout',
   'workflow.flowCanvas.hint':
-    'Double-click a node to edit. Use + on the last node to insert the next step. Ctrl + scroll to zoom.',
+    'Under state detection, + adds a branch only. On a branch tip, + picks the action. Sibling branch nodes are never copied.',
   'workflow.flowCanvas.nodeDrawerTitle': 'Node properties',
   'workflow.flowCanvas.inputInvalid': 'input must be a valid JSON object',
   'workflow.flowCanvas.phaseLegend': 'Node phases',
+  'workflow.clueTemplate.apply': 'State branch template',
+  'workflow.clueTemplate.applied':
+    'State-detection node and fallback placed — use + under the node to add branches',
+  'workflow.edge.drawerTitle': 'Edge properties',
+  'workflow.edge.save': 'Save edge',
+  'workflow.edge.delete': 'Delete edge',
+  'workflow.edge.path': '{from} → {to}',
+  'workflow.edge.kind': 'Edge kind',
+  'workflow.edge.kind.always': 'always (next / join)',
+  'workflow.edge.kind.clue': 'clue (state matched)',
+  'workflow.edge.kind.default': 'default (no state matched)',
+  'workflow.edge.label.clue': 'State · {key}',
+  'workflow.edge.label.clueUnset': 'State',
+  'workflow.edge.label.default': 'No state matched',
+  'workflow.edge.clueKey': 'State key',
+  'workflow.edge.clueKeyRequired': 'State key is required',
+  'workflow.edge.clueKeyHint': 'Stable id for routing, e.g. spam / logistics',
+  'workflow.edge.clueDescription': 'State description',
+  'workflow.edge.clueDescriptionRequired': 'State description is required',
+  'workflow.edge.clueDescriptionHint':
+    'Tell the LLM what counts as a hit; mutual exclusion can go here',
+  'workflow.edge.clueDescriptionPlaceholder':
+    'e.g. mentions tracking number, delivery status, or sign-off',
+  'workflow.edge.detectHint':
+    'State detection nodes may only emit clue/default edges. With any state edge, exactly one default is required. Branches may end independently — shared merge is optional.',
   'workflow.phase.prepare_acquire': 'Prepare & acquire',
   'workflow.phase.prepare_acquire.short': 'Acquire',
   'workflow.phase.generate_process': 'Generate & process',
@@ -1553,7 +1971,9 @@ export default {
   'workflow.phase.effect_confirm': 'Side effects & confirm',
   'workflow.phase.effect_confirm.short': 'Confirm',
   'workflow.action.load_page_context': 'Load page context',
+  'workflow.action.detect_clues': 'State detection',
   'workflow.action.fetch_data': 'Fetch data',
+  'workflow.action.summarize_images': 'Image recognition',
   'workflow.action.generate_and_push': 'Generate and push',
   'workflow.action.summarize': 'Summarize',
   'workflow.action.compose_mutation': 'Compose mutation',
@@ -1613,16 +2033,88 @@ export default {
     'This Workflow change breaks Skill #{skillId} tool bindings — update the Skill first',
   'workflow.error.breaksPageActionRef':
     'This Workflow change breaks PageAction #{pageActionId} hostToolId — update the PageAction first',
+  'workflow.error.edgesRequired':
+    'Send a { nodes, edges } document; linear flows still need always edges (nodes[] alone is rejected)',
+  'workflow.error.edgesInvalid':
+    'Invalid edges — check clue/default/always fields',
+  'workflow.detectClues.sectionTitle': 'State detection',
+  'workflow.detectClues.sectionLead':
+    'Each state and the no-match fallback is a tip; click + under it to attach a node.',
+  'workflow.detectClues.drawerTitle': 'State detection',
+  'workflow.detectClues.nodeMetaTitle': 'Node details',
+  'workflow.detectClues.wiredTo': 'Wired · {name}',
+  'workflow.detectClues.targetMissing': 'Missing target',
+  'workflow.detectClues.deleteConfirm':
+    'Delete this state and its branch rectangle?',
+  'workflow.detectClues.mergeNeedStates': 'Add at least one state first',
+  'workflow.detectClues.editBranchHint':
+    'Canvas branch rectangle text updates when you save.',
+  'workflow.detectClues.panelIntro':
+    'Add state = spawn a branch only; you decide what runs on it.',
+  'workflow.detectClues.fanoutHint':
+    'Multiple matches run serially. Encode mutual exclusion in the hint below.',
+  'workflow.detectClues.usePanelHint':
+    'Open detect-node properties and click “Add state”.',
+  'workflow.detectClues.afterPlusHint':
+    'Creates a small state rectangle. After Key / description, click + under it to add a business node — the rectangle stays.',
+  'workflow.detectClues.canvasPlusHint':
+    'Open detect-node properties → “Add state” for a rectangle; click + under it to add a business node (rectangle is not replaced).',
+  'workflow.detectClues.duplicateKey': 'This key already exists — use a unique id',
+  'workflow.detectClues.listTitle': 'States',
+  'workflow.detectClues.add': 'Add state',
+  'workflow.detectClues.empty': 'No states yet',
+  'workflow.detectClues.keyUnset': 'Key missing',
+  'workflow.detectClues.descUnset': 'Description missing',
+  'workflow.detectClues.needsKey': 'Key needed',
+  'workflow.detectClues.tipPending': 'No child yet',
+  'workflow.detectClues.delete': 'Delete state',
+  'workflow.detectClues.mergeTitle': 'No-match fallback',
+  'workflow.detectClues.mergePlaceholder': 'Select fallback node',
+  'workflow.detectClues.fillJoins': 'Add always joins for state leaves',
+  'workflow.detectClues.mergeHint':
+    'When states exist, a no-match tip is created; click + under it to pick a node.',
+  'workflow.detectClues.mergeBranchHint':
+    'Same as state branches: click + under the “未命中” tip — do not pick an existing node.',
+  'workflow.detectClues.mergeCreateBranch': 'Create no-match branch',
+  'workflow.detectClues.addTitle': 'Add state branch',
+  'workflow.detectClues.editTitle': 'Edit state',
+  'workflow.detectClues.keyExtra': 'Stable id, e.g. spam / logistics',
+  'workflow.detectClues.target': 'Branch node',
+  'workflow.detectClues.targetExtra': 'Pick a branch start on the canvas',
+  'workflow.detectClues.targetAuto': 'Auto-create blank branch',
+  'workflow.detectClues.targetRequired': 'Select a branch node',
+  'workflow.detectClues.targetPlaceholder': 'Select branch node',
+  'workflow.detectClues.addBranchHint':
+    'Creates a small state rectangle — click + under it to add a business node (rectangle stays).',
   'workflow.detail.advancedBindings': 'Advanced: mark required tools',
   'workflow.detail.advancedBindingsHint':
     'Tool / HostTool bindings are derived from node input; adjust isRequired flags here only.',
   'workflow.nodeInput.materialize': 'Materialize page context',
+  'workflow.nodeInput.detectCluesHint':
+    'Define states on outgoing clue edges (key / description). Hint here is optional prompt context only.',
+  'workflow.nodeInput.detectHint': 'Detection hint',
+  'workflow.nodeInput.detectHintExtra':
+    'Mutual exclusion rules, edge cases — e.g. spam vs business intents cannot both match',
+  'workflow.nodeInput.detectHintPlaceholder':
+    'Exclusive: when spam=true, logistics/product/inquiry must be false',
   'workflow.nodeInput.toolId': 'HTTP tool (toolId)',
   'workflow.nodeInput.toolIdRequired': 'Select an HTTP tool',
   'workflow.nodeInput.toolPlaceholder': 'Select tool',
+  'workflow.nodeInput.toolIds': 'HTTP tool whitelist (toolIds)',
+  'workflow.nodeInput.toolIdsRequired': 'Select at least one HTTP tool',
+  'workflow.nodeInput.toolIdsPlaceholder':
+    'Multi-select candidate tools; model picks one at runtime',
+  'workflow.nodeInput.toolIdsExtra':
+    'Whitelist candidates; with multiple options the model picks one to call',
   'workflow.nodeInput.hostToolId': 'Host tool (hostToolId)',
   'workflow.nodeInput.hostToolIdRequired': 'Select a host tool',
   'workflow.nodeInput.hostToolPlaceholder': 'Select host tool',
+  'workflow.nodeInput.hostToolIds': 'Host tool whitelist (hostToolIds)',
+  'workflow.nodeInput.hostToolIdsRequired': 'Select at least one host tool',
+  'workflow.nodeInput.hostToolIdsPlaceholder':
+    'Multi-select candidate host tools; model picks one at runtime',
+  'workflow.nodeInput.hostToolIdsExtra':
+    'Whitelist candidates; with multiple options the model picks one to flush',
   'workflow.nodeInput.completeWhen': 'Complete when',
   'workflow.nodeInput.completeWhen.first_success': 'First success',
   'workflow.nodeInput.completeWhen.fetch_all_pages': 'Fetch all pages',
@@ -1632,6 +2124,37 @@ export default {
   'workflow.nodeInput.summarizeMode.detailed': 'Detailed',
   'workflow.nodeInput.summarizeMode.draft': 'Draft',
   'workflow.nodeInput.summarizeMode.final': 'Final',
+  'workflow.nodeInput.summarizeImagesHelp':
+    'Adding this node enables vision. Ensure upstream tools or pageContext expose images as recognizable URLs.',
+  'workflow.nodeInput.summarizeImagesFrom': 'Image source (from)',
+  'workflow.nodeInput.summarizeImagesFromExtra':
+    'upstream = prior outputs only; page_context = page only; all = both',
+  'workflow.nodeInput.summarizeImagesFrom.upstream': 'Upstream outputs only',
+  'workflow.nodeInput.summarizeImagesFrom.page_context': 'Page context only',
+  'workflow.nodeInput.summarizeImagesFrom.all': 'Upstream + page context',
+  'workflow.nodeInput.summarizeImagesMaxCells': 'Max images (maxCells)',
+  'workflow.nodeInput.summarizeImagesMaxCellsInvalid':
+    'Must be an integer from 1 to 6',
+  'workflow.nodeInput.summarizeImagesCellPx': 'Cell size (cellPx)',
+  'workflow.nodeInput.summarizeImagesCellPxExtra':
+    'Use 512 for fine text; 384 is enough for overviews',
+  'workflow.nodeInput.summarizeImagesCellPxInvalid':
+    'Must be an integer from 128 to 1024',
+  'workflow.nodeInput.summarizeImagesHint': 'Vision hint',
+  'workflow.nodeInput.summarizeImagesHintExtra':
+    'Business focus only — do not hard-code greetings or language tables',
+  'workflow.nodeInput.summarizeImagesHintPlaceholder':
+    'Focus on tracking numbers, amounts, delivery status, etc.',
+  'workflow.nodeInput.summarizeImagesOnFailure': 'On failure',
+  'workflow.nodeInput.summarizeImagesOnFailureExtra':
+    'degrade continues the flow; fail stops this node',
+  'workflow.nodeInput.summarizeImagesOnFailure.degrade': 'Degrade and continue',
+  'workflow.nodeInput.summarizeImagesOnFailure.fail': 'Fail the node',
+  'workflow.nodeInput.summarizeImagesCacheTtl': 'Cache TTL (seconds)',
+  'workflow.nodeInput.summarizeImagesCacheTtlExtra':
+    '0 = disabled; default 86400; max 604800 (7 days)',
+  'workflow.nodeInput.summarizeImagesCacheTtlInvalid':
+    'Must be an integer from 0 to 604800',
   'workflow.nodeInput.presentMode': 'Present mode',
   'workflow.nodeInput.presentMode.brief': 'Brief',
   'workflow.nodeInput.presentMode.detailed': 'Detailed',
@@ -1647,10 +2170,66 @@ export default {
     'Node {nodeId} requires an HTTP tool (toolId)',
   'workflow.validation.host_tool_id_required':
     'Node {nodeId} requires a host tool (hostToolId)',
+  'workflow.validation.missing_tool_ids':
+    'Node {nodeId} requires toolIds (at least 1)',
+  'workflow.validation.missing_host_tool_ids':
+    'Node {nodeId} requires hostToolIds (at least 1)',
+  'workflow.graphValidation.missing_tool_ids':
+    'Node {path} is missing usable toolIds',
+  'workflow.graphValidation.missing_host_tool_ids':
+    'Node {path} is missing usable hostToolIds',
+  'workflow.graphValidation.tool_not_bound':
+    'Tool on node {path} is not in WorkflowTool bindings',
+  'workflow.graphValidation.host_tool_not_bound':
+    'HostTool on node {path} is not in WorkflowHostTool bindings',
+  'workflow.graphValidation.invalid_enum':
+    'Invalid enum at {path}',
+  'workflow.graphValidation.invalid_max_cells':
+    'maxCells must be an integer 1–6 ({path})',
+  'workflow.graphValidation.invalid_cell_px':
+    'cellPx must be an integer 128–1024 ({path})',
+  'workflow.graphValidation.invalid_hint':
+    'hint must be a string ({path})',
+  'workflow.graphValidation.invalid_cache_ttl':
+    'cacheTtlSec must be an integer 0–604800 ({path})',
+  'workflow.graphValidation.edges_required': 'edges are required',
+  'workflow.graphValidation.edges_empty':
+    'edges cannot be empty when there is more than one node',
+  'workflow.graphValidation.multiple_detect_clues':
+    'At most one state-detection node is allowed in v1',
+  'workflow.graphValidation.detect_no_outgoing':
+    'State detection node {path} has no outgoing edges',
+  'workflow.graphValidation.missing_default':
+    'State detection {path} with state edges must have exactly one default',
+  'workflow.graphValidation.duplicate_default':
+    'State detection {path} may only have one default edge',
+  'workflow.graphValidation.duplicate_clue_key':
+    'State detection {path} has duplicate state keys',
+  'workflow.graphValidation.duplicate_clue_target':
+    'State detection {path} cannot point multiple states at the same target',
+  'workflow.graphValidation.default_overlaps_clue_target':
+    'State detection {path} default.to must not match any state target',
+  'workflow.graphValidation.fanout_missing_join':
+    'State edge {path} target is missing an always join (optional; admin no longer requires it)',
+  'workflow.graphValidation.fanout_divergent_join':
+    'State detection {path} fan-out leaves join different nodes (optional; admin no longer requires it)',
+  'workflow.graphValidation.invalid_detect_edge_kind':
+    'State detection {path} may only emit clue or default edges',
+  'workflow.graphValidation.non_detect_branch_edge':
+    'edge {path}: only state detection nodes can emit clue/default',
+  'workflow.graphValidation.clue_fields_required':
+    'State edge {path} requires key and description',
+  'workflow.graphValidation.unknown_endpoint':
+    'edge {path} references an unknown node',
+  'workflow.graphValidation.cycle': 'Graph has a cycle',
+  'workflow.graphValidation.unreachable_node':
+    'node {path} is unreachable from the entry',
   'workflow.configMode.preset': 'Scenario preset',
   'workflow.configMode.nodes': 'Node editor (advanced)',
   'workflow.preset.hint':
     'Pick a scenario preset and bind tools; the server expands it into a node chain on save.',
+  'workflow.preset.incompatibleProfile':
+    'This Preset is not supported for the current profile',
   'workflow.preset.rebuildHint':
     'For existing workflows, saving in preset mode rebuilds nodes from the selected preset.',
   'workflow.preset.required': 'Select a scenario preset',
@@ -1876,6 +2455,23 @@ export default {
     'Response fields the agent must prioritize and keep in summaries.',
   'tool.response.coreField.pickerPlaceholder':
     'Select a core field from response schema…',
+  'tool.response.entityType': 'Entity type (entityType)',
+  'tool.response.entityTypePlaceholder': 'e.g. review',
+  'tool.response.decisionRole': 'Decision role (decisionRole)',
+  'tool.response.decisionRolePlaceholder': 'Select decision role',
+  'tool.response.decisionRole.read-list': 'Read list (read-list)',
+  'tool.response.decisionRole.read-detail': 'Read detail (read-detail)',
+  'tool.response.listPath': 'List path (listPath)',
+  'tool.response.listPathPlaceholder': 'e.g. data.list',
+  'tool.response.arrayLimitsMaxItems': 'Array limit (maxItems)',
+  'tool.response.arrayLimitsMaxItemsPlaceholder': 'e.g. 20',
+  'tool.response.listMetaField.section': 'List meta fields (listMetaFields)',
+  'tool.response.listMetaField.sectionDesc':
+    'Container-level list fields; not projected into each Entity.',
+  'tool.response.listMetaField.empty':
+    'No list meta fields yet—pick from response schema below',
+  'tool.response.listMetaField.pickerPlaceholder':
+    'Select list meta field from response schema…',
   'tool.response.optionalField.section': 'Optional Data Fields',
   'tool.response.optionalField.sectionDesc':
     'Secondary response fields to include when present, otherwise ignored.',

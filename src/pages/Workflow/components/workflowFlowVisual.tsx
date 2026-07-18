@@ -6,15 +6,25 @@ import {
   WORKFLOW_PHASE_SHORT_LABEL_FALLBACK,
   WORKFLOW_PHASE_VISUAL,
 } from '../workflowNodePhase';
-import { resolvePhaseShortLabel, resolveAwaitUserConfirmGateHint } from './workflowFlowLabels';
+import { BRANCH_TIP_FLAG } from '../workflowGraph';
+import {
+  resolveNodeHostToolIds,
+  resolveNodeToolIds,
+} from '../workflowShared';
+import {
+  resolvePhaseShortLabel,
+  resolveAwaitUserConfirmGateHint,
+} from './workflowFlowLabels';
 import {
   CloudDownloadOutlined,
   DesktopOutlined,
   EditOutlined,
   FileSearchOutlined,
   FileTextOutlined,
+  PictureOutlined,
   SaveOutlined,
   SendOutlined,
+  SearchOutlined,
   ThunderboltOutlined,
   UserOutlined,
 } from '@ant-design/icons';
@@ -30,6 +40,8 @@ export type WorkflowFlowNodeData = {
   workflowNodeId: string;
   workflowName: string;
   workflowInput: Record<string, unknown>;
+  /** 状态识别产出的空分支末梢，尚未选择业务动作 */
+  isBranchTip?: boolean;
   /** 由画布在挂载时注入，供 X6 React 节点渲染（无 Intl 上下文） */
   phaseShortLabel?: string;
   actionShortLabel?: string;
@@ -52,10 +64,20 @@ export const WORKFLOW_ACTION_VISUAL: Record<
     iconFg: '#1677ff',
     icon: <FileSearchOutlined />,
   },
+  detect_clues: {
+    iconBg: 'rgba(234,88,12,0.12)',
+    iconFg: '#c2410c',
+    icon: <SearchOutlined />,
+  },
   fetch_data: {
     iconBg: 'rgba(8,145,178,0.12)',
     iconFg: '#0e7490',
     icon: <CloudDownloadOutlined />,
+  },
+  summarize_images: {
+    iconBg: 'rgba(14,165,233,0.12)',
+    iconFg: '#0369a1',
+    icon: <PictureOutlined />,
   },
   generate_and_push: {
     iconBg: 'rgba(124,58,237,0.12)',
@@ -132,15 +154,27 @@ export function workflowNodeBindingMeta(
   action: WorkflowActionKind,
   input: Record<string, unknown>,
 ): { bindingLabel: string | null; needsBinding: boolean } {
-  const toolId = input.toolId;
-  const hostToolId = input.hostToolId;
-  const toolActions: WorkflowActionKind[] = [
-    'fetch_data',
+  const singleToolActions: WorkflowActionKind[] = [
     'compose_mutation',
     'write_data',
   ];
 
-  if (toolActions.includes(action)) {
+  if (action === 'fetch_data') {
+    const toolIds = resolveNodeToolIds(input);
+    if (toolIds.length === 0) {
+      return { bindingLabel: null, needsBinding: true };
+    }
+    if (toolIds.length === 1) {
+      return { bindingLabel: `Tool #${toolIds[0]}`, needsBinding: false };
+    }
+    return {
+      bindingLabel: `Tools ×${toolIds.length}`,
+      needsBinding: false,
+    };
+  }
+
+  if (singleToolActions.includes(action)) {
+    const toolId = input.toolId;
     if (typeof toolId === 'number' && toolId > 0) {
       return { bindingLabel: `Tool #${toolId}`, needsBinding: false };
     }
@@ -148,10 +182,20 @@ export function workflowNodeBindingMeta(
   }
 
   if (action === 'generate_and_push') {
-    if (typeof hostToolId === 'number' && hostToolId > 0) {
-      return { bindingLabel: `HostTool #${hostToolId}`, needsBinding: false };
+    const hostToolIds = resolveNodeHostToolIds(input);
+    if (hostToolIds.length === 0) {
+      return { bindingLabel: null, needsBinding: true };
     }
-    return { bindingLabel: null, needsBinding: true };
+    if (hostToolIds.length === 1) {
+      return {
+        bindingLabel: `HostTool #${hostToolIds[0]}`,
+        needsBinding: false,
+      };
+    }
+    return {
+      bindingLabel: `HostTools ×${hostToolIds.length}`,
+      needsBinding: false,
+    };
   }
 
   return { bindingLabel: null, needsBinding: false };
@@ -167,6 +211,7 @@ export function workflowNodeToFlowData(node: {
   const phase = getActionPhase(node.action);
   const displayName = node.name?.trim() || node.id;
   const binding = workflowNodeBindingMeta(node.action, node.input ?? {});
+  const isBranchTip = node.input?.[BRANCH_TIP_FLAG] === true;
   return {
     nodeType: 'execute',
     status: workflowNodeStatus({ name: node.name, objective: node.objective }),
@@ -176,16 +221,20 @@ export function workflowNodeToFlowData(node: {
     workflowNodeId: node.id,
     workflowName: node.name ?? '',
     workflowInput: node.input ?? {},
-    phaseShortLabel:
-      resolvePhaseShortLabel(phase) ||
-      WORKFLOW_PHASE_SHORT_LABEL_FALLBACK[phase],
-    actionShortLabel: WORKFLOW_ACTION_SHORT_LABEL_FALLBACK[node.action],
+    isBranchTip,
+    phaseShortLabel: isBranchTip
+      ? '状态'
+      : resolvePhaseShortLabel(phase) ||
+        WORKFLOW_PHASE_SHORT_LABEL_FALLBACK[phase],
+    actionShortLabel: isBranchTip
+      ? '状态'
+      : WORKFLOW_ACTION_SHORT_LABEL_FALLBACK[node.action],
     gateHint:
-      node.action === 'await_user_confirm'
+      !isBranchTip && node.action === 'await_user_confirm'
         ? resolveAwaitUserConfirmGateHint()
         : undefined,
-    bindingLabel: binding.bindingLabel,
-    needsBinding: binding.needsBinding,
+    bindingLabel: isBranchTip ? null : binding.bindingLabel,
+    needsBinding: isBranchTip ? false : binding.needsBinding,
     selected: false,
   };
 }

@@ -55,6 +55,11 @@ export type ToolFormValues = {
   outputSchemaFields: ToolOutputSchemaField[];
   responseCoreFields: ToolCoreFieldRow[];
   responseOptionalFields: ToolCoreFieldRow[];
+  responseListMetaFields: ToolCoreFieldRow[];
+  responseEntityType?: string;
+  responseDecisionRole?: import('@/types/tool').ToolDecisionRole | string;
+  responseListPath?: string;
+  responseArrayLimitsMaxItems?: number;
   agentMetadata: AgentMetadata | null;
 };
 
@@ -667,11 +672,31 @@ export function rowsToProfileFields(
       return;
     }
 
-    const obj: Record<string, unknown> = { path };
+    const obj: import('@/types/tool').ToolProfileField = { path };
     if (label) obj.label = label;
     if (description) obj.description = description;
     if (includeKeywords && keywords.length > 0) obj.keywords = keywords;
     result.push(obj);
+  });
+
+  return result.length ? result : undefined;
+}
+
+export function rowsToListMetaFields(
+  rows: ToolCoreFieldRow[],
+): import('@/types/tool').ToolProfileField[] | undefined {
+  const result: import('@/types/tool').ToolProfileField[] = [];
+
+  rows.forEach((row) => {
+    const path = row.path.trim();
+    if (!path) return;
+
+    const field: import('@/types/tool').ToolProfileField = { path };
+    const label = row.label.trim();
+    const description = row.description.trim();
+    if (label) field.label = label;
+    if (description) field.description = description;
+    result.push(field);
   });
 
   return result.length ? result : undefined;

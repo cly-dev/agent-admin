@@ -68,7 +68,8 @@ const SkillDetailPage: React.FC = () => {
     promptToolOptions,
     promptHostToolOptions,
     resolvedAppClientId,
-    workflowBinding,
+    flowBinding,
+    legacyWorkflowId,
     hasLegacyWorkflow,
     executionMode,
     useRawConfigOnly,
@@ -78,7 +79,7 @@ const SkillDetailPage: React.FC = () => {
     handlePromptChange,
     handleExecutionModeChange,
     handleToolSelectionChange,
-    handleWorkflowBindingChange,
+    handleFlowBindingChange,
     handleConfigJsonChange,
     toggleToolRequired,
     handleHostToolTabRowChange,
@@ -408,12 +409,13 @@ const SkillDetailPage: React.FC = () => {
                 mode="workflow"
                 promptValue={promptValue}
                 onPromptChange={handlePromptChange}
-                workflowBinding={workflowBinding}
+                flowBinding={flowBinding}
+                legacyWorkflowId={legacyWorkflowId}
                 hasLegacyWorkflow={hasLegacyWorkflow}
                 useRawConfigOnly={useRawConfigOnly}
                 saving={saving}
                 promptDisabled={editorDisabled}
-                onWorkflowBindingChange={handleWorkflowBindingChange}
+                onFlowBindingChange={handleFlowBindingChange}
               />
             </FormPanel>
           )}

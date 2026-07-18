@@ -131,6 +131,16 @@ export function normalizePageAction(raw: unknown): PageAction {
         : typeof item.workflow_name === 'string'
           ? item.workflow_name
           : undefined,
+    flowId: normalizeNullableNumber(item.flowId ?? item.flow_id),
+    flowVersion: normalizeNullableNumber(
+      item.flowVersion ?? item.flow_version,
+    ),
+    flowName:
+      typeof item.flowName === 'string'
+        ? item.flowName
+        : typeof item.flow_name === 'string'
+          ? item.flow_name
+          : undefined,
     createdAt: normalizeDate(item.createdAt ?? item.created_at),
     updatedAt: normalizeDate(item.updatedAt ?? item.updated_at),
   };

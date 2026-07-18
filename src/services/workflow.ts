@@ -1,4 +1,4 @@
-import { parseWorkflowNodes } from '@/pages/Workflow/workflowShared';
+import { parseWorkflowGraph } from '@/pages/Workflow/workflowGraph';
 import type { PageResult } from '@/types/integration';
 import type {
   CreateWorkflowDto,
@@ -121,7 +121,10 @@ function normalizeWorkflowBase(item: Record<string, unknown>) {
   if (!Number.isFinite(id) || id <= 0) {
     throw new Error('Invalid Workflow id');
   }
-  const nodes = parseWorkflowNodes(item.nodes);
+  const graph = parseWorkflowGraph(item.nodes);
+  const nodes = graph.nodes;
+  const edges = graph.edges;
+  const entryNodeId = graph.entryNodeId;
   const constraintsRaw = item.constraints;
   const constraints = Array.isArray(constraintsRaw)
     ? constraintsRaw.map((c) => String(c))
@@ -156,6 +159,8 @@ function normalizeWorkflowBase(item: Record<string, unknown>) {
     profile: String(item.profile ?? 'shared'),
     deliverable: String(item.deliverable ?? 'answer'),
     nodes,
+    edges,
+    entryNodeId,
     version: Number(item.version ?? 1),
     constraints,
     isActive: normalizeBoolean(item.isActive ?? item.is_active ?? true),
@@ -212,12 +217,15 @@ export function normalizeWorkflowRevision(raw: unknown): WorkflowRevision {
   const constraints = Array.isArray(constraintsRaw)
     ? constraintsRaw.map((c) => String(c))
     : [];
+  const graph = parseWorkflowGraph(item.nodes);
   return {
     id,
     workflowId,
     version: Number(item.version ?? 0),
     deliverable: String(item.deliverable ?? ''),
-    nodes: parseWorkflowNodes(item.nodes),
+    nodes: graph.nodes,
+    edges: graph.edges,
+    entryNodeId: graph.entryNodeId,
     constraints,
     changeNote:
       typeof item.changeNote === 'string'

@@ -10,13 +10,31 @@ export const WorkflowFlowNodeReact: FC<{ node: Node }> = ({ node }) => {
   const data = (node.getData() ?? {}) as WorkflowFlowNodeData;
   const action = data.workflowAction ?? 'summarize';
   const visual = getWorkflowActionVisual(action);
+  const isBranchTip = Boolean(data.isBranchTip);
 
   const name =
     data.name?.trim() || data.workflowName?.trim() || data.workflowNodeId || ' ';
   const description = data.description?.trim() ?? '';
   const gateHint = data.gateHint?.trim() ?? '';
 
-  const nodeClassName = [styles.node, data.selected ? styles.nodeSelected : '']
+  if (isBranchTip) {
+    const tipClass = [
+      styles.branchRect,
+      data.selected ? styles.branchRectSelected : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    return (
+      <div className={tipClass} title={description || name}>
+        <span className={styles.branchRectLabel}>{name}</span>
+      </div>
+    );
+  }
+
+  const nodeClassName = [
+    styles.node,
+    data.selected ? styles.nodeSelected : '',
+  ]
     .filter(Boolean)
     .join(' ');
 

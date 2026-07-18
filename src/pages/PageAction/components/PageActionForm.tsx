@@ -1,7 +1,7 @@
 import PageScopeSelect from '@/components/PageScopeSelect';
-import WorkflowBindingPanel from '@/pages/Workflow/components/WorkflowBindingPanel';
+import FlowBindingPanel from '@/pages/Flow/components/FlowBindingPanel';
+import type { FlowBindingValue } from '@/types/flow';
 import type { HostTool } from '@/types/host-tool';
-import type { WorkflowBindingValue } from '@/types/workflow';
 import {
   ApartmentOutlined,
   ApiOutlined,
@@ -36,8 +36,9 @@ type PageActionFormProps = {
   projectId?: number;
   configMode: PageActionConfigMode;
   onConfigModeChange: (mode: PageActionConfigMode) => void;
-  workflowBinding?: WorkflowBindingValue;
-  onWorkflowBindingChange?: (value: WorkflowBindingValue) => void;
+  flowBinding?: FlowBindingValue;
+  legacyWorkflowId?: number | null;
+  onFlowBindingChange?: (value: FlowBindingValue) => void;
   onPushHostToolResolved?: (
     hostToolId: number | null,
     hasPushNode: boolean,
@@ -426,9 +427,9 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
   projectId,
   configMode,
   onConfigModeChange,
-  workflowBinding,
-  onWorkflowBindingChange,
-  onPushHostToolResolved,
+  flowBinding,
+  legacyWorkflowId = null,
+  onFlowBindingChange,
   workflowPushState,
   onFinish,
   onHostToolChange,
@@ -513,13 +514,13 @@ const PageActionForm: React.FC<PageActionFormProps> = ({
                 id: 'pageAction.form.configMode.workflow.alert',
               })}
             />
-            {workflowBinding && onWorkflowBindingChange ? (
-              <WorkflowBindingPanel
+            {flowBinding && onFlowBindingChange ? (
+              <FlowBindingPanel
                 projectId={projectId}
                 entry="page_action"
-                value={workflowBinding}
-                onChange={onWorkflowBindingChange}
-                onPushHostToolResolved={onPushHostToolResolved}
+                value={flowBinding}
+                legacyWorkflowId={legacyWorkflowId}
+                onChange={onFlowBindingChange}
               />
             ) : null}
             <PageActionWorkflowPushPreview

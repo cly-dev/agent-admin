@@ -17,7 +17,9 @@ import {
 } from '@/services/tool';
 import type { Integration } from '@/types/integration';
 import type {
+  InitToolSchemasFromDebugResult,
   Tool,
+  ToolArrayLimits,
   ToolHttpMethod,
   ToolResponseProfile,
   ToolRiskLevel,
@@ -41,7 +43,7 @@ import {
   parametersFromToolSchemas,
   validateToolParameters,
 } from '../toolSchema';
-import type { ToolFormValues } from '../useTools';
+import type { ToolFormValues, ToolOutputSchemaField } from '../useTools';
 import {
   buildCreateToolPayload,
   buildOutputSchemaFromFields,
@@ -50,10 +52,25 @@ import {
   normalizeOutputSchemaFields,
   outputSchemaToFields,
   profileFieldsToRows,
-  rowsToProfileFields,
   rowsToListMetaFields,
-  type ToolOutputSchemaField,
+  rowsToProfileFields,
 } from '../useTools';
+
+function resolveArrayLimitsList(
+  arrayLimits: ToolArrayLimits | undefined,
+): number | undefined {
+  if (!arrayLimits || typeof arrayLimits !== 'object') {
+    return undefined;
+  }
+  if (typeof arrayLimits.list === 'number' && arrayLimits.list > 0) {
+    return arrayLimits.list;
+  }
+  const legacy = (arrayLimits as Record<string, unknown>).maxItems;
+  if (typeof legacy === 'number' && legacy > 0) {
+    return legacy;
+  }
+  return undefined;
+}
 
 const HTTP_METHODS: ToolHttpMethod[] = ['Get', 'Post', 'Put', 'Delete'];
 const RISK_LEVELS: ToolRiskLevel[] = ['L1', 'L2', 'L3'];
@@ -164,12 +181,14 @@ export function useToolDetail() {
       setOutputSchemaFields(normalizeOutputSchemaFields(fallbackOutputFields));
       form.setFieldsValue({
         name: detail.name,
+        definitionKey: detail.definitionKey ?? '',
         description: detail.description,
         method: detail.method,
         path: detail.path,
         integrationId: detail.integrationId,
         riskLevel: detail.riskLevel,
         isActive: detail.isActive,
+        timeout: detail.timeout,
         parameters,
         outputSchemaFields: normalizeOutputSchemaFields(fallbackOutputFields),
         responseCoreFields: profileFieldsToRows(
@@ -193,10 +212,9 @@ export function useToolDetail() {
           typeof detail.responseProfile?.listPath === 'string'
             ? detail.responseProfile.listPath
             : undefined,
-        responseArrayLimitsMaxItems:
-          typeof detail.responseProfile?.arrayLimits?.maxItems === 'number'
-            ? detail.responseProfile.arrayLimits.maxItems
-            : undefined,
+        responseArrayLimitsList: resolveArrayLimitsList(
+          detail.responseProfile?.arrayLimits,
+        ),
         agentMetadata,
       });
       setTestParams(buildTestParamsFromToolParameters(parameters));
@@ -229,12 +247,14 @@ export function useToolDetail() {
         setTool(null);
         form.setFieldsValue({
           name: '',
+          definitionKey: '',
           description: '',
           method: DEFAULT_TOOL_METHOD,
           path: '',
           integrationId: integrationResult.list[0]?.id,
           riskLevel: DEFAULT_TOOL_RISK,
           isActive: true,
+          timeout: undefined,
           parameters: [],
           outputSchemaFields: [],
           responseCoreFields: [],
@@ -395,11 +415,11 @@ export function useToolDetail() {
       }
 
       if (
-        typeof values.responseArrayLimitsMaxItems === 'number' &&
-        values.responseArrayLimitsMaxItems > 0
+        typeof values.responseArrayLimitsList === 'number' &&
+        values.responseArrayLimitsList > 0
       ) {
         baseProfile.arrayLimits = {
-          maxItems: values.responseArrayLimitsMaxItems,
+          list: values.responseArrayLimitsList,
         };
       } else {
         delete (baseProfile as Record<string, unknown>).arrayLimits;
@@ -408,6 +428,43 @@ export function useToolDetail() {
       responseProfile = Object.keys(baseProfile).length
         ? (baseProfile as ToolResponseProfile)
         : undefined;
+
+      const isReadMode =
+        values.agentMetadata?.mode === 'READ' ||
+        !values.agentMetadata?.mode;
+      if (isReadMode && (!nextCoreFields || nextCoreFields.length === 0)) {
+        message.error(
+          intl.formatMessage({ id: 'tool.response.validation.coreRequired' }),
+        );
+        return;
+      }
+      const listPathForValidate = values.responseListPath?.trim();
+      if (
+        (values.responseDecisionRole === 'read-list' ||
+          Boolean(listPathForValidate)) &&
+        !listPathForValidate
+      ) {
+        message.error(
+          intl.formatMessage({ id: 'tool.response.validation.listPathRequired' }),
+        );
+        return;
+      }
+      if ((nextCoreFields?.length ?? 0) > 8) {
+        message.warning(
+          intl.formatMessage({ id: 'tool.response.validation.coreTooMany' }),
+        );
+      }
+      if (
+        values.agentMetadata?.mode === 'WRITE' &&
+        (!values.agentMetadata.businessFields ||
+          values.agentMetadata.businessFields.length === 0)
+      ) {
+        message.warning(
+          intl.formatMessage({
+            id: 'tool.response.validation.businessFieldsSuggested',
+          }),
+        );
+      }
     }
 
     setSubmitting(true);
@@ -492,6 +549,51 @@ export function useToolDetail() {
     }
   };
 
+  const [initSchemasPreview, setInitSchemasPreview] =
+    useState<InitToolSchemasFromDebugResult | null>(null);
+  const [initSchemasPreviewOpen, setInitSchemasPreviewOpen] = useState(false);
+
+  const applyInitSchemasResultToForm = useCallback(
+    (result: InitToolSchemasFromDebugResult) => {
+      const nextOutputFields = normalizeOutputSchemaFields(
+        outputSchemaToFields(result.outputSchema as object | undefined),
+      );
+      setOutputSchemaFields(nextOutputFields);
+      const profile = result.responseProfile;
+      const rawMeta = normalizeAgentMetadata(result.agentMetadata);
+      const parameters = form.getFieldValue('parameters') ?? [];
+      const agentMetadata = rawMeta
+        ? {
+            ...rawMeta,
+            paramFormatHints: syncParamFormatHintsWithParameters(
+              parameters,
+              rawMeta.paramFormatHints,
+            ),
+          }
+        : form.getFieldValue('agentMetadata') ?? null;
+
+      form.setFieldsValue({
+        outputSchemaFields: nextOutputFields,
+        responseCoreFields: profileFieldsToRows(profile?.coreFields),
+        responseOptionalFields: profileFieldsToRows(profile?.optionalFields),
+        responseListMetaFields: profileFieldsToRows(profile?.listMetaFields),
+        responseEntityType:
+          typeof profile?.entityType === 'string'
+            ? profile.entityType
+            : undefined,
+        responseDecisionRole:
+          typeof profile?.decisionRole === 'string'
+            ? profile.decisionRole
+            : undefined,
+        responseListPath:
+          typeof profile?.listPath === 'string' ? profile.listPath : undefined,
+        responseArrayLimitsList: resolveArrayLimitsList(profile?.arrayLimits),
+        agentMetadata,
+      });
+    },
+    [form],
+  );
+
   const handleGenerateResponseSchemas = async () => {
     if (isCreateMode || !tool || !projectId) {
       message.warning(
@@ -514,17 +616,77 @@ export function useToolDetail() {
     const payload = buildInitSchemasFromDebugRequest(testParams, {
       apiKey: testApiKey,
       hint: schemaHint,
-      persist: true,
+      persist: false,
     });
 
     setGeneratingSchemas(true);
     try {
-      await ToolController_initSchemasFromDebug(projectId, tool.id, payload);
+      const result = await ToolController_initSchemasFromDebug(
+        projectId,
+        tool.id,
+        payload,
+      );
+      setInitSchemasPreview(result);
+      setInitSchemasPreviewOpen(true);
+    } catch (error: unknown) {
+      message.error(
+        error instanceof Error
+          ? error.message
+          : intl.formatMessage({ id: 'tool.detail.generateSchemasFailed' }),
+      );
+    } finally {
+      setGeneratingSchemas(false);
+    }
+  };
+
+  const handleApplyInitSchemasPreview = () => {
+    if (!initSchemasPreview) {
+      return;
+    }
+    applyInitSchemasResultToForm(initSchemasPreview);
+    setInitSchemasPreviewOpen(false);
+    message.success(
+      intl.formatMessage({ id: 'tool.initSchemas.appliedToForm' }),
+    );
+  };
+
+  const handleApplyAndPersistInitSchemas = async () => {
+    if (isCreateMode || !tool || !projectId) {
+      return;
+    }
+    const invalidBody = findInvalidApiTestBodyParam(testParams);
+    if (invalidBody) {
+      message.error(
+        intl.formatMessage(
+          { id: 'apiTestPanel.bodyJsonInvalid' },
+          { name: invalidBody },
+        ),
+      );
+      return;
+    }
+    setGeneratingSchemas(true);
+    try {
+      const result = await ToolController_initSchemasFromDebug(
+        projectId,
+        tool.id,
+        buildInitSchemasFromDebugRequest(testParams, {
+          apiKey: testApiKey,
+          hint: schemaHint,
+          persist: true,
+        }),
+      );
+      if (result.tool) {
+        applyToolToForm(result.tool);
+      } else {
+        applyInitSchemasResultToForm(result);
+        const refreshed = await ToolController_findOne(tool.id);
+        applyToolToForm(refreshed);
+      }
+      setInitSchemasPreviewOpen(false);
+      setInitSchemasPreview(null);
       message.success(
         intl.formatMessage({ id: 'tool.detail.generateSchemasSuccess' }),
       );
-      const refreshed = await ToolController_findOne(tool.id);
-      applyToolToForm(refreshed);
     } catch (error: unknown) {
       message.error(
         error instanceof Error
@@ -589,6 +751,11 @@ export function useToolDetail() {
     handleSubmit,
     handleRunTest,
     handleGenerateResponseSchemas,
+    initSchemasPreview,
+    initSchemasPreviewOpen,
+    setInitSchemasPreviewOpen,
+    handleApplyInitSchemasPreview,
+    handleApplyAndPersistInitSchemas,
     fillTestParamsFromParameters,
   };
 }

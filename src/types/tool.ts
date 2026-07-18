@@ -36,12 +36,17 @@ export type ToolProfileField = {
 /** 大模型响应摘要：coreFields 可为字段路径字符串或结构化对象 */
 export type ToolCoreField = string | ToolProfileField;
 
-export type ToolDecisionRole = 'read-list' | 'read-detail';
+export type ToolDecisionRole =
+  | 'read-detail'
+  | 'read-list'
+  | 'read-stats'
+  | 'write-single'
+  | 'write-batch'
+  | 'write-meta'
+  | 'admin';
 
-export type ToolArrayLimits = {
-  maxItems?: number;
-  maxDepth?: number;
-};
+/** 数组截断：按列表键限制条数，如 { list: 50 } */
+export type ToolArrayLimits = Record<string, number>;
 
 export interface ToolResponseProfile {
   entityType?: string;
@@ -58,6 +63,8 @@ export interface Tool {
   id: number;
   appClientId: number;
   name: string;
+  /** 业务能力键：同一 AppClient 内唯一，跨环境对齐 */
+  definitionKey?: string;
   description: string;
   riskLevel: ToolRiskLevel;
   method: ToolHttpMethod;
@@ -90,6 +97,11 @@ export interface CreateToolDto {
    * @example "getOrderList"
    */
   name: string;
+  /**
+   * 业务能力键：同一 AppClient 内唯一，用于跨系统对齐；未传则服务端自动生成
+   * @example "order.get.getOrderList"
+   */
+  definitionKey?: string;
   /** 工具描述 */
   description: string;
   /**
@@ -136,6 +148,7 @@ export interface CreateToolDto {
 export interface UpdateToolDto {
   appClientId?: number;
   name?: string;
+  definitionKey?: string;
   description?: string;
   riskLevel?: ToolRiskLevel;
   schema?: ToolInputSchemaPayload;
@@ -184,10 +197,22 @@ export interface InitToolSchemasFromDebugDto {
   headers?: object;
   apiKey?: string;
   timeoutMs?: number;
-  /** 是否将推断结果写回 Tool.outputSchema / Tool.responseProfile */
+  /** 是否将推断结果写回 Tool；推荐默认 false，预览后再应用 */
   persist?: boolean;
   /** 补充说明，帮助大模型判断哪些字段应作为 coreFields */
   hint?: string;
+}
+
+export interface InitToolSchemasFromDebugResult {
+  debug?: DebugToolResult;
+  outputSchema?: Record<string, unknown> | object;
+  responseProfile?: ToolResponseProfile;
+  agentMetadata?: AgentMetadata | null;
+  source?: 'llm' | 'fallback' | string;
+  agentMetadataSource?: 'llm' | 'heuristic' | 'existing' | string;
+  persisted?: boolean;
+  tool?: Tool;
+  adjustments?: Array<{ code?: string; message?: string } | string>;
 }
 
 export interface ToolControllerFindPageParams {

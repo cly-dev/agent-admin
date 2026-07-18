@@ -5,7 +5,15 @@ import type { ToolOutputSchemaField } from '../useTools';
 import ResponseProfileFieldList from './ResponseProfileFieldList';
 import styles from '../index.module.scss';
 
-const DECISION_ROLES: ToolDecisionRole[] = ['read-list', 'read-detail'];
+const DECISION_ROLES: ToolDecisionRole[] = [
+  'read-detail',
+  'read-list',
+  'read-stats',
+  'write-single',
+  'write-batch',
+  'write-meta',
+  'admin',
+];
 
 type Props = {
   disabled?: boolean;
@@ -18,20 +26,35 @@ const ToolResponseProfileMeta: React.FC<Props> = ({
 }) => {
   const intl = useIntl();
   const form = Form.useFormInstance();
+  const listPath =
+    (Form.useWatch('responseListPath', form) as string | undefined)?.trim() ??
+    '';
+  const decisionRole = Form.useWatch('responseDecisionRole', form) as
+    | string
+    | undefined;
+  const showListMeta =
+    Boolean(listPath) || decisionRole === 'read-list';
+
   const coreRows =
-    (Form.useWatch('responseCoreFields', form) as { path: string }[] | undefined) ??
-    [];
+    (Form.useWatch('responseCoreFields', form) as
+      | { path: string }[]
+      | undefined) ?? [];
   const listMetaRows =
-    (Form.useWatch('responseListMetaFields', form) as { path: string }[] | undefined) ??
-    [];
+    (Form.useWatch('responseListMetaFields', form) as
+      | { path: string }[]
+      | undefined) ?? [];
   const optionalRows =
-    (Form.useWatch('responseOptionalFields', form) as { path: string }[] | undefined) ??
-    [];
+    (Form.useWatch('responseOptionalFields', form) as
+      | { path: string }[]
+      | undefined) ?? [];
 
   const corePaths = coreRows.map((row) => row.path.trim()).filter(Boolean);
-  const listMetaPaths = listMetaRows.map((row) => row.path.trim()).filter(Boolean);
-  const optionalPaths = optionalRows.map((row) => row.path.trim()).filter(Boolean);
-  const allUsedPaths = [...corePaths, ...listMetaPaths, ...optionalPaths];
+  const listMetaPaths = listMetaRows
+    .map((row) => row.path.trim())
+    .filter(Boolean);
+  const optionalPaths = optionalRows
+    .map((row) => row.path.trim())
+    .filter(Boolean);
 
   return (
     <div className={styles.toolResponseProfileMeta}>
@@ -44,6 +67,7 @@ const ToolResponseProfileMeta: React.FC<Props> = ({
               {intl.formatMessage({ id: 'tool.response.entityType' })}
             </span>
           }
+          tooltip={intl.formatMessage({ id: 'tool.response.entityTypeHint' })}
         >
           <Input
             className="app-input"
@@ -62,6 +86,7 @@ const ToolResponseProfileMeta: React.FC<Props> = ({
               {intl.formatMessage({ id: 'tool.response.decisionRole' })}
             </span>
           }
+          tooltip={intl.formatMessage({ id: 'tool.response.decisionRoleHint' })}
         >
           <Select
             className="app-input"
@@ -87,6 +112,7 @@ const ToolResponseProfileMeta: React.FC<Props> = ({
               {intl.formatMessage({ id: 'tool.response.listPath' })}
             </span>
           }
+          tooltip={intl.formatMessage({ id: 'tool.response.listPathHint' })}
         >
           <Input
             className="app-input"
@@ -97,43 +123,54 @@ const ToolResponseProfileMeta: React.FC<Props> = ({
           />
         </Form.Item>
 
-        <Form.Item
-          name="responseArrayLimitsMaxItems"
-          className={styles.toolDetailField}
-          label={
-            <span className={styles.toolDetailLabel}>
-              {intl.formatMessage({ id: 'tool.response.arrayLimitsMaxItems' })}
-            </span>
-          }
-        >
-          <InputNumber
-            className="app-input w-full"
-            min={1}
-            disabled={disabled}
-            placeholder={intl.formatMessage({
-              id: 'tool.response.arrayLimitsMaxItemsPlaceholder',
+        {showListMeta ? (
+          <Form.Item
+            name="responseArrayLimitsList"
+            className={styles.toolDetailField}
+            label={
+              <span className={styles.toolDetailLabel}>
+                {intl.formatMessage({ id: 'tool.response.arrayLimitsList' })}
+              </span>
+            }
+            tooltip={intl.formatMessage({
+              id: 'tool.response.arrayLimitsListHint',
             })}
-          />
-        </Form.Item>
+          >
+            <InputNumber
+              className="app-input w-full"
+              min={1}
+              disabled={disabled}
+              placeholder={intl.formatMessage({
+                id: 'tool.response.arrayLimitsListPlaceholder',
+              })}
+            />
+          </Form.Item>
+        ) : null}
       </div>
 
-      <ResponseProfileFieldList
-        listName="responseListMetaFields"
-        title={intl.formatMessage({ id: 'tool.response.listMetaField.section' })}
-        description={intl.formatMessage({
-          id: 'tool.response.listMetaField.sectionDesc',
-        })}
-        emptyText={intl.formatMessage({ id: 'tool.response.listMetaField.empty' })}
-        pickerPlaceholder={intl.formatMessage({
-          id: 'tool.response.listMetaField.pickerPlaceholder',
-        })}
-        noCandidatesText={intl.formatMessage({
-          id: 'tool.response.profileField.noCandidates',
-        })}
-        disabled={disabled}
-        outputSchemaFields={outputSchemaFields}
-        siblingPaths={[...corePaths, ...optionalPaths]}
-      />
+      {showListMeta ? (
+        <ResponseProfileFieldList
+          listName="responseListMetaFields"
+          title={intl.formatMessage({
+            id: 'tool.response.listMetaField.section',
+          })}
+          description={intl.formatMessage({
+            id: 'tool.response.listMetaField.sectionDesc',
+          })}
+          emptyText={intl.formatMessage({
+            id: 'tool.response.listMetaField.empty',
+          })}
+          pickerPlaceholder={intl.formatMessage({
+            id: 'tool.response.listMetaField.pickerPlaceholder',
+          })}
+          noCandidatesText={intl.formatMessage({
+            id: 'tool.response.profileField.noCandidates',
+          })}
+          disabled={disabled}
+          outputSchemaFields={outputSchemaFields}
+          siblingPaths={[...corePaths, ...optionalPaths]}
+        />
+      ) : null}
     </div>
   );
 };

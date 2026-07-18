@@ -45,12 +45,14 @@ export { normalizeTool } from './toolNormalize';
 
 export type ToolFormValues = {
   name: string;
+  definitionKey?: string;
   description: string;
   method: ToolHttpMethod;
   path: string;
   integrationId: number;
   riskLevel: ToolRiskLevel;
   isActive: boolean;
+  timeout?: number;
   parameters: ToolParameter[];
   outputSchemaFields: ToolOutputSchemaField[];
   responseCoreFields: ToolCoreFieldRow[];
@@ -59,7 +61,8 @@ export type ToolFormValues = {
   responseEntityType?: string;
   responseDecisionRole?: import('@/types/tool').ToolDecisionRole | string;
   responseListPath?: string;
-  responseArrayLimitsMaxItems?: number;
+  /** arrayLimits.list */
+  responseArrayLimitsList?: number;
   agentMetadata: AgentMetadata | null;
 };
 
@@ -732,6 +735,12 @@ export function buildCreateToolPayload(
     integrationId: values.integrationId,
     riskLevel: values.riskLevel,
     isActive: values.isActive,
+    ...(values.definitionKey?.trim()
+      ? { definitionKey: values.definitionKey.trim() }
+      : {}),
+    ...(typeof values.timeout === 'number' && values.timeout > 0
+      ? { timeout: values.timeout }
+      : {}),
     ...(agentMetadata ? { agentMetadata } : {}),
     ...schemaFields,
   };
@@ -755,6 +764,12 @@ export function buildUpdateToolPayload(
     integrationId: values.integrationId,
     riskLevel: values.riskLevel,
     isActive: values.isActive,
+    ...(values.definitionKey?.trim()
+      ? { definitionKey: values.definitionKey.trim() }
+      : {}),
+    ...(typeof values.timeout === 'number' && values.timeout > 0
+      ? { timeout: values.timeout }
+      : {}),
     outputSchema: responseFields?.outputSchema,
     responseProfile: responseFields?.responseProfile,
     agentMetadata: agentMetadata ?? null,

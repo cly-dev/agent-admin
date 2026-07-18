@@ -137,7 +137,7 @@ export function buildInitSchemasFromDebugRequest(
 
   return {
     ...request,
-    persist: options?.persist ?? true,
+    persist: options?.persist ?? false,
     hint: hint || undefined,
   };
 }

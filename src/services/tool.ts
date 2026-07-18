@@ -10,6 +10,7 @@ import type {
   DebugToolResult,
   ImportToolsFromSwaggerDto,
   InitToolSchemasFromDebugDto,
+  InitToolSchemasFromDebugResult,
   Tool,
   ToolControllerFindByAppClientParams,
   ToolControllerFindPageParams,
@@ -108,18 +109,48 @@ export async function ToolController_debug(
 }
 
 /**
- * 调试 Tool 并由大模型初始化 outputSchema / responseProfile
- * 先按工具配置发起真实 HTTP 调试请求；成功后调用大模型推断并默认写回该 Tool。
+ * 调试 Tool 并由大模型初始化 outputSchema / responseProfile / agentMetadata。
+ * 推荐 persist: false，预览后再应用到表单或二次 persist。
  */
 export async function ToolController_initSchemasFromDebug(
   appClientId: number,
   id: number,
   data: InitToolSchemasFromDebugDto,
-): Promise<void> {
-  await http.post<unknown>(
+): Promise<InitToolSchemasFromDebugResult> {
+  const response = await http.post<unknown>(
     `${TOOL_BASE}/by-app-client/${appClientId}/${id}/debug/init-schemas`,
     data,
   );
+  const payload = unwrapPayload(response) as Record<string, unknown>;
+  return {
+    debug: (payload.debug as InitToolSchemasFromDebugResult['debug']) ?? undefined,
+    outputSchema:
+      (payload.outputSchema as InitToolSchemasFromDebugResult['outputSchema']) ??
+      undefined,
+    responseProfile: normalizeResponseProfileLoose(payload.responseProfile),
+    agentMetadata:
+      (payload.agentMetadata as InitToolSchemasFromDebugResult['agentMetadata']) ??
+      null,
+    source: typeof payload.source === 'string' ? payload.source : undefined,
+    agentMetadataSource:
+      typeof payload.agentMetadataSource === 'string'
+        ? payload.agentMetadataSource
+        : undefined,
+    persisted: payload.persisted === true,
+    tool: payload.tool ? normalizeTool(payload.tool) : undefined,
+    adjustments: Array.isArray(payload.adjustments)
+      ? (payload.adjustments as InitToolSchemasFromDebugResult['adjustments'])
+      : undefined,
+  };
+}
+
+function normalizeResponseProfileLoose(
+  raw: unknown,
+): InitToolSchemasFromDebugResult['responseProfile'] {
+  if (typeof raw !== 'object' || raw === null) {
+    return undefined;
+  }
+  return raw as InitToolSchemasFromDebugResult['responseProfile'];
 }
 
 /** 创建工具 */

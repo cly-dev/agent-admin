@@ -7,9 +7,10 @@ import {
   ThunderboltOutlined,
 } from '@ant-design/icons';
 import { FormattedMessage, Link, useIntl } from '@umijs/max';
-import { Form, Input, Select, Switch } from 'antd';
-import { useMemo } from 'react';
+import { Alert, Form, Input, InputNumber, Select, Steps, Switch } from 'antd';
+import { useMemo, useState } from 'react';
 import ToolAgentMetadataEditor from '../components/ToolAgentMetadataEditor';
+import ToolInitSchemasPreviewModal from '../components/ToolInitSchemasPreviewModal';
 import ToolParametersEditor from '../components/ToolParametersEditor';
 import ToolResponseEditors from '../components/ToolResponseEditors';
 import styles from '../index.module.scss';
@@ -69,8 +70,15 @@ const ToolDetailPage: React.FC = () => {
     handleSubmit,
     handleRunTest,
     handleGenerateResponseSchemas,
+    initSchemasPreview,
+    initSchemasPreviewOpen,
+    setInitSchemasPreviewOpen,
+    handleApplyInitSchemasPreview,
+    handleApplyAndPersistInitSchemas,
     fillTestParamsFromParameters,
   } = useToolDetail();
+
+  const [wizardStep, setWizardStep] = useState(0);
 
   const pageTitle = isCreateMode
     ? intl.formatMessage({ id: 'tool.detail.createTitle' })
@@ -226,6 +234,34 @@ const ToolDetailPage: React.FC = () => {
 
           <div className={styles.toolDetailGrid}>
             <div className={styles.toolDetailMainStack}>
+              <div className={styles.toolDetailWizard}>
+                <Steps
+                  size="small"
+                  current={wizardStep}
+                  onChange={setWizardStep}
+                  items={[
+                    {
+                      title: intl.formatMessage({
+                        id: 'tool.wizard.step.call',
+                      }),
+                    },
+                    {
+                      title: intl.formatMessage({
+                        id: 'tool.wizard.step.response',
+                      }),
+                      disabled: isCreateMode,
+                    },
+                    {
+                      title: intl.formatMessage({
+                        id: 'tool.wizard.step.agent',
+                      }),
+                    },
+                  ]}
+                />
+              </div>
+
+              {wizardStep === 0 ? (
+                <>
               <section className={styles.toolDetailPanel}>
                 <header className={styles.toolDetailPanelHeader}>
                   <span className={styles.toolDetailPanelIcon}>
@@ -359,6 +395,26 @@ const ToolDetailPage: React.FC = () => {
                   </Form.Item>
 
                   <Form.Item
+                    name="definitionKey"
+                    className={styles.toolDetailField}
+                    label={
+                      <span className={styles.toolDetailLabel}>
+                        {intl.formatMessage({ id: 'tool.form.definitionKey' })}
+                      </span>
+                    }
+                    tooltip={intl.formatMessage({
+                      id: 'tool.form.definitionKeyHint',
+                    })}
+                  >
+                    <Input
+                      className="app-input font-mono"
+                      placeholder={intl.formatMessage({
+                        id: 'tool.form.definitionKeyPlaceholder',
+                      })}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
                     name="riskLevel"
                     className={styles.toolDetailField}
                     label={
@@ -373,6 +429,25 @@ const ToolDetailPage: React.FC = () => {
                         value: level,
                         label: level,
                       }))}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="timeout"
+                    className={styles.toolDetailField}
+                    label={
+                      <span className={styles.toolDetailLabel}>
+                        {intl.formatMessage({ id: 'tool.form.timeout' })}
+                      </span>
+                    }
+                  >
+                    <InputNumber
+                      className="app-input w-full"
+                      min={1000}
+                      step={1000}
+                      placeholder={intl.formatMessage({
+                        id: 'tool.form.timeoutPlaceholder',
+                      })}
                     />
                   </Form.Item>
 
@@ -444,18 +519,19 @@ const ToolDetailPage: React.FC = () => {
                   <ToolParametersEditor disabled={submitting} />
                 </Form.Item>
               </section>
+              <div className={styles.toolDetailWizardActions}>
+                <button
+                  type="button"
+                  className="app-button-primary px-4 py-2 text-sm font-semibold"
+                  onClick={() => setWizardStep(isCreateMode ? 2 : 1)}
+                >
+                  {intl.formatMessage({ id: 'tool.wizard.next' })}
+                </button>
+              </div>
+                </>
+              ) : null}
 
-              <section className={styles.toolDetailPanel}>
-                <ToolAgentMetadataEditor
-                  key={tool?.id ?? 'create'}
-                  form={form}
-                  disabled={submitting}
-                  isCreateMode={isCreateMode}
-                  savedAgentMetadata={tool?.agentMetadata ?? null}
-                />
-              </section>
-
-              {!isCreateMode ? (
+              {wizardStep === 1 && !isCreateMode ? (
                 <section className={styles.toolDetailPanel}>
                   <header className={styles.toolDetailPanelHeader}>
                     <span className={styles.toolDetailPanelIcon}>
@@ -474,6 +550,20 @@ const ToolDetailPage: React.FC = () => {
                       </p>
                     </div>
                   </header>
+
+                  {!testResult?.ok ? (
+                    <Alert
+                      type="info"
+                      showIcon
+                      className={styles.toolDetailWizardEmpty}
+                      message={intl.formatMessage({
+                        id: 'tool.wizard.responseEmptyTitle',
+                      })}
+                      description={intl.formatMessage({
+                        id: 'tool.wizard.responseEmptyDesc',
+                      })}
+                    />
+                  ) : null}
 
                   <ToolResponseEditors
                     disabled={submitting}
@@ -498,6 +588,43 @@ const ToolDetailPage: React.FC = () => {
                       onChange={(event) => setSchemaHint(event.target.value)}
                     />
                   </div>
+                  <div className={styles.toolDetailWizardActions}>
+                    <button
+                      type="button"
+                      className="app-button-secondary px-4 py-2 text-sm font-semibold"
+                      onClick={() => setWizardStep(0)}
+                    >
+                      {intl.formatMessage({ id: 'tool.wizard.prev' })}
+                    </button>
+                    <button
+                      type="button"
+                      className="app-button-primary px-4 py-2 text-sm font-semibold"
+                      onClick={() => setWizardStep(2)}
+                    >
+                      {intl.formatMessage({ id: 'tool.wizard.next' })}
+                    </button>
+                  </div>
+                </section>
+              ) : null}
+
+              {wizardStep === 2 ? (
+                <section className={styles.toolDetailPanel}>
+                <ToolAgentMetadataEditor
+                  key={tool?.id ?? 'create'}
+                  form={form}
+                  disabled={submitting}
+                  isCreateMode={isCreateMode}
+                  savedAgentMetadata={tool?.agentMetadata ?? null}
+                />
+                  <div className={styles.toolDetailWizardActions}>
+                    <button
+                      type="button"
+                      className="app-button-secondary px-4 py-2 text-sm font-semibold"
+                      onClick={() => setWizardStep(isCreateMode ? 0 : 1)}
+                    >
+                      {intl.formatMessage({ id: 'tool.wizard.prev' })}
+                    </button>
+                  </div>
                 </section>
               ) : null}
             </div>
@@ -514,12 +641,14 @@ const ToolDetailPage: React.FC = () => {
                   generatingSchemas={generatingSchemas}
                   paramsDisabled={isCreateMode}
                   runDisabled={isCreateMode}
-                  generateSchemasDisabled={isCreateMode}
+                  generateSchemasDisabled={isCreateMode || !testResult?.ok}
                   result={testResult}
                   onRun={handleRunTest}
-                  onGenerateSchemas={handleGenerateResponseSchemas}
+                  onGenerateSchemas={
+                    testResult?.ok ? handleGenerateResponseSchemas : undefined
+                  }
                   generateSchemasLabel={intl.formatMessage({
-                    id: 'tool.detail.generateResponseSchemas',
+                    id: 'tool.initSchemas.cta',
                   })}
                   onSyncParams={fillTestParamsFromParameters}
                   syncParamsLabel={intl.formatMessage({
@@ -608,6 +737,18 @@ const ToolDetailPage: React.FC = () => {
           </div>
         </div>
       </Form>
+
+      <ToolInitSchemasPreviewModal
+        open={initSchemasPreviewOpen}
+        loading={generatingSchemas}
+        result={initSchemasPreview}
+        onCancel={() => setInitSchemasPreviewOpen(false)}
+        onApply={() => {
+          handleApplyInitSchemasPreview();
+          setWizardStep(1);
+        }}
+        onApplyAndPersist={() => void handleApplyAndPersistInitSchemas()}
+      />
     </AppDetailPage>
   );
 };

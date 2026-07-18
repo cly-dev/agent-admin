@@ -252,6 +252,12 @@ export function normalizeTool(raw: unknown): Tool {
     id: Number(item.id),
     appClientId: Number(item.appClientId ?? item.app_client_id),
     name: String(item.name ?? ''),
+    definitionKey:
+      typeof item.definitionKey === 'string'
+        ? item.definitionKey
+        : typeof item.definition_key === 'string'
+          ? item.definition_key
+          : undefined,
     description: String(item.description ?? ''),
     riskLevel: normalizeRiskLevel(item.riskLevel ?? item.risk_level),
     method: normalizeHttpMethod(item.method),

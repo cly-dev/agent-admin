@@ -40,6 +40,7 @@ import {
 import {
   buildTestParamsFromToolParameters,
   getParameterValidationMessage,
+  mergeTestParamsWithToolParameters,
   parametersFromToolSchemas,
   validateToolParameters,
 } from '../toolSchema';
@@ -304,6 +305,16 @@ export function useToolDetail() {
   const watchedMethod = Form.useWatch('method', form);
   const watchedPath = Form.useWatch('path', form);
   const watchedIsActive = Form.useWatch('isActive', form);
+  const watchedParameters = Form.useWatch('parameters', form);
+
+  useEffect(() => {
+    if (loading || !Array.isArray(watchedParameters)) {
+      return;
+    }
+    setTestParams((current) =>
+      mergeTestParamsWithToolParameters(current, watchedParameters),
+    );
+  }, [loading, watchedParameters]);
 
   const selectedIntegration = useMemo(() => {
     if (!watchedIntegrationId) {
@@ -322,7 +333,14 @@ export function useToolDetail() {
     history.push('/tool');
   };
 
-  const handleSubmit = async (values: ToolFormValues) => {
+  const handleSubmit = async (submitted: ToolFormValues) => {
+    // 向导会卸载非当前步骤字段；onFinish 只带已挂载字段。
+    // preserve 下需用 getFieldsValue(true) 合并完整表单值。
+    const values: ToolFormValues = {
+      ...form.getFieldsValue(true),
+      ...submitted,
+    };
+
     if (!projectId) {
       message.warning(intl.formatMessage({ id: 'tool.selectProject' }));
       return;
@@ -430,8 +448,7 @@ export function useToolDetail() {
         : undefined;
 
       const isReadMode =
-        values.agentMetadata?.mode === 'READ' ||
-        !values.agentMetadata?.mode;
+        values.agentMetadata?.mode === 'READ' || !values.agentMetadata?.mode;
       if (isReadMode && (!nextCoreFields || nextCoreFields.length === 0)) {
         message.error(
           intl.formatMessage({ id: 'tool.response.validation.coreRequired' }),
@@ -445,7 +462,9 @@ export function useToolDetail() {
         !listPathForValidate
       ) {
         message.error(
-          intl.formatMessage({ id: 'tool.response.validation.listPathRequired' }),
+          intl.formatMessage({
+            id: 'tool.response.validation.listPathRequired',
+          }),
         );
         return;
       }
@@ -570,7 +589,7 @@ export function useToolDetail() {
               rawMeta.paramFormatHints,
             ),
           }
-        : form.getFieldValue('agentMetadata') ?? null;
+        : (form.getFieldValue('agentMetadata') ?? null);
 
       form.setFieldsValue({
         outputSchemaFields: nextOutputFields,

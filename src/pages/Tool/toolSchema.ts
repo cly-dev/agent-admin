@@ -1,5 +1,11 @@
 import type { ApiTestParamsByIn } from '@/components/ApiTestPanel';
 import { createEmptyApiTestParams } from '@/components/ApiTestPanel';
+import type {
+  ApiTestParamIn,
+  ApiTestParamRow,
+} from '@/components/ApiTestPanel/types';
+
+const API_TEST_SECTIONS: ApiTestParamIn[] = ['path', 'query', 'header', 'body'];
 
 /** OpenAPI 参数位置（与后端 inputSchema.parameters[].in 一致） */
 export type ToolParameterIn = 'path' | 'query' | 'header' | 'body';
@@ -877,6 +883,58 @@ export function buildTestParamsFromToolParameters(
   }
 
   return result;
+}
+
+function testParamLookupKey(row: { in: ApiTestParamIn; name: string }): string {
+  return `${row.in}:${normalizeParameterPath(row.name)}`;
+}
+
+/** 将工具参数合并进调试台：新增参数自动出现，已有值保留，手动添加的 test_ 行保留 */
+export function mergeTestParamsWithToolParameters(
+  current: ApiTestParamsByIn,
+  parameters: ToolParameter[],
+): ApiTestParamsByIn {
+  const fromTool = buildTestParamsFromToolParameters(parameters);
+  const existingById = new Map<string, ApiTestParamRow>();
+  const existingByKey = new Map<string, ApiTestParamRow>();
+
+  for (const section of API_TEST_SECTIONS) {
+    for (const row of current[section]) {
+      existingById.set(row.id, row);
+      const key = testParamLookupKey(row);
+      if (key.endsWith(':')) {
+        continue;
+      }
+      existingByKey.set(key, row);
+    }
+  }
+
+  const merged = createEmptyApiTestParams();
+
+  for (const section of API_TEST_SECTIONS) {
+    for (const row of fromTool[section]) {
+      const key = testParamLookupKey(row);
+      const existing = existingById.get(row.id) ?? existingByKey.get(key);
+      merged[section].push(
+        existing
+          ? {
+              ...row,
+              id: existing.id,
+              value: existing.value,
+              enabled: existing.enabled,
+            }
+          : row,
+      );
+    }
+
+    for (const row of current[section]) {
+      if (row.id.startsWith('test_')) {
+        merged[section].push(row);
+      }
+    }
+  }
+
+  return merged;
 }
 
 export type ToolParameterValidationIssue =

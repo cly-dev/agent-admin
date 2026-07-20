@@ -1,0 +1,303 @@
+# omnix-admin 生产发布：OIDC → Docker 构建 → ECR → ECS
+#
+# 触发：推送到 release-prod 分支，或手动 workflow_dispatch
+#
+# GitHub Environment「production」Secrets：
+#   UMI_APP_API_BASE_URL           必填，构建时写入前端 bundle
+#   UMI_APP_OMNIX_CHAT_BASE_URL    必填（启用嵌入聊天时）
+#   UMI_APP_OMNIX_CHAT_DSN         可选
+#   AWS_ROLE_TO_ASSUME             可选，默认 github-ecs-deploy-role
+#   NODE_AUTH_TOKEN                可选，拉取私有 npm 包
+#   DINGTALK_WEBHOOK               可选
+#   DINGTALK_TABLE_CONNECTOR_URL   可选
+#
+# GitHub Environment「production」Variables（可按实际 ECS 修改）：
+#   AWS_REGION / ECS_CLUSTER / ECS_SERVICE / ECS_CONTAINER_NAME / ECR_REPOSITORY
+#   REPO_LABEL                     默认 B端
+
+name: Prod — build & deploy ECS
+
+on:
+  push:
+    branches:
+      - release-prod
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-southeast-1
+  ECS_CLUSTER: prod-omnix-cluster
+  ECS_SERVICE: prod-omnix-admin
+  ECS_CONTAINER_NAME: omnix-admin-ctn
+  ECR_REPOSITORY: yangtenggroup/omnix-admin
+  ECS_TASK_DEFINITION: provisioning/prod-definition-task.json
+  DOCKERFILE: docker/Dockerfile.ci
+  DOCKER_PLATFORM: linux/amd64
+  REPO_LABEL: B端
+  AWS_ROLE_TO_ASSUME_DEFAULT: arn:aws:iam::709278514449:role/github-ecs-deploy-role
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-push:
+    name: Build and push
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: production
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      image: ${{ steps.image-uri.outputs.image }}
+      release_version: prod-${{ github.sha }}
+      aws_role: ${{ steps.cfg.outputs.aws_role }}
+      aws_region: ${{ steps.cfg.outputs.aws_region }}
+      ecs_cluster: ${{ steps.cfg.outputs.ecs_cluster }}
+      ecs_service: ${{ steps.cfg.outputs.ecs_service }}
+      ecs_container: ${{ steps.cfg.outputs.ecs_container }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve deploy config
+        id: cfg
+        run: |
+          set -euo pipefail
+          echo "aws_region=${{ vars.AWS_REGION || env.AWS_REGION }}" >> "$GITHUB_OUTPUT"
+          echo "ecs_cluster=${{ vars.ECS_CLUSTER || env.ECS_CLUSTER }}" >> "$GITHUB_OUTPUT"
+          echo "ecs_service=${{ vars.ECS_SERVICE || env.ECS_SERVICE }}" >> "$GITHUB_OUTPUT"
+          echo "ecs_container=${{ vars.ECS_CONTAINER_NAME || env.ECS_CONTAINER_NAME }}" >> "$GITHUB_OUTPUT"
+          echo "ecr_repository=${{ vars.ECR_REPOSITORY || env.ECR_REPOSITORY }}" >> "$GITHUB_OUTPUT"
+          ROLE="${{ secrets.AWS_ROLE_TO_ASSUME }}"
+          if [ -z "${ROLE}" ]; then
+            ROLE="${{ env.AWS_ROLE_TO_ASSUME_DEFAULT }}"
+          fi
+          echo "aws_role=${ROLE}" >> "$GITHUB_OUTPUT"
+
+      - name: Check build secrets
+        env:
+          UMI_APP_API_BASE_URL: ${{ secrets.UMI_APP_API_BASE_URL }}
+          UMI_APP_OMNIX_CHAT_BASE_URL: ${{ secrets.UMI_APP_OMNIX_CHAT_BASE_URL }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in UMI_APP_API_BASE_URL UMI_APP_OMNIX_CHAT_BASE_URL; do
+            eval "val=\${$name}"
+            if [ -z "${val}" ]; then
+              echo "::error::请在 GitHub Environment production 配置 Secret：${name}"
+              missing=1
+            fi
+          done
+          if [ "${missing}" != "0" ]; then
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.cfg.outputs.aws_role }}
+          aws-region: ${{ steps.cfg.outputs.aws_region }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ env.DOCKERFILE }}
+          platforms: ${{ env.DOCKER_PLATFORM }}
+          push: true
+          build-args: |
+            UMI_APP_API_BASE_URL=${{ secrets.UMI_APP_API_BASE_URL }}
+            UMI_APP_OMNIX_CHAT_BASE_URL=${{ secrets.UMI_APP_OMNIX_CHAT_BASE_URL }}
+            UMI_APP_OMNIX_CHAT_DSN=${{ secrets.UMI_APP_OMNIX_CHAT_DSN }}
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ steps.cfg.outputs.ecr_repository }}:prod-${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ steps.cfg.outputs.ecr_repository }}:prod-latest
+          cache-from: type=gha,scope=omnix-admin-prod
+          cache-to: type=gha,mode=max,scope=omnix-admin-prod
+          provenance: false
+
+      - name: Export image URI
+        id: image-uri
+        run: |
+          echo "image=${{ steps.login-ecr.outputs.registry }}/${{ steps.cfg.outputs.ecr_repository }}:prod-${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy ECS
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build-push]
+    environment: production
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.build-push.outputs.aws_role }}
+          aws-region: ${{ needs.build-push.outputs.aws_region }}
+
+      - name: Render Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ needs.build-push.outputs.ecs_container }}
+          image: ${{ needs.build-push.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ needs.build-push.outputs.ecs_service }}
+          cluster: ${{ needs.build-push.outputs.ecs_cluster }}
+          wait-for-service-stability: true
+          force-new-deployment: true
+
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [build-push, deploy]
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Send DingTalk notification
+        env:
+          DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          REPO_LABEL: ${{ vars.REPO_LABEL || env.REPO_LABEL }}
+          RELEASE_VERSION: ${{ needs.build-push.outputs.release_version }}
+          IMAGE: ${{ needs.build-push.outputs.image }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if [ -z "${DINGTALK_WEBHOOK:-}" ]; then
+            echo "DINGTALK_WEBHOOK not set, skip notification."
+            exit 0
+          fi
+
+          PR_TITLE=""
+          COMMIT_SUBJECT=$(printf '%s\n' "$COMMIT_MSG" | head -1)
+          LATEST_PR=$(printf '%s' "$COMMIT_SUBJECT" | grep -oE '#[0-9]+' | head -1 | sed 's/#//')
+
+          if [ -n "$LATEST_PR" ]; then
+            pr_info=$(curl -sfS \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${REPOSITORY}/pulls/${LATEST_PR}" || echo '{}')
+            PR_TITLE=$(echo "$pr_info" | jq -r '.title // ""')
+          fi
+
+          MESSAGE="【PROD部署完成】${REPO_LABEL}: ${REPOSITORY}"
+          MESSAGE="${MESSAGE}"$'\n'"版本：${RELEASE_VERSION}"
+          MESSAGE="${MESSAGE}"$'\n'"镜像：${IMAGE}"
+          if [ -n "$PR_TITLE" ]; then
+            MESSAGE="${MESSAGE}"$'\n'"内容：${PR_TITLE}"
+          fi
+
+          PAYLOAD=$(jq -n --arg content "$MESSAGE" \
+            '{msgtype: "text", text: {content: $content}}')
+          curl -fsS -H "Content-Type: application/json" -d "$PAYLOAD" "$DINGTALK_WEBHOOK"
+
+  record-prs:
+    name: Record PRs to DingTalk Table
+    runs-on: ubuntu-latest
+    needs: [build-push, notify]
+    timeout-minutes: 5
+    if: github.ref == 'refs/heads/release-prod'
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      APP_ID: ${{ github.event.repository.name }}
+      SKIP_UPDATE: 'false'
+      BC_TYPE: B
+    steps:
+      - name: Get current Beijing time as publish time
+        id: get-publish-time
+        run: |
+          PUBLISH_TIME=$(TZ=Asia/Shanghai date +"%Y-%m-%d %H:%M:%S" | tr -d '\r\n' | xargs)
+          echo "publish_time=${PUBLISH_TIME}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout current prod branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Extract latest PR number
+        id: extract
+        run: |
+          CURRENT="${{ github.sha }}"
+          LATEST_PR=$(git log "$CURRENT" --oneline \
+            | grep 'Merge pull request #' \
+            | grep -E 'from [^/]+/(feature|hotfix|bugfix|fix|features)/' \
+            | head -1 \
+            | grep -oE '#[0-9]+' \
+            | sed 's/#//' || true)
+          echo "latest_pr=${LATEST_PR}" >> "$GITHUB_OUTPUT"
+          echo "Latest PR: ${LATEST_PR:-none}"
+
+      - name: Send latest PR record to DingTalk Table
+        if: env.SKIP_UPDATE != 'true'
+        env:
+          DINGTALK_CONNECTOR_URL: ${{ secrets.DINGTALK_TABLE_CONNECTOR_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LATEST_PR: ${{ steps.extract.outputs.latest_pr }}
+          RELEASE_VERSION: ${{ needs.build-push.outputs.release_version }}
+        run: |
+          if [ -z "${DINGTALK_CONNECTOR_URL:-}" ]; then
+            echo "DINGTALK_TABLE_CONNECTOR_URL not set, skip table record."
+            exit 0
+          fi
+          if [ -z "$LATEST_PR" ]; then
+            echo "No PR found in merge history, skip."
+            exit 0
+          fi
+
+          pr_info=$(curl -sfS -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/$LATEST_PR")
+          title=$(echo "$pr_info" | jq -r '.title // "Unknown"')
+          author=$(echo "$pr_info" | jq -r '.user.login // "unknown"')
+          url="https://github.com/${{ github.repository }}/pull/${LATEST_PR}"
+
+          payload=$(jq -n \
+            --arg content "$title" \
+            --arg publish_time "${{ steps.get-publish-time.outputs.publish_time }}" \
+            --arg service "${{ github.event.repository.name }}, ${{ env.BC_TYPE }}" \
+            --arg status "已发布" \
+            --arg bc_type "${{ env.BC_TYPE }}" \
+            --arg product_owner "" \
+            --arg developer "$author" \
+            --arg pr_urls "$url" \
+            --arg remark "${RELEASE_VERSION}" \
+            '{
+              "内容": $content,
+              "发布时间": $publish_time,
+              "服务": $service,
+              "状态": $status,
+              "B/C端": $bc_type,
+              "产品": $product_owner,
+              "研发": $developer,
+              "PR地址": $pr_urls,
+              "备注": $remark
+            }')
+
+          curl -fsS -X POST "$DINGTALK_CONNECTOR_URL" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer" \
+            -d "$payload"
